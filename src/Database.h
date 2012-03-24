@@ -10,6 +10,7 @@
 
 #include "Pvlib.h"
 #include "Utility.h"
+#include "DateTime.h"
 
 
 class Database {
@@ -19,11 +20,18 @@ public:
 	typedef Pvlib::Ac Ac;
 	typedef Pvlib::Stats Stats;
 
+	enum Type {
+		POWER,
+		VOLTAGE,
+		CURRENT
+	};
+
+
 	enum Resolution {
-		Minute,
-		Day,
-		Month,
-		Year
+		MINUTE,
+		MONTH,
+		DAY,
+		YEAR
 	};
 
 	struct Plant {
@@ -33,6 +41,14 @@ public:
 		std::string conParam2;
 		std::string protocol;
 		std::string password;
+	};
+
+	struct Location {
+		Location(float longitude, float latitude) :
+			longitude(longitude),
+			latitude(latitude) { /* nothing to do */}
+		float longitude;
+		float latitude;
 	};
 
 	Database() { /* nothing to do */ }
@@ -110,22 +126,28 @@ public:
 	 * Store ac values.
 	 */
     virtual void storeAc(const Ac& ac, uint32_t id) = 0;
-/*
-    virtual std::vector<Ac> getAc(uint32_t id, const Date& date) = 0;
 
-    virtual std::vector< std::pair<Date, int32_t> > getEnergie(const std::string& logicalPlant, const Date& from, const Date& to, Resolution) = 0;
-*/
 	/**
 	 * Store dc side values.
 	 */
     virtual void storeDc(const Dc& dc, uint32_t id) = 0;
 
-//    virtual std::vector<Dc> getDc(uint32_t id, const Date& date) = 0;
-
     /**
      * Store statistics of inverter.
      */
     virtual void storeStats(const Stats& stats, uint32_t id) = 0;
+
+    virtual std::vector< std::pair<uint32_t, uint32_t> > readAc(uint32_t id,
+															    int line,
+															    Type type,
+															    const DateTime& from,
+															    const DateTime& to) = 0;
+
+    virtual std::vector< std::pair<uint32_t, uint32_t> > readDc(uint32_t id,
+															    int trackerNum,
+															    Type type,
+															    const DateTime& from,
+															    const DateTime& to) = 0;
 
     //virtual std::vector<Stats> getStats(uint32_t id, const Time& time) = 0;
 

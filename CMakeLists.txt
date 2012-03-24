@@ -15,8 +15,8 @@ find_package(sqlite3)
 
 find_Package(GTest)
 if (GTEST_FOUND)
-	enable_testing()
-	add_subdirectory(tests)
+	#	enable_testing()
+	add_subdirectory(tests EXCLUDE_FROM_ALL)
 endif (GTEST_FOUND)
 
 add_subdirectory(src)

@@ -13,7 +13,7 @@ private:
     std::string         filename;
     sqlite3_stmt*       stmt;
     std::vector<Value>  values;
-    bool                hasNext;
+    bool                stepRet;
     bool                first;
 protected:
     virtual void beginTransaction();

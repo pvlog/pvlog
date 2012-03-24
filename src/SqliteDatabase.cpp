@@ -76,7 +76,7 @@ void SqliteDatabase::exec(std::vector<Value>& values)
 
     }
     values.clear();
-    hasNext = step();
+    stepRet = step();
     first   = true;
 }
 
@@ -84,7 +84,7 @@ bool SqliteDatabase::next()
 {
 	if (first) {
 		first = false;
-		return hasNext;
+		return stepRet;
 	} else {
 		return step();
 	}
@@ -124,7 +124,7 @@ bool SqliteDatabase::step()
     default :
         sqlite3_finalize(stmt);
         stmt = NULL;
-        PVLOG_EXCEPT("Unable to fetch row!");
+        PVLOG_EXCEPT(sqlite3_errmsg(db));
         break;
     }
 
@@ -137,7 +137,6 @@ Value SqliteDatabase::getValue(int index)
 		PVLOG_EXCEPT("Invalid index!");
 
 	Value Value = values.at(index);
-	if (first) first = false;
 	return Value;
 }
 

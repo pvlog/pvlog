@@ -89,6 +89,11 @@ public:
     	return static_cast<int>((time + 2440587.5 * 86400.0) / 86400.0);
     }
 
+    time_t unixTime() const
+    {
+    	return time;
+    }
+
     /**
      * Return localtime string.
 	 * Format:  Www Mmm dd hh:mm:ss yyyy

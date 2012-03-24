@@ -87,7 +87,10 @@ public:
 	};
 
 	struct Ac {
+		static const int32_t INVALID = 0x80000000;
+
 		static bool isValid(int32_t type) { return !(type & 0x80000000); } //higest bit set => invalid
+
 		uint32_t totalPower;
 
 		int32_t power[3];
@@ -102,6 +105,8 @@ public:
 	};
 
 	struct Dc {
+		static const int32_t INVALID = 0x80000000;
+
 		static bool isValid(int32_t type) { return !(type & 0x80000000); } //higest bit set => invalid
 		uint32_t totalPower;
 

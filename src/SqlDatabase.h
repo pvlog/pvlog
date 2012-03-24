@@ -56,11 +56,8 @@ protected :
 
     virtual bool next() = 0;
 
-    virtual bool step() = 0;
-
     virtual Value getValue(int index) = 0;
 public:
-
 	SqlDatabase();
 
     virtual ~SqlDatabase();
@@ -106,16 +103,22 @@ public:
 
 
     virtual void storeAc(const Ac& ac, uint32_t id);
-/*
-    virtual std::vector<Ac> getAc(uint32_t id, const Date& date) = 0;
 
-    virtual std::vector< std::pair<Date, int32_t> > getEnergie(const std::string& logicalPlant, const Date& from, const Date& to, Resolution) = 0;
-*/
     virtual void storeDc(const Dc& dc, uint32_t id);
 
-    //virtual std::vector<Dc> getDc(uint32_t id, const Date& date) = 0;
-
     virtual void storeStats(const Stats& stats, uint32_t id);
+
+    virtual std::vector< std::pair<uint32_t, uint32_t> > readAc(uint32_t id,
+															   int line,
+															   Type type,
+															   const DateTime& from,
+															   const DateTime& to);
+
+    virtual std::vector< std::pair<uint32_t, uint32_t> > readDc(uint32_t id,
+															    int trackerNum,
+															    Type type,
+															    const DateTime& from,
+															    const DateTime& to);
 
   /**
      * Returns all plants in our database.
