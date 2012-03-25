@@ -20,4 +20,4 @@ if (GTEST_FOUND)
 endif (GTEST_FOUND)
 
 add_subdirectory(src)
-
+add_subdirectory(pvlib)

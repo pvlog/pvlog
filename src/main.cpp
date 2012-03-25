@@ -1,13 +1,20 @@
-#include "Utility.h"
-#include "SqliteDatabase.h"
+#include <cstdlib>
+#include <iostream>
+
+#include "Pvlog.h"
 
 
 int main(int argc, char **argv)
 {
 	if (argc != 3) {
-		fprintf(stderr, "Usage %s <database path> <mac>", argv[0]);
+		std::cerr << "Usage %s <config_file_path>" << std::endl;
+		exit(EXIT_FAILURE);
 	}
 
+	Pvlog pvlog(argv[1]);
+	pvlog.start();
+
+/*
 	Database* database = new SqliteDatabase();
 	database->open(argv[1], "", "", "", "");
 	database->createSchema();
@@ -17,4 +24,5 @@ int main(int argc, char **argv)
 	database->close();
 
 	delete database;
+*/
 }

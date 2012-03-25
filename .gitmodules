@@ -1,0 +1,3 @@
+[submodule "pvlib"]
+	path = pvlib
+	url = git@git.assembla.com:pvlib.git
