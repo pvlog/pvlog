@@ -8,43 +8,47 @@
 #include "ConfigReader.h"
 #include "DateTime.h"
 
-SqlDatabase::SqlDatabase() { /* nothing to do */ }
+SqlDatabase::SqlDatabase()
+{ /* nothing to do */
+}
 
-SqlDatabase::~SqlDatabase() { /* nothing to do */ }
+SqlDatabase::~SqlDatabase()
+{ /* nothing to do */
+}
 
 void SqlDatabase::createSchema()
 {
 	try {
-    	beginTransaction();
+		beginTransaction();
 
-    	exec("CREATE TABLE settings(value VARCHAR(128) PRIMARY KEY,"
-                "data varchar(128));");
-   	 	exec("CREATE TABLE plant(name VARCHAR(32) PRIMARY KEY,"
-                "connection VARCHAR(32), con_param1 VARCHAR(32) NOT NULL, con_param2 VARCHAR(32),"
-                "protocol VARCHAR(32) NOT NULL, password VARCHAR(32));");
+		exec("CREATE TABLE settings(value VARCHAR(128) PRIMARY KEY,"
+			 "data VARCHAR(128));");
+		exec("CREATE TABLE plant(name VARCHAR(32) PRIMARY KEY,"
+			 "connection VARCHAR(32), con_param1 VARCHAR(32) NOT NULL, con_param2 VARCHAR(32),"
+			 "protocol VARCHAR(32) NOT NULL, password VARCHAR(32));");
 		exec("CREATE TABLE logical_plant(name VARCHAR(32), longitude FLOAT, latitude FLOAT,"
-				"declination FLOAT, orientation FLOAT)");
-    	exec("CREATE TABLE inverter(id INTEGER PRIMARY KEY,"
-                "name VARCHAR(32), plant VARCHAR(32) REFERENCES plant(name) NOT NULL,"
-                "logical_plant VARCHAR(32) NOT NULL REFERENCES logical_plant(name),"
-                "wattpeak INTEGER NOT NULL, total_power INTEGER, operation_time INTEGER,"
-                "feed_in_time INTEGER);");
-    	exec("CREATE TABLE day_values(year SMALLINT, month SMALLINT, day SMALLINT,"
-				"inverter INTEGER NOT NULL REFERENCES inverter(id),"
-                "power INTEGER, PRIMARY KEY(year, month , day));");
-    	exec("CREATE TABLE errors(date INTEGER,"
-                "inverter INTEGER NOT NULL REFERENCES inverter(id),"
-                "message VARCHAR(500), error_code INTEGER);");
-    	exec("CREATE TABLE ac_values(line INTEGER, inverter INTEGER REFERENCES inverter(id) NOT NULL,"
-                "date INTEGER,  power INTEGER, frequence INTEGER,"
-                "PRIMARY KEY(line, inverter, date));");
+			"declination FLOAT, orientation FLOAT)");
+		exec("CREATE TABLE inverter(id INTEGER PRIMARY KEY,"
+			 "name VARCHAR(32), plant VARCHAR(32) REFERENCES plant(name) NOT NULL,"
+			 "logical_plant VARCHAR(32) NOT NULL REFERENCES logical_plant(name),"
+			 "wattpeak INTEGER NOT NULL, total_power INTEGER, operation_time INTEGER,"
+			 "feed_in_time INTEGER);");
+		exec("CREATE TABLE day_values(year SMALLINT, month SMALLINT, day SMALLINT,"
+			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
+			"power INTEGER, PRIMARY KEY(year, month , day));");
+		exec("CREATE TABLE errors(date INTEGER,"
+			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
+			"message VARCHAR(500), error_code INTEGER);");
+		exec("CREATE TABLE ac_values(line INTEGER, inverter INTEGER REFERENCES inverter(id) NOT NULL,"
+		     "date INTEGER,  power INTEGER, frequence INTEGER,"
+			 "PRIMARY KEY(line, inverter, date));");
 		exec("CREATE TABLE line(inverter INTEGER, date INTEGER, line SMALLINT,"
-				"power INTEGER, current INTEGER, voltage INTEGER,"
-				"PRIMARY KEY(inverter, date, line),"
-				"FOREIGN KEY(inverter, date) REFERENCES ac_values(inverter, date));");
-    	exec("CREATE TABLE tracker(num INTEGER,"
-                "inverter INTEGER REFERENCES inverter(id), date INTEGER,"
-                "voltage INTEGER, current INTEGER, power INTEGER, PRIMARY KEY(num, inverter, date))");
+			 "power INTEGER, current INTEGER, voltage INTEGER,"
+			 "PRIMARY KEY(inverter, date, line),"
+			 "FOREIGN KEY(inverter, date) REFERENCES ac_values(inverter, date));");
+		exec("CREATE TABLE tracker(num INTEGER,"
+			 "inverter INTEGER REFERENCES inverter(id), date INTEGER,"
+			 "voltage INTEGER, current INTEGER, power INTEGER, PRIMARY KEY(num, inverter, date))");
 
 		prepare("INSERT INTO settings (value, data) VALUES(\"version\", :version);");
 		std::stringstream ss;
@@ -52,23 +56,22 @@ void SqlDatabase::createSchema()
 		bindValueAdd(ss.str());
 		exec();
 
-   	 	commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+		commitTransaction();
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Create schema: ") + exception.what());
 	}
 }
 
 bool SqlDatabase::checkDatabase()
 {
-    exec("SELECT data FROM settings WHERE value=\"version\";");
-    if (!next()) return false;
-    std::string str = getValue(0);
-    std::stringstream ss(str);
-    int version;
-    ss >> version;
+	exec("SELECT data FROM settings WHERE value=\"version\";");
+	if (!next()) return false;
+	std::string str = getValue(0);
+	std::stringstream ss(str);
+	int version;
+	ss >> version;
 
-    return (version == VERSION);
+	return (version == VERSION);
 }
 
 void SqlDatabase::storeConfig(const std::string& value, const std::string& data)
@@ -80,8 +83,7 @@ void SqlDatabase::storeConfig(const std::string& value, const std::string& data)
 		bindValueAdd(data);
 		exec();
 		commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Store config: ") + exception.what());
 	}
 }
@@ -97,11 +99,11 @@ std::string SqlDatabase::readConfig(const std::string& key)
 }
 
 void SqlDatabase::addPlant(const std::string& name,
-	                       const std::string& connection,
-	                       const std::string& conParam1,
-	                       const std::string& conParam2,
-	                       const std::string& protocol,
-	                       const std::string& password)
+                           const std::string& connection,
+                           const std::string& conParam1,
+                           const std::string& conParam2,
+                           const std::string& protocol,
+                           const std::string& password)
 {
 	try {
 		beginTransaction();
@@ -115,8 +117,7 @@ void SqlDatabase::addPlant(const std::string& name,
 		bindValueAdd(password);
 		exec();
 		commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("addPlant: ") + exception.what());
 	}
 }
@@ -124,7 +125,7 @@ void SqlDatabase::addPlant(const std::string& name,
 std::vector<Database::Plant> SqlDatabase::plants()
 {
 	exec("SELECT name, connection, con_param1, con_param2, protocol, password\n"
-	     "FROM plant.");
+	     "FROM plant;");
 
 	std::vector<Plant> plants;
 	while (next()) {
@@ -133,8 +134,10 @@ std::vector<Database::Plant> SqlDatabase::plants()
 		plant.connection = getValue(1).getString();
 		plant.conParam1 = getValue(2).getString();
 		plant.conParam2 = getValue(3).getString();
-		plant.protocol  = getValue(4).getString();
-		plant.password  = getValue(5).getString();
+		plant.protocol = getValue(4).getString();
+		plant.password = getValue(5).getString();
+
+		plants.push_back(plant);
 	}
 
 	return plants;
@@ -156,8 +159,7 @@ void SqlDatabase::addLogicalPlant(const std::string& name,
 		bindValueAdd(orientation);
 		exec();
 		commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Add logicalPlant ") + exception.what());
 	}
 }
@@ -169,24 +171,23 @@ Database::Location SqlDatabase::location(const std::string& logicalPlant)
 }
 
 void SqlDatabase::addInverter(uint32_t id,
-	                          const std::string& name,
-	                          const std::string& plant,
-	                          const std::string& logicalPlant,
-	                          int32_t wattPeak)
+                              const std::string& name,
+                              const std::string& plant,
+                              const std::string& logicalPlant,
+                              int32_t wattPeak)
 {
 	try {
 		beginTransaction();
 		prepare("INSERT INTO inverter (id, name, plant, logical_plant, wattpeak)\n"
 		        "VALUES(:id, :name, :logical_plant, :plant, :wattpeak);");
-		bindValueAdd(static_cast<int64_t>(id));
+		bindValueAdd(static_cast<int64_t> (id));
 		bindValueAdd(name);
 		bindValueAdd(plant);
 		bindValueAdd(logicalPlant);
 		bindValueAdd(wattPeak);
 		exec();
 		commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Add inverter ") + exception.what());
 	}
 }
@@ -194,45 +195,44 @@ void SqlDatabase::addInverter(uint32_t id,
 void SqlDatabase::storeAc(const Ac& ac, uint32_t id)
 {
 	try {
-    	beginTransaction();
+		beginTransaction();
 
-    	prepare("INSERT INTO ac_values(inverter, date, frequence, power)\n"
-				"VALUES(:inverter, :date, :frequence, :power);");
+		prepare("INSERT INTO ac_values(inverter, date, frequence, power)\n"
+		        "VALUES(:inverter, :date, :frequence, :power);");
 
-		bindValueAdd(static_cast<int64_t>(id));
-		bindValueAdd(static_cast<int32_t>(ac.time));
+		bindValueAdd(static_cast<int64_t> (id));
+		bindValueAdd(static_cast<int32_t> (ac.time));
 
 		if (Ac::isValid(ac.frequence)) bindValueAdd(ac.frequence);
 		else bindValueAdd();
 
-		if (Ac::isValid(ac.totalPower)) bindValueAdd(static_cast<int32_t>(ac.totalPower));
+		if (Ac::isValid(ac.totalPower)) bindValueAdd(static_cast<int32_t> (ac.totalPower));
 		else bindValueAdd();
 
 		exec();
 
-    	for (int i = 0; i < ac.lineNum; ++i) {
-        	prepare("INSERT INTO line(inverter, date, line, power, voltage, current)\n"
+		for (int i = 0; i < ac.lineNum; ++i) {
+			prepare("INSERT INTO line(inverter, date, line, power, voltage, current)\n"
 			        "VALUES(:line, :id, :date, :power, :voltage, :current);");
 
-       	 	bindValueAdd(static_cast<int64_t>(id));
-       	 	bindValueAdd(static_cast<int32_t>(ac.time));
+			bindValueAdd(static_cast<int64_t> (id));
+			bindValueAdd(static_cast<int32_t> (ac.time));
 			bindValueAdd(i);
 
 			if (Ac::isValid(ac.power[i])) bindValueAdd(ac.power[i]);
 			else bindValueAdd();
 
-        	if (Ac::isValid(ac.voltage[i])) bindValueAdd(ac.voltage[i]);
-       	 	else bindValueAdd();
+			if (Ac::isValid(ac.voltage[i])) bindValueAdd(ac.voltage[i]);
+			else bindValueAdd();
 
-       	 	if (Ac::isValid(ac.power[i])) bindValueAdd(ac.current[i]);
-        	else bindValueAdd();
+			if (Ac::isValid(ac.power[i])) bindValueAdd(ac.current[i]);
+			else bindValueAdd();
 
-        	exec();
-    	}
+			exec();
+		}
 
-    	commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+		commitTransaction();
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Store ac data: ") + exception.what());
 	}
 }
@@ -240,17 +240,16 @@ void SqlDatabase::storeAc(const Ac& ac, uint32_t id)
 void SqlDatabase::storeDc(const Dc& dc, uint32_t id)
 {
 	try {
-    	beginTransaction();
+		beginTransaction();
 
-    	for (int i = 0; i < dc.trackerNum; i++) {
-       	 	prepare("INSERT INTO tracker(num, inverter, date, power, voltage, current)\n"
+		for (int i = 0; i < dc.trackerNum; i++) {
+			prepare("INSERT INTO tracker(num, inverter, date, power, voltage, current)\n"
 			        "VALUES(:num, :inverter, :date, :power, :voltage, :current);");
-        	bindValueAdd(i);
-        	bindValueAdd(static_cast<int64_t>(id));
-        	bindValueAdd(static_cast<int32_t>(dc.time));
+			bindValueAdd(i);
+			bindValueAdd(static_cast<int64_t> (id));
+			bindValueAdd(static_cast<int32_t> (dc.time));
 
-
-        	if (Dc::isValid(dc.power[i])) bindValueAdd(dc.power[i]);
+			if (Dc::isValid(dc.power[i])) bindValueAdd(dc.power[i]);
 			else bindValueAdd();
 
 			if (Dc::isValid(dc.voltage[i])) bindValueAdd(dc.voltage[i]);
@@ -259,96 +258,105 @@ void SqlDatabase::storeDc(const Dc& dc, uint32_t id)
 			if (Dc::isValid(dc.current[i])) bindValueAdd(dc.current[i]);
 			else bindValueAdd();
 
-        	exec();
-    	}
+			exec();
+		}
 
-    	commitTransaction();
-	}
-	catch (const PvlogException& exception) {
+		commitTransaction();
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("Store dc data: ") + exception.what());
 	}
 }
 
-std::vector< std::pair<uint32_t, uint32_t> >SqlDatabase::readAc(uint32_t id,
-														         int line,
-														         Type type,
-																 const DateTime& from,
-														         const DateTime& to)
+std::vector<std::pair<uint32_t, uint32_t> > SqlDatabase::readAc(uint32_t id,
+                                                                int line,
+                                                                Type type,
+                                                                const DateTime& from,
+                                                                const DateTime& to)
 {
-	std::vector< std::pair<uint32_t, uint32_t> > acData;
+	std::vector<std::pair<uint32_t, uint32_t> > acData;
 
 	try {
 		std::string select = "SELECT date, ";
-		switch(type) {
-			case POWER: select += "power\n"; break;
-			case VOLTAGE: select += "voltage\n"; break;
-			case CURRENT: select += "current\n"; break;
-			default: PVLOG_EXCEPT("Invalid Type!");
+		switch (type) {
+		case POWER:
+			select += "power\n";
+			break;
+		case VOLTAGE:
+			select += "voltage\n";
+			break;
+		case CURRENT:
+			select += "current\n";
+			break;
+		default:
+			PVLOG_EXCEPT("Invalid Type!");
 		}
 
-		prepare(select +
-				"FROM line\n"
-				"WHERE date >= :from AND date <= :to AND inverter = :id AND line = :line\n"
-				"ORDER BY date ASC;");
-		bindValueAdd(static_cast<int32_t>(from.unixTime()));
-		bindValueAdd(static_cast<int32_t>(to.unixTime()));
-		bindValueAdd(static_cast<int64_t>(id));
+		prepare(select + "FROM line\n"
+		        "WHERE date >= :from AND date <= :to AND inverter = :id AND line = :line\n"
+		        "ORDER BY date ASC;");
+		bindValueAdd(static_cast<int32_t> (from.unixTime()));
+		bindValueAdd(static_cast<int32_t> (to.unixTime()));
+		bindValueAdd(static_cast<int64_t> (id));
 		bindValueAdd(line);
 		exec();
 
-		while(next()) {
-			uint32_t time = static_cast<uint32_t>(getValue(0).getInt32());
+		while (next()) {
+			uint32_t time = static_cast<uint32_t> (getValue(0).getInt32());
 			Value value = getValue(1);
 
 			if (!value.isNull()) {
-				acData.push_back(std::make_pair(time, static_cast<uint32_t>(value.getInt32())));
+				acData.push_back(std::make_pair(time, static_cast<uint32_t> (value.getInt32())));
 			}
 		}
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("GetDc: ") + exception.what());
 	}
 
 	return acData;
 }
 
-std::vector< std::pair<uint32_t, uint32_t> > SqlDatabase::readDc(uint32_t id,
-												                 int trackerNum,
-														         Type type,
-																 const DateTime& from,
-												                 const DateTime& to)
+std::vector<std::pair<uint32_t, uint32_t> > SqlDatabase::readDc(uint32_t id,
+                                                                int trackerNum,
+                                                                Type type,
+                                                                const DateTime& from,
+                                                                const DateTime& to)
 {
-	std::vector< std::pair<uint32_t, uint32_t> > dcData;
+	std::vector<std::pair<uint32_t, uint32_t> > dcData;
 
 	try {
 		std::string select = "SELECT date, ";
-		switch(type) {
-			case POWER: select += "power\n"; break;
-			case VOLTAGE: select += "voltage\n"; break;
-			case CURRENT: select += "current\n"; break;
-			default: PVLOG_EXCEPT("Invalid DcLineType!");
+		switch (type) {
+		case POWER:
+			select += "power\n";
+			break;
+		case VOLTAGE:
+			select += "voltage\n";
+			break;
+		case CURRENT:
+			select += "current\n";
+			break;
+		default:
+			PVLOG_EXCEPT("Invalid DcLineType!");
 		}
 
-		prepare(select +
-				"FROM tracker\n"
-				"WHERE date >= :from AND date <= :to AND inverter = :id AND num = :num\n"
-				"ORDER BY date ASC;");
-		bindValueAdd(static_cast<int32_t>(from.unixTime()));
-		bindValueAdd(static_cast<int32_t>(to.unixTime()));
-		bindValueAdd(static_cast<int64_t>(id));
+		prepare(select + "FROM tracker\n"
+		        "WHERE date >= :from AND date <= :to AND inverter = :id AND num = :num\n"
+		        "ORDER BY date ASC;");
+		bindValueAdd(static_cast<int32_t> (from.unixTime()));
+		bindValueAdd(static_cast<int32_t> (to.unixTime()));
+		bindValueAdd(static_cast<int64_t> (id));
 		bindValueAdd(trackerNum);
 		exec();
 
-		while(next()) {
-			uint32_t time = static_cast<uint32_t>(getValue(0).getInt32());
+		while (next()) {
+			uint32_t time = static_cast<uint32_t> (getValue(0).getInt32());
 			Value value = getValue(1);
 
 			if (!value.isNull()) {
-				dcData.push_back(std::make_pair(time, static_cast<uint32_t>(value.getInt32())));
+				dcData.push_back(std::make_pair(time, static_cast<uint32_t> (value.getInt32())));
 			}
 		}
-	}
-	catch (const PvlogException& exception) {
+	} catch (const PvlogException& exception) {
 		PVLOG_EXCEPT(std::string("GetDc: ") + exception.what());
 	}
 
@@ -357,310 +365,309 @@ std::vector< std::pair<uint32_t, uint32_t> > SqlDatabase::readDc(uint32_t id,
 
 void SqlDatabase::storeStats(const Stats& stats, uint32_t id)
 {
-		beginTransaction();
-		prepare("UPDATE inverter"
-				"SET"
-				"total_power = coalesce(:total_power total_power),"
-				"operation_time = :coalesce(:operation_time, operation_time),"
-				"feed_in_time = coalesce(:feed_in_time, feed_in_time)"
-				"WHERE id = :id;");
-		if (Stats::isValid(stats.totalYield)) bindValueAdd(static_cast<int32_t>(stats.totalYield));
-		else bindValueAdd();
+	beginTransaction();
+	prepare("UPDATE inverter\n"
+			"SET\n"
+			"total_power = coalesce(:total_power, total_power),\n"
+			"operation_time = coalesce(:operation_time, operation_time),\n"
+			"feed_in_time = coalesce(:feed_in_time, feed_in_time)\n"
+			"WHERE id = :id;");
+	if (Stats::isValid(stats.totalYield)) bindValueAdd(static_cast<int32_t> (stats.totalYield));
+	else bindValueAdd();
 
-		if (Stats::isValid(stats.operationTime))
-			bindValueAdd(static_cast<int32_t>(stats.operationTime));
-		else bindValueAdd();
+	if (Stats::isValid(stats.operationTime)) bindValueAdd(
+	        static_cast<int32_t> (stats.operationTime));
+	else bindValueAdd();
 
-		if (Stats::isValid(stats.feedInTime))
-			bindValueAdd(static_cast<int32_t>(stats.feedInTime));
-		else bindValueAdd();
+	if (Stats::isValid(stats.feedInTime)) bindValueAdd(static_cast<int32_t> (stats.feedInTime));
+	else bindValueAdd();
 
-		bindValueAdd(static_cast<int64_t>(id));
+	bindValueAdd(static_cast<int64_t> (id));
+	exec();
+
+	//day Value
+	if (Stats::isValid(stats.dayYield)) {
+		DateTime time;
+		prepare("INSERT INTO day_values(inverter, year, month, day, power)\n"
+				"VALUES(:inverter, :year, :month, :day, :power);");
+		bindValueAdd(static_cast<int64_t> (id));
+		bindValueAdd(static_cast<int16_t> (time.year()));
+		bindValueAdd(static_cast<int16_t> (time.month()));
+		bindValueAdd(static_cast<int16_t> (time.monthDay()));
+		bindValueAdd(static_cast<int32_t> (stats.totalYield));
+
 		exec();
+	}
 
-		//day Value
-		if (Stats::isValid(stats.dayYield)) {
-			DateTime time(stats.time);
-			prepare("INSERT INTO day_values(inverter, year, month, day, power)"
-					"VALUES(:year, :month, :day, :power);");
-			bindValueAdd(static_cast<int64_t>(id));
-			bindValueAdd(static_cast<int16_t>(time.year()));
-			bindValueAdd(static_cast<int16_t>(time.month()));
-			bindValueAdd(static_cast<int16_t>(time.monthDay()));
-			bindValueAdd(static_cast<int32_t>(stats.totalYield));
-
-			exec();
-		}
-
-		commitTransaction();
+	commitTransaction();
 }
 
 /*
-std::vector<int, std::string> SqlDatabase::getPlants()
-{
-    exec("SELECT id, name FROM plant;");
+ std::vector<int, std::string> SqlDatabase::getPlants()
+ {
+ exec("SELECT id, name FROM plant;");
 
-    std::vector<int, std::string> inverters;
+ std::vector<int, std::string> inverters;
 
-    while(next()) {
-        std::pair<uint32_t, std::string> pair;
-        pair.first  = static_cast<uint32_t>(getValue(0).getInt64());
-        pair.second = getValue(1).getString();
+ while(next()) {
+ std::pair<uint32_t, std::string> pair;
+ pair.first  = static_cast<uint32_t>(getValue(0).getInt64());
+ pair.second = getValue(1).getString();
 
-        inverters.push_back(pair);
-    }
+ inverters.push_back(pair);
+ }
 
-    return inverters;
-}
+ return inverters;
+ }
 
-std::vector<uint32_t, std::string> SqlDatabase::getInverters(int plantId)
-{
-    prepare("SELECT id, name FROM string_inverter WHERE id = :id");
-    bindValueAdd(plantId);
-    exec();
+ std::vector<uint32_t, std::string> SqlDatabase::getInverters(int plantId)
+ {
+ prepare("SELECT id, name FROM string_inverter WHERE id = :id");
+ bindValueAdd(plantId);
+ exec();
 
-    std::vector<uint32_t, std::string>
+ std::vector<uint32_t, std::string>
 
-    while(next()) {
-        std::pair<uint32_t, std::string> pair;
-        pair.first  = getValue(0).getInt64();
-        pair.second = getValue(1).getString();
+ while(next()) {
+ std::pair<uint32_t, std::string> pair;
+ pair.first  = getValue(0).getInt64();
+ pair.second = getValue(1).getString();
 
-        inverters.push_back(pair);
-    }
+ inverters.push_back(pair);
+ }
 
-    return inverters;
-}
+ return inverters;
+ }
 
-void SqlDatabase::storeStats(const Stats & stats)
-{
-    beginTransaction();
+ void SqlDatabase::storeStats(const Stats & stats)
+ {
+ beginTransaction();
 
-    if (stats.energieTotal != 0xffffffff) {
-        prepare("UPDATE string_inverter SET total_power = :total_power,"
-                       "WHERE id = :id;");
-        bindValueAdd(stats.energieTotal);
-        bindValueAdd(stats.id);
-        exec();
-    }
+ if (stats.energieTotal != 0xffffffff) {
+ prepare("UPDATE string_inverter SET total_power = :total_power,"
+ "WHERE id = :id;");
+ bindValueAdd(stats.energieTotal);
+ bindValueAdd(stats.id);
+ exec();
+ }
 
-    if (stats.operationTime != 0xffffffff) {
-        prepare("UPDATE string_inverter SET operation_time = :time,"
-                       "WHERE id = :id;");
-        exec();
-        bindValueAdd(stats.operationTime);
-        bindValueAdd(stats.id);
-        exec();
-    }
+ if (stats.operationTime != 0xffffffff) {
+ prepare("UPDATE string_inverter SET operation_time = :time,"
+ "WHERE id = :id;");
+ exec();
+ bindValueAdd(stats.operationTime);
+ bindValueAdd(stats.id);
+ exec();
+ }
 
-    if (stats.feedInTime != 0xffffffff) {
-        prepare("UPDATE string_inverter SET feed_in_time = : time,"
-                       "WHERE id = :id;");
-        bindValueAdd(stats.feedInTime);
-        bindValueAdd(stats.id);
-        exec();
-    }
+ if (stats.feedInTime != 0xffffffff) {
+ prepare("UPDATE string_inverter SET feed_in_time = : time,"
+ "WHERE id = :id;");
+ bindValueAdd(stats.feedInTime);
+ bindValueAdd(stats.id);
+ exec();
+ }
 
-    prepare("IF EXISTS (SELECT date FROM day_values WHERE string_inverter = :id, date = :date)"
-                   "UPDATE day_values SET power = :power WHERE string_inverter = :id, date = :date)"
-                   "ELSE"
-                   "INSERT INTO day_values(:date, :string_inverter, :power;");
-    struct tm * timeInfo = localtime(&stats.time);
-    char time[20];
-    strftime(time, 20, "%Y-%m-%d", timeInfo);
-    bindValueAdd(stats.id);
-    bindValueAdd(time);
-    bindValueAdd(stats.energieToday);
-    bindValueAdd(stats.id);
-    bindValueAdd(time);
-    bindValueAdd(time);
-    bindValueAdd(stats.id);
-    bindValueAdd(stats.energieToday);
-    exec();
+ prepare("IF EXISTS (SELECT date FROM day_values WHERE string_inverter = :id, date = :date)"
+ "UPDATE day_values SET power = :power WHERE string_inverter = :id, date = :date)"
+ "ELSE"
+ "INSERT INTO day_values(:date, :string_inverter, :power;");
+ struct tm * timeInfo = localtime(&stats.time);
+ char time[20];
+ strftime(time, 20, "%Y-%m-%d", timeInfo);
+ bindValueAdd(stats.id);
+ bindValueAdd(time);
+ bindValueAdd(stats.energieToday);
+ bindValueAdd(stats.id);
+ bindValueAdd(time);
+ bindValueAdd(time);
+ bindValueAdd(stats.id);
+ bindValueAdd(stats.energieToday);
+ exec();
 
-    commitTransaction();
-}
+ commitTransaction();
+ }
 
-int SqlDatabase::numInverter()
-{
-	prepare("SELECT count(*) As inverter_num from string_inverter"
-				   "WHERE plant = :id;");
-	bindValueAdd(id);
-	exec();
-   // }
+ int SqlDatabase::numInverter()
+ {
+ prepare("SELECT count(*) As inverter_num from string_inverter"
+ "WHERE plant = :id;");
+ bindValueAdd(id);
+ exec();
+ // }
 
-    return getValue(0).getInt();
-}
+ return getValue(0).getInt();
+ }
 
-int SqlDatabase::numInverter(int32_t plantId)
-{
-	prepare("SELECT count(*) As inverter_num from string_inverter"
-				   "WHERE plant = :id;");
-	bindValueAdd(id);
-	exec();
+ int SqlDatabase::numInverter(int32_t plantId)
+ {
+ prepare("SELECT count(*) As inverter_num from string_inverter"
+ "WHERE plant = :id;");
+ bindValueAdd(id);
+ exec();
 
-    return getValue(0).getInt();
-}
+ return getValue(0).getInt();
+ }
 
-void SqlDatabase::getInverters(std::vector< std::pair<int32_t, std::string> > & inverters, int plantId)
-{
-    if (plantId < 0) {
-        exec("SELECT id, name FROM string_inverter;");
-    } else {
-        prepare("SELECT id, name FROM string_inverter WHERE id = :id");
-        bindValueAdd(plantId);
-        exec();
-    }
-    while(next()) {
-        std::pair<int64_t, std::string> pair;
-        pair.first  = getValue(0).getLongLong();
-        pair.second = getValue(1).getString();
+ void SqlDatabase::getInverters(std::vector< std::pair<int32_t, std::string> > & inverters, int plantId)
+ {
+ if (plantId < 0) {
+ exec("SELECT id, name FROM string_inverter;");
+ } else {
+ prepare("SELECT id, name FROM string_inverter WHERE id = :id");
+ bindValueAdd(plantId);
+ exec();
+ }
+ while(next()) {
+ std::pair<int64_t, std::string> pair;
+ pair.first  = getValue(0).getLongLong();
+ pair.second = getValue(1).getString();
 
-        inverters.push_back(pair);
-    }
-}
+ inverters.push_back(pair);
+ }
+ }
 
-void SqlDatabase::getInverterStats(int64_t id, Stats & stats)
-{
-    prepare("SELECT wattpeak, total_power, operation_time, feed_in_time"
-                   "FROM string_inverter WHERE id = :id;");
-    bindValueAdd(id);
-    exec();
+ void SqlDatabase::getInverterStats(int64_t id, Stats & stats)
+ {
+ prepare("SELECT wattpeak, total_power, operation_time, feed_in_time"
+ "FROM string_inverter WHERE id = :id;");
+ bindValueAdd(id);
+ exec();
 
-    Query::Value value;
+ Query::Value value;
 
-    value = getValue(0);
-    if (value.isNull()) stats.energieTotal = -1;
-    else  stats.energieTotal = value.getLongLong();
+ value = getValue(0);
+ if (value.isNull()) stats.energieTotal = -1;
+ else  stats.energieTotal = value.getLongLong();
 
-    value = getValue(1);
-    if (value.isNull()) stats.operationTime = -1;
-    else  stats.operationTime = value.getLongLong();
+ value = getValue(1);
+ if (value.isNull()) stats.operationTime = -1;
+ else  stats.operationTime = value.getLongLong();
 
-    value = getValue(2);
-    if (value.isNull()) stats.feedInTime = -1;
-    else  stats.feedInTime = value.getLongLong();
+ value = getValue(2);
+ if (value.isNull()) stats.feedInTime = -1;
+ else  stats.feedInTime = value.getLongLong();
 
-    stats.id   = id;
-    stats.time = static_cast<time_t>(-1);
-}
+ stats.id   = id;
+ stats.time = static_cast<time_t>(-1);
+ }
 
-void SqlDatabase::getMonthValues(int64_t id, int year, std::vector< std::pair<int, int32_t> > & power)
-{
-    prepare("SELECT month, SUM(power) FROM day_values WHERE id = :id, year = :year"
-                   "GROUP BY month ORDER BY month ASC;");
-    bindValueAdd(id);
-    bindValueAdd(year);
-    exec();
+ void SqlDatabase::getMonthValues(int64_t id, int year, std::vector< std::pair<int, int32_t> > & power)
+ {
+ prepare("SELECT month, SUM(power) FROM day_values WHERE id = :id, year = :year"
+ "GROUP BY month ORDER BY month ASC;");
+ bindValueAdd(id);
+ bindValueAdd(year);
+ exec();
 
-    while (next()) {
-        std::pair<int, int32_t> pair(getValue(0).getInt(),
-                                         getValue(1).getInt());
-        power.push_back(pair);
-    }
-}
+ while (next()) {
+ std::pair<int, int32_t> pair(getValue(0).getInt(),
+ getValue(1).getInt());
+ power.push_back(pair);
+ }
+ }
 
-void SqlDatabase::getMonthValuesPlant(int id, int year, std::vector< std::pair<int, int32_t> > & power)
-{
-    prepare("SELECT month, SUM(power), FROM day_values"
-                   "WHERE id IN(SELECT id FROM string_inverter WHERE plant = :id), year = :year"
-                   "GROUP BY month ORDER BY month ASC;");
-    bindValueAdd(id);
-    bindValueAdd(year);
-    exec();
+ void SqlDatabase::getMonthValuesPlant(int id, int year, std::vector< std::pair<int, int32_t> > & power)
+ {
+ prepare("SELECT month, SUM(power), FROM day_values"
+ "WHERE id IN(SELECT id FROM string_inverter WHERE plant = :id), year = :year"
+ "GROUP BY month ORDER BY month ASC;");
+ bindValueAdd(id);
+ bindValueAdd(year);
+ exec();
 
-    while (next()) {
-        std::pair<int, int32_t> pair(getValue(0).getInt(),
-                                     getValue(1).getInt());
-        power.push_back(pair);
-    }
-}
+ while (next()) {
+ std::pair<int, int32_t> pair(getValue(0).getInt(),
+ getValue(1).getInt());
+ power.push_back(pair);
+ }
+ }
 
-void SqlDatabase::getYearValues(int64_t id, int fromYear, int toYear, std::vector< std::pair<int, int32_t> > & power)
-{
-    prepare("SELECT year, SUM(power), FROM day_values"
-                   "WHERE id = :id, year >= :from_year AND year <= to_year"
-                   "GROUP BY year ORDER BY year ASC;");
-    bindValueAdd(id);
-    bindValueAdd(fromYear);
-    bindValueAdd(toYear);
+ void SqlDatabase::getYearValues(int64_t id, int fromYear, int toYear, std::vector< std::pair<int, int32_t> > & power)
+ {
+ prepare("SELECT year, SUM(power), FROM day_values"
+ "WHERE id = :id, year >= :from_year AND year <= to_year"
+ "GROUP BY year ORDER BY year ASC;");
+ bindValueAdd(id);
+ bindValueAdd(fromYear);
+ bindValueAdd(toYear);
 
-    while (next()) {
-        std::pair<int, int32_t> pair(getValue(0).getInt(),
-                                     getValue(1).getInt());
-        power.push_back(pair);
-    }
-}
+ while (next()) {
+ std::pair<int, int32_t> pair(getValue(0).getInt(),
+ getValue(1).getInt());
+ power.push_back(pair);
+ }
+ }
 
-void SqlDatabase::getYearValuesPlant(int id, int fromYear, int toYear, std::vector< std::pair<int, int32_t> > & power)
-{
-    prepare("SELECT year, SUM(power), FROM day_values"
-                   "WHERE id IN(SELECT id FROM string_inverter WHERE plant = :id),"
-                   "year >= :from_year AND year <= to_year"
-                   "GROUP BY year ORDER BY year ASC;");
-    bindValueAdd(id);
-    bindValueAdd(fromYear);
-    bindValueAdd(toYear);
+ void SqlDatabase::getYearValuesPlant(int id, int fromYear, int toYear, std::vector< std::pair<int, int32_t> > & power)
+ {
+ prepare("SELECT year, SUM(power), FROM day_values"
+ "WHERE id IN(SELECT id FROM string_inverter WHERE plant = :id),"
+ "year >= :from_year AND year <= to_year"
+ "GROUP BY year ORDER BY year ASC;");
+ bindValueAdd(id);
+ bindValueAdd(fromYear);
+ bindValueAdd(toYear);
 
-    while (next()) {
-        std::pair<int, int32_t> pair(getValue(0).getInt(),
-                                     getValue(1).getInt());
-        power.push_back(pair);
-    }
-}
+ while (next()) {
+ std::pair<int, int32_t> pair(getValue(0).getInt(),
+ getValue(1).getInt());
+ power.push_back(pair);
+ }
+ }
 
-int SqlDatabase::getPhaseCount(int64_t id)
-{
-    prepare("SELECT MAX(line) FROM ac_values WHERE string_inverter = :id");
-    bindValueAdd(id);
-    exec();
+ int SqlDatabase::getPhaseCount(int64_t id)
+ {
+ prepare("SELECT MAX(line) FROM ac_values WHERE string_inverter = :id");
+ bindValueAdd(id);
+ exec();
 
-    return getValue(0).getInt();
-}
+ return getValue(0).getInt();
+ }
 
-void SqlDatabase::getAc(int64_t id, int phase, const Date & date, std::vector< std::pair<time_t, int32_t > > & ac, Type type)
-{
-    prepare("SELECT power, voltage, current FROM ac_values"
-                   "WHERE string_inverter = :id, date >= :day_beginn AND <= :day_end,"
-                   "line = :phase;");
-    bindValueAdd(id);
-    bindValueAdd(static_cast<int64_t>(date.getDayBeginn()));
-    bindValueAdd(static_cast<int64_t>(date.getDayBeginn()) + 24 * 3600);
-    bindValueAdd(phase);
-    exec();
+ void SqlDatabase::getAc(int64_t id, int phase, const Date & date, std::vector< std::pair<time_t, int32_t > > & ac, Type type)
+ {
+ prepare("SELECT power, voltage, current FROM ac_values"
+ "WHERE string_inverter = :id, date >= :day_beginn AND <= :day_end,"
+ "line = :phase;");
+ bindValueAdd(id);
+ bindValueAdd(static_cast<int64_t>(date.getDayBeginn()));
+ bindValueAdd(static_cast<int64_t>(date.getDayBeginn()) + 24 * 3600);
+ bindValueAdd(phase);
+ exec();
 
-    while (next()) {
-        std::pair<time_t, int32_t> pair(static_cast<time_t>(getValue(0).getLongLong()),
-                                     getValue(1).getInt());
-        ac.push_back(pair);
-    }
-}
-*/
+ while (next()) {
+ std::pair<time_t, int32_t> pair(static_cast<time_t>(getValue(0).getLongLong()),
+ getValue(1).getInt());
+ ac.push_back(pair);
+ }
+ }
+ */
 /*
-void SqlDatabase::getAcPlant(int id, const Date & date, std::vector< std::pair<time_t, int32_t > > & ac, Type type)
-{
-    prepare("SELECT AVG(power), AVG(voltage), AVG(current)"
-                   "FROM ac_values"
-                   "INNER JOIN string_inverter ON ac_values.string_inverter = string_inverter.id"
-                   "WHERE date >= :day_beginn AND <= :day_end, in = :id"
-                   "GROUP BY string_inverter;");
+ void SqlDatabase::getAcPlant(int id, const Date & date, std::vector< std::pair<time_t, int32_t > > & ac, Type type)
+ {
+ prepare("SELECT AVG(power), AVG(voltage), AVG(current)"
+ "FROM ac_values"
+ "INNER JOIN string_inverter ON ac_values.string_inverter = string_inverter.id"
+ "WHERE date >= :day_beginn AND <= :day_end, in = :id"
+ "GROUP BY string_inverter;");
 
-    bindValueAdd(id);
-    bindValueAdd(date.getDayBeginn());
-    bindValueAdd(date.getDayBeginn() + 24 * 3600);
-    exec();
+ bindValueAdd(id);
+ bindValueAdd(date.getDayBeginn());
+ bindValueAdd(date.getDayBeginn() + 24 * 3600);
+ exec();
 
-    while (next()) {
-        std::pair<time_t, int32_t> pair(static_cast<time_t>(getValue(0).getLongLong()),
-                                     getValue(1).getInt());
-        power.push_back(pair);
-    }
-}
+ while (next()) {
+ std::pair<time_t, int32_t> pair(static_cast<time_t>(getValue(0).getLongLong()),
+ getValue(1).getInt());
+ power.push_back(pair);
+ }
+ }
 
-*/
+ */
 /*
-void SqlDatabase::getDayValues(int64_t id, const Date & date, std::vector< std::pair<int, int> > values)
-{
-    prepare("SELECT ")
-}
-*/
+ void SqlDatabase::getDayValues(int64_t id, const Date & date, std::vector< std::pair<int, int> > values)
+ {
+ prepare("SELECT ")
+ }
+ */

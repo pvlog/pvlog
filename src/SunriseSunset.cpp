@@ -28,7 +28,6 @@ static double acosDeg(double in)
 	return acos(in) * (180.0 / PI);
 }
 
-
 static double currentJulianCycle(double julianDate, double longitude)
 {
 	double n = julianDate - 2451545.0009 - (longitude / 360.0);
@@ -76,7 +75,9 @@ static double hourAngle(double declinationOfSun, double latitude)
 	return acosDeg(z / n);
 }
 
-static std::pair<double,double> calcSunriseSunset(double julianDate, double longitude, double latitude)
+static std::pair<double, double> calcSunriseSunset(double julianDate,
+                                                   double longitude,
+                                                   double latitude)
 {
 	double JulianCycle;
 	double SolarNoon;
@@ -87,37 +88,35 @@ static std::pair<double,double> calcSunriseSunset(double julianDate, double long
 	double DeclinationOfSun;
 	double HourAngle;
 
-	JulianCycle      = currentJulianCycle(julianDate, longitude);
-	SolarNoon        = approximateSolarNoon(JulianCycle, longitude);
+	JulianCycle = currentJulianCycle(julianDate, longitude);
+	SolarNoon = approximateSolarNoon(JulianCycle, longitude);
 	SolarMeanAnomaly = solarMeanAnomaly(SolarNoon);
 	EquationOfCenter = equationOfCenter(SolarMeanAnomaly);
 	ElipticLongitude = elipticLongitude(SolarMeanAnomaly, EquationOfCenter);
-	SolarTransit     = solarTransit(SolarNoon, SolarMeanAnomaly, ElipticLongitude);
+	SolarTransit = solarTransit(SolarNoon, SolarMeanAnomaly, ElipticLongitude);
 	DeclinationOfSun = declinationOfSun(ElipticLongitude);
-	HourAngle        = hourAngle(DeclinationOfSun, latitude);
+	HourAngle = hourAngle(DeclinationOfSun, latitude);
 
-	double sunset = 2451545.0009 + (HourAngle + longitude) / 360.0 +
-		JulianCycle + 0.0053 * sinDeg(SolarMeanAnomaly) - 0.0069 * sinDeg(2 * ElipticLongitude);
+	double sunset = 2451545.0009 + (HourAngle + longitude) / 360.0 + JulianCycle + 0.0053 * sinDeg(
+	        SolarMeanAnomaly) - 0.0069 * sinDeg(2 * ElipticLongitude);
 
 	double sunrise = SolarTransit - (sunset - SolarTransit);
 
 	return std::make_pair(sunrise, sunset);
 }
 
-
 SunriseSunset::SunriseSunset(float longitude, float latitude) :
-	longitude(longitude),
-	latitude(latitude),
-	lastJulianDay(-1)
+	longitude(longitude), latitude(latitude), lastJulianDay(-1)
 {
 	//nothing to do
 }
 
 void SunriseSunset::calculate(int julianDay)
 {
-	std::pair<double, double> sun = calcSunriseSunset(static_cast<double>(julianDay), longitude, latitude);
+	std::pair<double, double> sun = calcSunriseSunset(static_cast<double> (julianDay), longitude,
+	        latitude);
 	curSunrise = DateTime(sun.first);
-	curSunset  = DateTime(sun.second);
+	curSunset = DateTime(sun.second);
 }
 
 DateTime SunriseSunset::sunrise(int julianDay)

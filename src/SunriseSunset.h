@@ -18,9 +18,9 @@ private:
 
 	float longitude;
 	float latitude;
-	int   lastJulianDay;
-	DateTime  curSunrise;
-	DateTime  curSunset;
+	int lastJulianDay;
+	DateTime curSunrise;
+	DateTime curSunset;
 };
 
 #endif // SUNRISE_SUNSET_H

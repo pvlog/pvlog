@@ -2,6 +2,7 @@
 #define DAEMON_H
 
 #include <cstddef>
+#include <memory>
 
 class DaemonWork {
 public:
@@ -10,21 +11,28 @@ public:
 
 class Daemon {
 protected:
-	DaemonWork* work;
+	std::unique_ptr<DaemonWork> work;
 
 public:
-	Daemon() : work(NULL) {}
-
-	Daemon(DaemonWork *work)
+	Daemon()
 	{
-		this->work = work;
+		/* nothing to do */
 	}
 
-	virtual ~Daemon() { delete work; }
-
-	void setWork(DaemonWork* work)
+	Daemon(std::unique_ptr<DaemonWork> work) :
+		work(std::move(work))
 	{
-		this->work = work;
+		//nothing to do
+	}
+
+	virtual ~Daemon()
+	{
+		/* nothing to do */
+	}
+
+	void setWork(std::unique_ptr<DaemonWork> work)
+	{
+		this->work = std::move(work);
 	}
 
 	virtual void start() = 0;

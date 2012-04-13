@@ -4,16 +4,12 @@
 #include "SunriseSunset.h"
 #include <gtest/gtest.h>
 
-
 static void printUsage()
 {
-    std::cout << " pvlog [config file]" << std::endl;
+	std::cout << " pvlog [config file]" << std::endl;
 }
 
-
-
-
-class DatabaseTest : public ::testing::Test {
+class DatabaseTest: public ::testing::Test {
 protected:
 	std::string path;
 	virtual void SetUp()
@@ -51,7 +47,6 @@ TEST_F(DatabaseTest, DatabaseCheckVersion)
 	database->createSchema();
 	ASSERT_TRUE(database->checkDatabase());
 }
-
 
 TEST_F(DatabaseTest, StoreAc) {
 	database->createSchema();
@@ -93,7 +88,6 @@ TEST_F(DatabaseTest, StoreDc) {
 	}
 }
 
-
 TEST_F(DatabaseTest, StoreStats) {
 	Database::Stats stats;
 	memset(&stats, 0, sizeof(stats));
@@ -116,23 +110,23 @@ int main(int argc, char **argv)
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 
-/*	Database* database = new SqliteDatabase();
-	database->open("/home/benjamin/test.db", "", "", "", "");
-	database->createSchema();
-	Database::Ac ac;
-	memset(&ac, 0, sizeof(ac));
+	/*	Database* database = new SqliteDatabase();
+	 database->open("/home/benjamin/test.db", "", "", "", "");
+	 database->createSchema();
+	 Database::Ac ac;
+	 memset(&ac, 0, sizeof(ac));
 
-	for (int i = 0; i < 10; i++) {
-		ac.time += 60 * 5;
-		database->storeAc(ac, 0x0f0f0f0f);
-	}
+	 for (int i = 0; i < 10; i++) {
+	 ac.time += 60 * 5;
+	 database->storeAc(ac, 0x0f0f0f0f);
+	 }
 
-	memset(&ac, 0, sizeof(ac));
+	 memset(&ac, 0, sizeof(ac));
 
-	for (int i = 0; i < 10; i++) {
-		ac.time += 60 * 5;
-		database->storeAc(ac, 0x0f0f0f00);
-	}
-*/
+	 for (int i = 0; i < 10; i++) {
+	 ac.time += 60 * 5;
+	 database->storeAc(ac, 0x0f0f0f00);
+	 }
+	 */
 
 }
