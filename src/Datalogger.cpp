@@ -1,4 +1,4 @@
-#include "DataLogger.h"
+#include "Datalogger.h"
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
@@ -13,10 +13,10 @@ DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
 	PVLOG_NOT_NULL(pvlib);
 
 	 if (timeout < 60) {
-	 PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
+		 PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
 	 }
 	 if ((timeout % 60) != 0) {
-	 PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
+		 PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	 }
 
 	//database->plantLocation(longitude, latitude);

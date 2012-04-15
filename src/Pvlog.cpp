@@ -4,7 +4,7 @@
 
 #include "PvlogException.h"
 #include "ConfigReader.h"
-#include "DataLogger.h"
+#include "Datalogger.h"
 #include "SqliteDatabase.h"
 #include "ForgroundDaemon.h"
 #include "Log.h"
@@ -66,7 +66,7 @@ void Pvlog::initPvlib()
 		pvlib->openPlant(plant.name, plant.connection, plant.protocol, plant.conParam1,
 		        plant.password);
 
-		LOG(Info) << "Successfull opened plant " << plant.name << " [" << plant.connection << ", "
+		LOG(Info) << "Successfully opened plant " << plant.name << " [" << plant.connection << ", "
 		        << plant.protocol << "]";
 	}
 }
