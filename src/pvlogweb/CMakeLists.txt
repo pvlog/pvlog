@@ -20,6 +20,7 @@ set(HEADERS
 set(LIBS 
 	ctemplate
 	util
+	pvlogdatabase
 )
 
 add_executable(pvlogweb ${SRC})

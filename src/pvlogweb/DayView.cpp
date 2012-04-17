@@ -2,26 +2,32 @@
 
 #include <string>
 #include <sstream>
+#include <climits>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 #include "PvlogException.h"
 
-int str2int (const std::string& str, int base = 0)
+bool str2int(int32_t& out, const std::string& str, int base = 10)
 {
     char *end;
     long  l;
     errno = 0;
     l = strtol(str.c_str(), &end, base);
     if ((errno == ERANGE && l == LONG_MAX) || l > INT_MAX) {
-    	PVLOG_EXCCEPT(string("Not convertible to int (overflow): ") + str);
+    	return false;
     }
     if ((errno == ERANGE && l == LONG_MIN) || l < INT_MIN) {
-    	PVLOG_EXCCEPT(string("Not convertible to int (underflow): ") + str);
+    	return false;
     }
-    if (*s == '\0' || *end != '\0') {
-    	PVLOG_EXCCEPT(string("Not convertible to int : ") + str);
+    if (str.empty() || *end != '\0') {
+    	return false;
     }
 
-    return l;
+    out = static_cast<int32_t>(l);
+    return true;
 }
 
 
@@ -32,29 +38,52 @@ DayView::DayView(UrlParser& urlParser) : urlParser(urlParser)
 	//nothing to do
 }
 
-Request DayView::parseRequest()
+DayView::Request DayView::parseRequest()
 {
 	string year = urlParser.get("year");
 	string month = urlParser.get("month");
 	string day = urlParser.get("day");
-	string type = urlParser.get("type");
+	string side = urlParser.get("side");
 	string display = urlParser.get("display");
+	vector<string> inverter = urlParser.getRange("inverter");
 
 	Request request;
 
-	int ret;
-	ret = str2int(request.year, year.c_str());
-	if (ret < 0) PVLOG_EXCEPT("Invalid year: ") << year;
+	for (vector<string>::const_iterator it = inverter.begin(); it != inverter.end(); ++it) {
+		int32_t inv;
+		if (str2int(inv, *it, 16) == false) PVLOG_EXCEPT(string("Invalid inverter: ") + *it +
+				" inverter must be and hexadecimal number");
+		request.inverters.push_back(inv);
+	}
 
-	//ret = str2int(request.month, year.c_str())
+	if (str2int(request.year, year) == false) PVLOG_EXCEPT(string("Invalid year: ") + year);
+	if (str2int(request.month, month) == false) PVLOG_EXCEPT(string("Invalid month: ") + month);
+	if (str2int(request.day, day) == false) PVLOG_EXCEPT(string("Invalid day: ") + day);
+
+	if (side == "ac") {
+		request.side = AC;
+	} else if (side == "dc") {
+		request.side = DC;
+	} else {
+		PVLOG_EXCEPT(string("Invalid side: ") + side + " should be \"ac\" or \"dc\"");
+	}
+
+	if (display == "voltage") {
+		request.type = Database::VOLTAGE;
+	} else if (display == "power") {
+		request.type = Database::POWER;
+	} else if (display == "current") {
+		request.type = Database::CURRENT;
+	} else {
+		PVLOG_EXCEPT(std::string("Invalid display: ") + display +
+				" should be \"power\", \"voltage\" or \"current\".");
+	}
 
 
-	//request.year =
-	return Request;
+	return request;
 
 }
 void DayView::handleRequest()
 {
-
 
 }

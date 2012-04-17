@@ -55,8 +55,8 @@ std::set<std::string> Pvlib::supportedConnections() const
 	std::map<std::string, uint32_t>::const_iterator beg = connections.begin();
 	std::map<std::string, uint32_t>::const_iterator end = connections.end();
 
-	return std::set<std::string>(const_key_iterator<std::map<std::string, uint32_t> > (beg),
-	        const_key_iterator<std::map<std::string, uint32_t> > (end));
+	return std::set<std::string>(util::const_key_iterator<std::map<std::string, uint32_t> > (beg),
+	        util::const_key_iterator<std::map<std::string, uint32_t> > (end));
 }
 
 std::set<std::string> Pvlib::supportedProtocols() const
@@ -64,8 +64,8 @@ std::set<std::string> Pvlib::supportedProtocols() const
 	std::map<std::string, uint32_t>::const_iterator beg = protocols.begin();
 	std::map<std::string, uint32_t>::const_iterator end = protocols.end();
 
-	return std::set<std::string>(const_key_iterator<std::map<std::string, uint32_t> > (beg),
-	        const_key_iterator<std::map<std::string, uint32_t> > (end));
+	return std::set<std::string>(util::const_key_iterator<std::map<std::string, uint32_t> > (beg),
+			util::const_key_iterator<std::map<std::string, uint32_t> > (end));
 }
 
 void Pvlib::openPlant(const std::string& plantName,
@@ -102,8 +102,8 @@ std::vector<std::string> Pvlib::openPlants()
 {
 	PlantMap::const_iterator beg = plants.begin();
 	PlantMap::const_iterator end = plants.end();
-	return std::vector<std::string>(const_key_iterator<PlantMap> (beg),
-	        const_key_iterator<PlantMap> (end));
+	return std::vector<std::string>(util::const_key_iterator<PlantMap> (beg),
+	        util::const_key_iterator<PlantMap> (end));
 }
 
 const std::set<uint32_t>& Pvlib::inverters(const std::string& plantName) const

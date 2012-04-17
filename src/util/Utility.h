@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+namespace util {
+
 template<typename map_type>
 class const_key_iterator: public map_type::const_iterator {
 public:
@@ -18,19 +20,6 @@ public:
 		return map_iterator::operator*().first;
 	}
 };
-
-/*
- template<typename map_type>
- const_key_iterator<map_type> const_key_begin(map_type& m)
- {
- return const_key_iterator<map_type>(m.begin());
- }
- template<typename map_type>
- const_key_iterator<map_type> const_key_end(map_type& m)
- {
- return const_key_iterator<map_type>(m.end());
- }
- */
 
 template<class map_type>
 class key_iterator: public map_type::iterator {
@@ -50,31 +39,11 @@ public:
 	}
 };
 
-/*
- template<typename map_type>
- key_iterator<map_type> key_begin(map_type& m)
- {
- return key_iterator<map_type>(m.begin());
- }
- template<typename map_type>
- key_iterator<map_type> key_end(map_type& m)
- {
- return key_iterator<map_type>(m.end());
- }
- */
-
-struct Location {
-	Location(float longitude, float latitude) :
-		longitude(longitude), latitude(latitude)
-	{ /* nothing to do */
-	}
-	float longitude;
-	float latitude;
-};
 
 #define DISABLE_COPY(CLASS) \
 	private : \
     	CLASS(const CLASS&); \
     	CLASS& operator=(const CLASS&);
+} //namespace util
 
 #endif // #ifndef UTIL_H

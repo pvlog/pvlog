@@ -20,7 +20,7 @@ DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
 	 }
 
 	//database->plantLocation(longitude, latitude);
-	Location location(-10.9, 49.7);
+	Database::Location location(-10.9, 49.7);
 	sunriseSunset = std::unique_ptr<SunriseSunset>(new SunriseSunset(location.longitude,
 	        location.latitude));
 
