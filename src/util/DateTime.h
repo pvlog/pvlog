@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <cstring>
+#include <string.h>
 #include <utility>
 
 #include "PvlogException.h"
@@ -26,6 +27,23 @@ public:
 	explicit DateTime(double julianDay)
 	{
 		time = (julianDay - 2440587.5) * 86400.0;
+	}
+
+	DateTime(int year, int month, int day, int hour, int min, int second)
+	{
+		struct tm time;
+		memset(&time, 0, sizeof(time));
+
+		time.tm_year = year;
+		time.tm_mon  = month;
+		time.tm_hour = hour;
+		time.tm_min  = min;
+		time.tm_sec  = second;
+
+		this->time = mktime(&time);
+		if (this->time == -1) {
+			PVLOG_EXCEPT("mktime failed!");
+		}
 	}
 
 	DateTime()
@@ -65,23 +83,23 @@ public:
 
 	int year()
 	{
-		struct tm *gm = gmtime(&time);
-		if (gm == NULL) PVLOG_EXCEPT("gmtime failed");
-		return gm->tm_year + 1900;
+		struct tm* ltime = localtime(&time);
+		if (ltime== NULL) PVLOG_EXCEPT("localtime failed!");
+		return ltime->tm_year + 1900;
 	}
 
 	int month()
 	{
-		struct tm *gm = gmtime(&time);
-		if (gm == NULL) PVLOG_EXCEPT("gmtime failed");
-		return gm->tm_mon;
+		struct tm* ltime = localtime(&time);
+		if (ltime == NULL) PVLOG_EXCEPT("localtime failed!");
+		return ltime->tm_mon;
 	}
 
 	int monthDay()
 	{
-		struct tm *gm = gmtime(&time);
-		if (gm == NULL) PVLOG_EXCEPT("gmtime failed");
-		return gm->tm_mday;
+		struct tm* ltime = localtime(&time);
+		if (ltime == NULL) PVLOG_EXCEPT("localtime failed!");
+		return ltime->tm_mday;
 	}
 
 	double julianDate()
@@ -106,8 +124,12 @@ public:
 	 */
 	std::string timeString()
 	{
-		std::string str(ctime(&time));
-		str.resize(str.size() - 1);
+		char* tm = ctime(&time);
+		if (tm == 0) PVLOG_EXCEPT("ctime failed!");
+		std::string str(tm);
+		if (str.size() > 0) {
+			str.resize(str.size() - 1);
+		}
 		return str;
 	}
 

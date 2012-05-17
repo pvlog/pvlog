@@ -8,6 +8,9 @@
 #include "ConfigReader.h"
 #include "DateTime.h"
 
+using std::vector;
+using std::string;
+
 SqlDatabase::SqlDatabase()
 { /* nothing to do */
 }
@@ -40,7 +43,7 @@ void SqlDatabase::createSchema()
 			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
 			"message VARCHAR(500), error_code INTEGER);");
 		exec("CREATE TABLE ac_values(line INTEGER, inverter INTEGER REFERENCES inverter(id) NOT NULL,"
-		     "date INTEGER,  power INTEGER, frequence INTEGER,"
+		     "date INTEGER,  power INTEGER, frequency INTEGER,"
 			 "PRIMARY KEY(line, inverter, date));");
 		exec("CREATE TABLE line(inverter INTEGER, date INTEGER, line SMALLINT,"
 			 "power INTEGER, current INTEGER, voltage INTEGER,"
@@ -192,13 +195,76 @@ void SqlDatabase::addInverter(uint32_t id,
 	}
 }
 
+vector<Database::Inverter> SqlDatabase::inverters()
+{
+	vector<Inverter> inverters;
+
+	try {
+		exec("SELECT id, name, plant, logical_plant, wattpeak FROM inverter;");
+		while(next()) {
+			Inverter inverter;
+			inverter.id   = static_cast<uint32_t>(getValue(0).getInt64());
+
+			Value value = getValue(1);
+			if (!value.isNull()) inverter.name = value.getString();
+
+			value = getValue(2);
+			if (!value.isNull()) inverter.plant = value.getString();
+
+			value = getValue(3);
+			if (!value.isNull()) inverter.logicalPlant = value.getString();
+
+			value = getValue(4);
+			if (!value.isNull()) inverter.wattpeak = value.getInt32();
+			else inverter.wattpeak = 0;
+
+			inverters.push_back(inverter);
+		}
+	}
+	catch (PvlogException& exception) {
+		PVLOG_EXCEPT(string("inverters ") + exception.what());
+	}
+
+	return inverters;
+}
+
+Database::Inverter SqlDatabase::inverter(uint32_t id)
+{
+
+	try {
+		exec("SELECT id, name, plant, logical_plant, wattpeak FROM inverter, WHERE id = :id;");
+		bindValueAdd(static_cast<int64_t>(id));
+	}
+	catch (PvlogException& exception) {
+		PVLOG_EXCEPT(string("inverter ") + exception.what());
+	}
+	Inverter inverter;
+
+	inverter.id = id;
+
+	Value value = getValue(1);
+	if (!value.isNull()) inverter.name = value.getString();
+
+	value = getValue(2);
+	if (!value.isNull()) inverter.plant = value.getString();
+
+	value = getValue(3);
+	if (!value.isNull()) inverter.logicalPlant = value.getString();
+
+	value = getValue(4);
+	if (!value.isNull()) inverter.wattpeak = value.getInt32();
+	else inverter.wattpeak = 0;
+
+	return inverter;
+}
+
 void SqlDatabase::storeAc(const Ac& ac, uint32_t id)
 {
 	try {
 		beginTransaction();
 
-		prepare("INSERT INTO ac_values(inverter, date, frequence, power)\n"
-		        "VALUES(:inverter, :date, :frequence, :power);");
+		prepare("INSERT INTO ac_values(inverter, date, frequency, power)\n"
+		        "VALUES(:inverter, :date, :frequency, :power);");
 
 		bindValueAdd(static_cast<int64_t> (id));
 		bindValueAdd(static_cast<int32_t> (ac.time));

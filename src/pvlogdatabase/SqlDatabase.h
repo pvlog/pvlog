@@ -100,6 +100,10 @@ public:
 	                         const std::string& logicalPlant,
 	                         int32_t wattPeak);
 
+	virtual Inverter inverter(uint32_t id);
+
+	virtual std::vector<Inverter> inverters();
+
 	virtual void storeAc(const Ac& ac, uint32_t id);
 
 	virtual void storeDc(const Dc& dc, uint32_t id);

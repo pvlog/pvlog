@@ -79,6 +79,11 @@ void UrlParser::parse()
 	parsed = true;
 }
 
+void UrlParser::remove(const string& key)
+{
+	values.erase(key);
+}
+
 string UrlParser::get(const string& key)
 {
 	if (!parsed) parse();
@@ -96,9 +101,17 @@ vector<string> UrlParser::getRange(const string& key)
 	if (!parsed) parse();
 
 	std::pair<Values::const_iterator, Values::const_iterator> equalRange = values.equal_range(key);
-	return vector<string>(const_key_iterator<Values>(equalRange.first),
-			const_key_iterator<Values>(equalRange.second));
+	return vector<string>(util::const_key_iterator<Values>(equalRange.first),
+			util::const_key_iterator<Values>(equalRange.second));
 
+}
+
+vector<string> UrlParser::getOptions()
+{
+	if (!parsed) parse();
+
+	return vector<string>(util::const_key_iterator<Values>(values.begin()),
+			util::const_key_iterator<Values>(values.end()));
 }
 
 

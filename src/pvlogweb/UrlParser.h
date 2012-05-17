@@ -31,5 +31,9 @@ public:
 
 	std::string get(const std::string& key);
 
+	void remove(const std::string& key);
+
 	std::vector<std::string> getRange(const std::string& key);
+
+	std::vector<std::string> getOptions();
 };

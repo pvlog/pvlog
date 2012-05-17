@@ -38,6 +38,16 @@ public:
 		return map_type::iterator::operator*().first;
 	}
 };
+/*
+enum {
+	STR2INT_SUCCESS = 0,
+	STR2INT_DATA_LEFT = 1, //Not necessarily and error
+	STR2INT_OVERFLOW = - 1,
+	STR2INT_UNDERFLOW = -2,
+	STR2INT_NONUMBER = -3,
+	STR2INT_OTHERERROR = -4;
+};
+*/
 
 
 #define DISABLE_COPY(CLASS) \

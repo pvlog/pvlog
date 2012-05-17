@@ -3,7 +3,7 @@
 
 #include <ctime>
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 #include <cstring>
 #include <vector>
 #include <map>
@@ -36,21 +36,32 @@ public:
 		std::string password;
 	};
 
+	struct Inverter {
+		uint32_t id;
+		std::string name;
+		std::string plant;
+		std::string logicalPlant;
+		int32_t wattpeak;
+	};
+
 	struct Location {
 		Location(float longitude, float latitude) :
 			longitude(longitude), latitude(latitude)
-		{ /* nothing to do */
+		{
+			//nothing to do
 		}
 		float longitude;
 		float latitude;
 	};
 
 	Database()
-	{ /* nothing to do */
+	{
+		//nothing to do
 	}
 
 	virtual ~Database()
-	{ /* nothing to do */
+	{
+		//nothing to do
 	}
 
 	virtual void open(const std::string& database,
@@ -119,6 +130,13 @@ public:
 	                         const std::string& plant,
 	                         const std::string& logicalPlant,
 	                         int32_t wattPeak) = 0;
+
+	virtual std::vector<Inverter> inverters() = 0;
+
+	/**
+	 * Returns inverter informations
+	 */
+	virtual Inverter inverter(uint32_t id) = 0;
 
 	/**
 	 * Store ac values.
