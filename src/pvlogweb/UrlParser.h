@@ -1,6 +1,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 class UrlParser {
 private:
@@ -35,5 +36,5 @@ public:
 
 	std::vector<std::string> getRange(const std::string& key);
 
-	std::vector<std::string> getOptions();
+	std::set<std::string> getOptions();
 };

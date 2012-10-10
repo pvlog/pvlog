@@ -82,7 +82,7 @@ public:
 	{
 		type = Blob;
 		data.b = value;
-		len = len;
+		this->len = len;
 	}
 
 	Value()
@@ -180,7 +180,7 @@ public:
 
 	float getFloat() const
 	{
-		if (type != Float) PVLOG_EXCEPT("Con not convert to float");
+		if (type != Float) PVLOG_EXCEPT("Can not convert to float");
 		return data.f;
 	}
 

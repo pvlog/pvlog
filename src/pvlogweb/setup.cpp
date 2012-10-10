@@ -7,13 +7,15 @@
 #include <ctemplate/template_cache.h>
 
 #include "Log.h"
-#include "DayView.h"
-#include "ConfigReader.h"
-#include "SqliteDatabase.h"
+#include "Overview.h"
 #include "Util.h"
 
-#define DAY_VIEW_TPL "dayview.tpl"
 #define LAYOUT_TPL "layout.tpl"
+#define SETUP_OVERVIEW_TPL "setup_overview.tpl"
+#define SETUP_INVERTER_TPL "setup_inverter.tpl"
+#define SETUP_PLANT_TPL "setup_plant.tpl"
+#define SETUP_LOGICALPLANT_TPL "setup_logicalplant.tpl"
+
 
 using std::string;
 using ctemplate::TemplateDictionary;
@@ -68,11 +70,11 @@ int main(int argc, char *argv[]) {
 
 		UrlParser urlParser(queryString);
 		string view = urlParser.get("view");
-		if (view == "day") {
-			urlParser.remove("day");
-			content->SetFilename(DAY_VIEW_TPL);
-			DayView(urlParser, database, content).handleRequest();
-		} else if (view == "month") {
+		if (view == "overview") {
+			urlParser.remove("view");
+			content->SetFilename(SETUP_OVERVIEW_TPL);
+			Overview(urlParser, database, content).handleRequest();
+		} else if (view == "plant") {
 			urlParser.remove("month");
 			//MonthView(urlParser).handleRequest();
 		}

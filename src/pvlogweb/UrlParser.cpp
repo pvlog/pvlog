@@ -4,6 +4,7 @@
 
 using std::string;
 using std::vector;
+using std::set;
 
 static char toNum(char ascii)
 {
@@ -106,11 +107,11 @@ vector<string> UrlParser::getRange(const string& key)
 
 }
 
-vector<string> UrlParser::getOptions()
+set<string> UrlParser::getOptions()
 {
 	if (!parsed) parse();
 
-	return vector<string>(util::const_key_iterator<Values>(values.begin()),
+	return set<string>(util::const_key_iterator<Values>(values.begin()),
 			util::const_key_iterator<Values>(values.end()));
 }
 

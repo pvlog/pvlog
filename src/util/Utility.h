@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef UTILITY_H
+#define UTILITY_H
 
 namespace util {
 
@@ -56,4 +56,4 @@ enum {
     	CLASS& operator=(const CLASS&);
 } //namespace util
 
-#endif // #ifndef UTIL_H
+#endif // #ifndef UTILITY_H

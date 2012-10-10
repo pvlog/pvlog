@@ -15,6 +15,7 @@ private:
 
 	struct Request {
 		bool hasOptions; // we got options
+		bool hasDate;
 
 		int year;
 		int month;
@@ -34,7 +35,10 @@ private:
 
 	struct Data {
 		Side side;
-		std::vector<InverterData> inverterData;
+		std::vector<InverterData> inverterData; // data for chart
+		std::vector<std::pair<std::string, int> > inverters; //all inverters inclusive tracker/phase count
+
+
 	};
 
 	UrlParser urlParser;
@@ -50,6 +54,10 @@ private:
 
 	InverterData readInverterData(uint32_t id, int line, const DateTime& from, const DateTime& to,
 	                              Side side, Database::Type type);
+
+	void fillInverterDictionary(const std::vector< std::pair<std::string, int> >& inverters);
+
+	void fillChartDictionary(const std::vector<InverterData>& inverterData);
 
 	void fillDictionary(const Data& data);
 

@@ -62,8 +62,6 @@ public:
 
 	virtual ~SqlDatabase();
 
-	virtual Location location(const std::string& logicalPlant);
-
 	virtual void open(const std::string& database,
 	                  const std::string& hostname,
 	                  const std::string& port,
@@ -90,15 +88,20 @@ public:
 	virtual std::vector<Plant> plants();
 
 	virtual void addLogicalPlant(const std::string& name,
-	                             const Location& location,
-	                             float declination,
-	                             float orientation);
+	                             double longitude,
+	                             double latitude,
+	                             double declination,
+	                             double orientation);
+
+	virtual std::vector<LogicalPlant> logicalPlants();
 
 	virtual void addInverter(uint32_t id,
 	                         const std::string& name,
 	                         const std::string& plant,
 	                         const std::string& logicalPlant,
-	                         int32_t wattPeak);
+	                         int32_t wattPeak,
+	                         int phaseCount,
+	                         int trackerCount);
 
 	virtual Inverter inverter(uint32_t id);
 
@@ -121,15 +124,6 @@ public:
 	                                                           Type type,
 	                                                           const DateTime& from,
 	                                                           const DateTime& to);
-
-	/**
-	 * Returns all plants in our database.
-	 *
-	 * @param[out] plant map with inverter id as key.
-	 */
-	// virtual std::vector<int, std::string> getPlants();
-
-
 };
 
 #endif // DATABASE_H

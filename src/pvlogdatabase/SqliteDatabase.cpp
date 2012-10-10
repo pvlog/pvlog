@@ -8,6 +8,12 @@ SqliteDatabase::SqliteDatabase() :
 { /* nothing to do */
 }
 
+SqliteDatabase::SqliteDatabase(const std::string& database) :
+	db(NULL), stmt(NULL)
+{
+	open(database, std::string(), std::string(), std::string(), std::string());
+}
+
 SqliteDatabase::~SqliteDatabase()
 {
 	close();

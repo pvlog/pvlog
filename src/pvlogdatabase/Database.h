@@ -36,12 +36,22 @@ public:
 		std::string password;
 	};
 
+	struct LogicalPlant {
+		std::string name;
+		double longitude;
+		double latitude;
+		double declination;
+		double orientation;
+	};
+
 	struct Inverter {
 		uint32_t id;
 		std::string name;
 		std::string plant;
 		std::string logicalPlant;
 		int32_t wattpeak;
+		int phaseCount;
+		int trackerCount;
 	};
 
 	struct Location {
@@ -95,13 +105,6 @@ public:
 	virtual std::string readConfig(const std::string& key) = 0;
 
 	/**
-	 * Retrieve logical plant location.
-	 *
-	 * @return Location of logical plant
-	 */
-	virtual Location location(const std::string& logicalPlant) = 0;
-
-	/**
 	 * Add plant to Database
 	 */
 	virtual void addPlant(const std::string& name,
@@ -117,9 +120,15 @@ public:
 	virtual std::vector<Plant> plants() = 0;
 
 	virtual void addLogicalPlant(const std::string& name,
-	                             const Location& location,
-	                             float declination,
-	                             float orientation) = 0;
+	                             double longitude,
+	                             double latitude,
+	                             double declination,
+	                             double orientation) = 0;
+
+	/**
+	 * Returns all logical plants
+	 */
+	virtual std::vector<LogicalPlant> logicalPlants() = 0;
 
 	/**
 	 * Add a new inverter to plant associated with plant specified by plantId.
@@ -129,12 +138,14 @@ public:
 	                         const std::string& name,
 	                         const std::string& plant,
 	                         const std::string& logicalPlant,
-	                         int32_t wattPeak) = 0;
+	                         int32_t wattPeak,
+	                         int phaseCount,
+	                         int trackerCount) = 0;
 
 	virtual std::vector<Inverter> inverters() = 0;
 
 	/**
-	 * Returns inverter informations
+	 * Returns inverter informations TODO: remove
 	 */
 	virtual Inverter inverter(uint32_t id) = 0;
 

@@ -29,12 +29,13 @@ void SqlDatabase::createSchema()
 		exec("CREATE TABLE plant(name VARCHAR(32) PRIMARY KEY,"
 			 "connection VARCHAR(32), con_param1 VARCHAR(32) NOT NULL, con_param2 VARCHAR(32),"
 			 "protocol VARCHAR(32) NOT NULL, password VARCHAR(32));");
-		exec("CREATE TABLE logical_plant(name VARCHAR(32), longitude FLOAT, latitude FLOAT,"
-			"declination FLOAT, orientation FLOAT)");
+		exec("CREATE TABLE logical_plant(name VARCHAR(32) PRIMARY KEY, longitude FLOAT NOT NULL, latitude FLOAT NOT NULL,"
+			"declination FLOAT NOT NULL, orientation FLOAT NOT NULL)");
 		exec("CREATE TABLE inverter(id INTEGER PRIMARY KEY,"
 			 "name VARCHAR(32), plant VARCHAR(32) REFERENCES plant(name) NOT NULL,"
 			 "logical_plant VARCHAR(32) NOT NULL REFERENCES logical_plant(name),"
 			 "wattpeak INTEGER NOT NULL, total_power INTEGER, operation_time INTEGER,"
+			 "phase_count INTEGER NOT NULL, tracker_count INTEGER NOT NULL,"
 			 "feed_in_time INTEGER);");
 		exec("CREATE TABLE day_values(year SMALLINT, month SMALLINT, day SMALLINT,"
 			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
@@ -147,17 +148,18 @@ std::vector<Database::Plant> SqlDatabase::plants()
 }
 
 void SqlDatabase::addLogicalPlant(const std::string& name,
-                                  const Location& location,
-                                  float declination,
-                                  float orientation)
+                                  double longitude,
+                                  double latitude,
+                                  double declination,
+                                  double orientation)
 {
 	try {
 		beginTransaction();
 		prepare("INSERT INTO logical_plant(name, longitude, latitude, declination, orientation)\n"
 		        "VALUES(:name, :longitude, :latitude, :declination, :orientation);");
 		bindValueAdd(name);
-		bindValueAdd(location.longitude);
-		bindValueAdd(location.latitude);
+		bindValueAdd(longitude);
+		bindValueAdd(latitude);
 		bindValueAdd(declination);
 		bindValueAdd(orientation);
 		exec();
@@ -167,27 +169,49 @@ void SqlDatabase::addLogicalPlant(const std::string& name,
 	}
 }
 
-Database::Location SqlDatabase::location(const std::string& logicalPlant)
+std::vector<Database::LogicalPlant> SqlDatabase::logicalPlants()
 {
-	Location location(0.0, 0.0);
-	return location;
+	std::vector<LogicalPlant> plants;
+	try {
+		exec("SELECT name, longitude, latitude, declination, orientation\n"
+		     "FROM logical_plant;");
+		while (next()) {
+			LogicalPlant plant;
+			plant.name        = getValue(0).getString();
+			plant.longitude   = getValue(1).getDouble();
+			plant.latitude    = getValue(2).getDouble();
+			plant.declination = getValue(3).getDouble();
+			plant.orientation = getValue(4).getDouble();
+
+			plants.push_back(plant);
+		}
+	}
+	catch (const PvlogException& ex) {
+		PVLOG_EXCEPT(std::string("logicalPlants(): ") + ex.what());
+	}
+
+	return plants;
 }
 
 void SqlDatabase::addInverter(uint32_t id,
                               const std::string& name,
                               const std::string& plant,
                               const std::string& logicalPlant,
-                              int32_t wattPeak)
+                              int32_t wattPeak,
+                              int phaseCount,
+                              int inverterCount)
 {
 	try {
 		beginTransaction();
-		prepare("INSERT INTO inverter (id, name, plant, logical_plant, wattpeak)\n"
-		        "VALUES(:id, :name, :logical_plant, :plant, :wattpeak);");
+		prepare("INSERT INTO inverter (id, name, plant, logical_plant, wattpeak, phase_count, tracker_count)\n"
+				"VALUES(:id, :name, :logical_plant, :plant, :wattpeak, :phase_count, :tracker_count);");
 		bindValueAdd(static_cast<int64_t> (id));
 		bindValueAdd(name);
 		bindValueAdd(plant);
 		bindValueAdd(logicalPlant);
 		bindValueAdd(wattPeak);
+		bindValueAdd(phaseCount);
+		bindValueAdd(inverterCount);
 		exec();
 		commitTransaction();
 	} catch (const PvlogException& exception) {
@@ -200,7 +224,7 @@ vector<Database::Inverter> SqlDatabase::inverters()
 	vector<Inverter> inverters;
 
 	try {
-		exec("SELECT id, name, plant, logical_plant, wattpeak FROM inverter;");
+		exec("SELECT id, name, plant, logical_plant, wattpeak, tracker_count, phase_count FROM inverter;");
 		while(next()) {
 			Inverter inverter;
 			inverter.id   = static_cast<uint32_t>(getValue(0).getInt64());
@@ -218,6 +242,9 @@ vector<Database::Inverter> SqlDatabase::inverters()
 			if (!value.isNull()) inverter.wattpeak = value.getInt32();
 			else inverter.wattpeak = 0;
 
+			inverter.trackerCount = getValue(5).getInt32();
+			inverter.phaseCount = getValue(6).getInt32();
+
 			inverters.push_back(inverter);
 		}
 	}
@@ -232,7 +259,7 @@ Database::Inverter SqlDatabase::inverter(uint32_t id)
 {
 
 	try {
-		exec("SELECT id, name, plant, logical_plant, wattpeak FROM inverter, WHERE id = :id;");
+		exec("SELECT id, name, plant, logical_plant, wattpeak, tracker_count, phase_count FROM inverter, WHERE id = :id;");
 		bindValueAdd(static_cast<int64_t>(id));
 	}
 	catch (PvlogException& exception) {
@@ -254,6 +281,9 @@ Database::Inverter SqlDatabase::inverter(uint32_t id)
 	value = getValue(4);
 	if (!value.isNull()) inverter.wattpeak = value.getInt32();
 	else inverter.wattpeak = 0;
+
+	inverter.trackerCount = getValue(5).getInt32();
+	inverter.phaseCount = getValue(6).getInt32();
 
 	return inverter;
 }

@@ -19,19 +19,17 @@ static void trim(std::string& source, const char * delims = "\t\n\r\0x20")
 	else source.erase();
 }
 
-ConfigReader::ConfigReader(const std::string& file) :
-	filename(file)
-{
-	open( filename);
-}
-
 void ConfigReader::open(const std::string& filename)
 {
-	this->filename = filename;
 	file.open(filename.c_str());
 
 	if (!file.is_open()) PVLOG_EXCEPT("Could not open file: " + filename);
 
+}
+
+ConfigReader::ConfigReader(const std::string& file)
+{
+	open(file);
 }
 
 void ConfigReader::parse()

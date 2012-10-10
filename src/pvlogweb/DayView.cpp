@@ -12,6 +12,7 @@
 
 using std::vector;
 using std::string;
+using std::ostringstream;
 using ctemplate::TemplateDictionary;
 
 template<typename T>
@@ -72,7 +73,7 @@ DayView::Request DayView::parseRequest()
 			try {
 				line = convertTo<uint32_t>(*l);
 			} catch (PvlogException& exc) {
-				PVLOG_EXCEPT("Invalid inverter line: " + *it + " inverter line must be and decimal number");
+				PVLOG_EXCEPT("Invalid inverter line: " + *it + " inverter line must be an decimal number");
 			}
 			linesDec.push_back(line);
 
@@ -108,9 +109,40 @@ DayView::Request DayView::parseRequest()
 
 }
 
+void DayView::fillInverterDictionary(const vector< std::pair<string, int> >& inverters)
+{
+	for (vector< std::pair<string, int> >::const_iterator it = inverters.begin(); it != inverters.end(); ++it) {
+		TemplateDictionary* invDic = dict->AddSectionDictionary("INVERTERS");
+		invDic->SetValue("INVERTER", it->first);
+		for (int i = 0; i < it->second; ++i) {
+			TemplateDictionary* invLine = invDic->AddSectionDictionary("LINES");
+			invLine->SetIntValue("LINE", i);
+		}
+	}
+}
+
+void DayView::fillChartDictionary(const vector<InverterData>& inverterData)
+{
+	for (vector<InverterData>::const_iterator it = inverterData.begin();
+			it != inverterData.end(); ++it) {
+		std::ostringstream ss;
+		ss << it->name << " (" << it->line << ")";
+		string label = ss.str();
+
+		TemplateDictionary* chartData = dict->AddSectionDictionary("CHART_DATA_SERIES");
+		chartData->SetValue("LABEL", label);
+		for (vector< std::pair<uint32_t,uint32_t> >::const_iterator valueIt;
+				valueIt != it->values.end(); ++valueIt) {
+			TemplateDictionary* chartValues = chartData->AddSectionDictionary("CHART_DATA_VALUES");
+			chartValues->SetIntValue("CHART_DATA_X", valueIt->first);
+			chartValues->SetIntValue("CHART_DATA_VALUE_Y", valueIt->second);
+		}
+	}
+}
+
 void DayView::fillDictionary(const DayView::Data& data)
 {
-
+	fillInverterDictionary(data.inverters);
 }
 
 DayView::InverterData DayView::readInverterData(uint32_t id, int line, const DateTime& from,
@@ -141,12 +173,36 @@ DayView::Data DayView::readData(const Request& request)
 	DateTime from(request.year, request.month, request.day, 0, 0, 0);
 	DateTime to(request.year, request.month, request.day, 23, 59, 59);
 
+	//read data for chart
 	for (vector< std::pair<uint32_t, std::vector<int > > >::const_iterator it = request.inverters.begin();
 			it != request.inverters.end(); ++it) {
 		for (vector<int>::const_iterator l = it->second.begin(); l != it->second.end(); ++l) { // iterate lines
 			InverterData inverterData = readInverterData(it->first, *l, from, to, request.side, request.type);
 			data.inverterData.push_back(inverterData);
 		}
+	}
+
+	//read data of all inverters
+	vector<Database::Inverter> inverters = database->inverters();
+	data.inverters.reserve(inverters.size());
+	for (vector<Database::Inverter>::const_iterator it = inverters.begin(); it != inverters.end(); ++it) {
+		string name;
+		if (it->name.empty()) {
+			ostringstream ss;
+			ss << it->id;
+			name = ss.str();
+		} else {
+			name = it->name;
+		}
+
+		int lines;
+		if (request.side == AC) {
+			lines = it->phaseCount;
+		} else {
+			lines = it->trackerCount;
+		}
+
+		data.inverters.push_back(std::make_pair(name, lines));
 	}
 
 	return data;

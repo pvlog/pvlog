@@ -5,26 +5,25 @@
 #include <map>
 #include <fstream>
 
+#include <Utility.h>
+
 class ConfigReader {
+	DISABLE_COPY(ConfigReader)
 private:
-	std::string filename;
-	std::ifstream file;
+	std::fstream file;
 
 	std::map<std::string, std::string> values;
 	typedef std::pair<std::string, std::string> stringPair;
 
+protected:
+	void open(const std::string & filename);
+
 public:
 	explicit ConfigReader(const std::string & file);
 
-	ConfigReader()
-	{
-	}
-
-	void open(const std::string & filename);
-
 	void parse();
 
-	const std::string & getValue(const std::string & name) const;
+	const std::string& getValue(const std::string & name) const;
 };
 
 #endif // #ifndef CONFIG_READER_H

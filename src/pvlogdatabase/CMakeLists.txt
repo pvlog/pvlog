@@ -23,3 +23,5 @@ endif()
 
 add_library(pvlogdatabase ${SRC} ${HEADERS})
 target_link_libraries(pvlogdatabase ${LIBS})
+
+add_subdirectory(test)

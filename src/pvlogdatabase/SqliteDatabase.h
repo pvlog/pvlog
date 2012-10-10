@@ -38,6 +38,8 @@ public:
 	 */
 	SqliteDatabase();
 
+	SqliteDatabase(const std::string& database);
+
 	virtual ~SqliteDatabase();
 
 	virtual void open(const std::string & database,
