@@ -1,0 +1,2 @@
+add_executable(createTestDatabase createTestDatabase.cpp)
+target_link_libraries(createTestDatabase pvlogdatabase)

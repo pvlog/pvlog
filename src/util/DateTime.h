@@ -61,7 +61,10 @@ public:
 	 */
 	static bool sleep(time_t seconds)
 	{
-		if (::sleep(seconds) > 0) return false;
+		struct timespec time;
+		time.tv_sec  = seconds;
+		time.tv_nsec = 0;
+		if (::nanosleep(&time, NULL) > 0) return false;
 		else return true;
 	}
 

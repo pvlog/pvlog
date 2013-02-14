@@ -97,7 +97,7 @@ static bool ascii_isspace(char c) {
 }
 
 #define strsuffix(str, suffix)                                          \
-   ( strlen(str) > (sizeof(""suffix"")-1) &&                            \
+   ( strlen(str) > (sizeof("" suffix "")-1) &&                            \
      strcmp(str + strlen(str) - (sizeof(suffix)-1), suffix) == 0 )
 
 using std::endl;

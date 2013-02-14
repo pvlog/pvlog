@@ -3,8 +3,13 @@
 
 using namespace ctemplate;
 
-InverterSetupView::InverterSetupView(TemplateDictionary* dict) {
-	// TODO Auto-generated constructor stub
+InverterSetupView::InverterSetupView(TemplateDictionary* dict) : dict(dict)
+{
+	//Nothing to do
+}
+
+void handleRequest()
+{
 
 }
 

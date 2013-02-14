@@ -1,6 +1,7 @@
 project(pvlogweb)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare")
+#set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/ctemplate/src)
 
