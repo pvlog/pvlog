@@ -1,4 +1,7 @@
-set(SRC ConfigReader.cpp)
+set(SRC 
+	ConfigReader.cpp
+	Log.cpp
+	)
 
 set(HEADERS 
 	ConfigReader.h 

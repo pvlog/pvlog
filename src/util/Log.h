@@ -10,7 +10,7 @@ enum Level {
 	Error = 0, Info, Warning, Debug
 };
 
-static const char *levelName[] = { "ERROR", "INFO", "WARNING", "DEBUG" };
+const static char *levelName[4] = { "ERROR", "INFO", "WARNING", "DEBUG" };
 
 class Log {
 public:
@@ -30,13 +30,11 @@ public:
 		const char *fileName = filename(file);
 
 		os << levelName[level] << '[' << fileName << " " << line << ']' << " ";
-		messageLevel = level;
 		return os;
 	}
 	static Level& ReportingLevel()
 	{
-		static Level dumpLevels;
-		return dumpLevels;
+		return messageLevel;
 	}
 
 protected:
@@ -60,7 +58,7 @@ private:
 	Log(const Log&);
 	Log& operator =(const Log&);
 private:
-	Level messageLevel;
+	static Level messageLevel;
 };
 
 #define LOG(LEVEL) \
