@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 		}
 		configFile.close();
 
+		LOG(Debug) << "Opening database.";
 		Database* database = Util::openDatabase(configFilePath);
 
 
@@ -68,6 +69,9 @@ int main(int argc, char *argv[]) {
 
 		UrlParser urlParser(queryString);
 		string view = urlParser.get("view");
+
+		LOG(Debug) << "view=" << view;
+
 		if (view == "day") {
 			urlParser.remove("day");
 			content->SetFilename(DAY_VIEW_TPL);
@@ -76,9 +80,10 @@ int main(int argc, char *argv[]) {
 			urlParser.remove("month");
 			//MonthView(urlParser).handleRequest();
 		}
+
 	}
-	catch (...) {
-		LOG(Error) << "Error";
+	catch (const std::exception& except) {
+		LOG(Error) << except.what();
 		//error HTTP
 	}
 

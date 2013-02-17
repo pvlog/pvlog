@@ -26,6 +26,8 @@ int main(int argc, char* argv[])
 	static_cast<ExecWrapper*>(database)->exec("PRAGMA synchronous = OFF");
 	database->createSchema();
 
+	database->storeConfig("template_dir", "/home/benjamin/pvlog/src/pvlogweb/templates/");
+
 	database->addPlant("testPlant", "", "", "", "", "");
 
 	Database::Location location(0.0, 0.0);

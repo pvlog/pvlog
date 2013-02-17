@@ -65,7 +65,7 @@ DayView::Request DayView::parseRequest()
 			PVLOG_EXCEPT("Invalid inverter: " + *it + " inverter must be and hexadecimal number");
 		}
 
-		vector<string> lines = urlParser.getRange("*it");
+		vector<string> lines = urlParser.getRange(*it);
 		vector<int> linesDec;
 		linesDec.reserve(lines.size());
 		for (vector<string>::const_iterator l = lines.begin(); l != lines.end(); ++l) {

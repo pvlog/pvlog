@@ -20,6 +20,7 @@ public:
 	inline static Database* openDatabase(const std::string& configFile)
 	{
 		ConfigReader configReader(configFile);
+		configReader.parse();
 
 		std::string databaseType = configReader.getValue("database_type");
 		std::string databaseName = configReader.getValue("database_name");
