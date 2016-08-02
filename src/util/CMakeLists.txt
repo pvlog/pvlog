@@ -9,7 +9,6 @@ set(HEADERS
 	Log.h 
 	PvlogException.h 
 	Utility.h
-	Str2Int.h
 	)
 
 add_library(util ${SRC} ${HEADERS})
