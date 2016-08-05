@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <iterator>
+#include <iostream>
 
 #include <pvlib.h>
 
@@ -108,6 +109,16 @@ public:
 		int32_t frequence;
 		time_t time;
 
+		friend std::ostream& operator << (std::ostream& o, const Ac& ac) {
+		    o << "power: " << ac.totalPower << "W, frequency: " << ac.frequence << "mHz\n";
+		    for (int i = 0; i < ac.lineNum; ++i) {
+		        o << i << ": power: " << ac.power[i] << "W, voltage: " << ac.voltage[i]
+		            << "mV, current: " << ac.current[i] << "mA\n";
+		    }
+
+		    return o;
+		}
+
 		static const int32_t INVALID = 0x80000000;
 		static bool isValid(int32_t type)
 		{
@@ -130,6 +141,16 @@ public:
 		{
 			return !(type & 0x80000000);
 		} //higest bit set => invalid
+
+        friend std::ostream& operator << (std::ostream& o, const Dc& dc) {
+            o << "power: " << dc.totalPower << "W\n";
+            for (int i = 0; i < dc.trackerNum; ++i) {
+                o << i << ": power: " << dc.power[i] << "W, voltage: " << dc.voltage[i]
+                    << "mV, current: " << dc.current[i] << "mA\n";
+            }
+
+            return o;
+        }
 	};
 
 	struct Stats {

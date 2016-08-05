@@ -81,6 +81,8 @@ void DataLogger::logData()
         ac.time = time;
         dc.time = time;
 
+        LOG(Debug) << "ac:\n" << ac << "\n";
+        LOG(Debug) << "dc:\n" << dc << "\n";
 		database->storeAc(ac, *it);
 		database->storeDc(dc, *it);
 	}
