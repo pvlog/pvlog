@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     Database* database = new SqliteDatabase();
     database->open(databaseName, "", "", "", "");
     database->createSchema();
-    database->addPlant("sunnyboy", "rfcomm", argv[1], "", "smabluetooth", "0000");
+    database->addPlant("sunnyboy", "rfcomm", argv[1], "", "smadata2plus", "0000");
     database->addLogicalPlant("sunnyboy", 0, 0, 0, 0);
     database->addInverter(2100106015, "sunnyboy", "sunnyboy", "sunnyboy", 5000, 1, 2);
     database->close();
