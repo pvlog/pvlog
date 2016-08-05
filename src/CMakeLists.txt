@@ -8,7 +8,7 @@ add_subdirectory(pvlib)
 add_subdirectory(pvlog)
 add_subdirectory(pvlogdatabase)
 add_subdirectory(pvlogweb)
-#add_subdirectory(databasesetup)
+add_subdirectory(setup)
 add_subdirectory(util)
 
 #if (GTEST_FOUND)
