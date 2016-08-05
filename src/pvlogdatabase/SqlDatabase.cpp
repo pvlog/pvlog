@@ -322,7 +322,7 @@ void SqlDatabase::storeAc(const Ac& ac, uint32_t id)
 			if (Ac::isValid(ac.voltage[i])) bindValueAdd(ac.voltage[i]);
 			else bindValueAdd();
 
-			if (Ac::isValid(ac.power[i])) bindValueAdd(ac.current[i]);
+			if (Ac::isValid(ac.current[i])) bindValueAdd(ac.current[i]);
 			else bindValueAdd();
 
 			execQuery();
