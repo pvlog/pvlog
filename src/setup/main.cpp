@@ -34,6 +34,8 @@ int main(int argc, char **argv) {
     database->addLogicalPlant("sunnyboy", 0, 0, 0, 0);
     database->addInverter(2100106015, "sunnyboy", "sunnyboy", "sunnyboy", 5000, 1, 2);
     database->storeConfig("timeout", std::to_string(60 * 5));
+    database->storeConfig("longitude", std::to_string(49.71));
+    database->storeConfig("latitude", std::to_string(10.97));
     database->close();
 
     delete database;
