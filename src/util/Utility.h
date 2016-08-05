@@ -1,6 +1,10 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+#include <sstream>
+#include <typeinfo>
+#include "PvlogException.h"
+
 namespace util {
 
 template<typename map_type>
@@ -48,6 +52,21 @@ enum {
 	STR2INT_OTHERERROR = -4;
 };
 */
+
+template<typename T>
+static inline T convertTo(const std::string& str,
+                          std::ios_base& (*base)(std::ios_base &) = std::dec,
+                          bool failIfLeftoverChars = true)
+{
+    std::istringstream i(str);
+    T ret;
+    char c;
+    if (!(i >> ret) || (failIfLeftoverChars && i.get(c))) {
+        PVLOG_EXCEPT("convert " + str + " to " + std::string(typeid(T).name()) + " failed.");
+    }
+
+    return ret;
+}
 
 
 #define DISABLE_COPY(CLASS) \

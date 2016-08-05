@@ -84,35 +84,35 @@ public:
 		return time;
 	}
 
-	int year()
+	int year() const
 	{
 		struct tm* ltime = localtime(&time);
 		if (ltime== NULL) PVLOG_EXCEPT("localtime failed!");
 		return ltime->tm_year + 1900;
 	}
 
-	int month()
+	int month() const
 	{
 		struct tm* ltime = localtime(&time);
 		if (ltime == NULL) PVLOG_EXCEPT("localtime failed!");
 		return ltime->tm_mon;
 	}
 
-	int monthDay()
+	int monthDay() const
 	{
 		struct tm* ltime = localtime(&time);
 		if (ltime == NULL) PVLOG_EXCEPT("localtime failed!");
 		return ltime->tm_mday;
 	}
 
-	double julianDate()
+	double julianDate() const
 	{
-		return ((double(time) + 2440587.5 * 86400.0) / 86400.0);
+		return time / 86400.0 + 2440587.5;
 	}
 
-	int julianDay()
+	int julianDay() const
 	{
-		return static_cast<int> ((time + 2440587.5 * 86400.0) / 86400.0);
+		return static_cast<int>(time / 86400.0 + 2440587.5);
 	}
 
 	time_t unixTime() const

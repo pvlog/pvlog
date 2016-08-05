@@ -21,12 +21,12 @@ SqliteDatabase::~SqliteDatabase()
 
 void SqliteDatabase::beginTransaction()
 {
-	SqlDatabase::exec("BEGIN TRANSACTION;");
+	SqlDatabase::execQuery("BEGIN TRANSACTION;");
 }
 
 void SqliteDatabase::commitTransaction()
 {
-	SqlDatabase::exec("COMMIT TRANSACTION;");
+	SqlDatabase::execQuery("COMMIT TRANSACTION;");
 }
 
 void SqliteDatabase::prepare(const std::string& statment)

@@ -13,7 +13,6 @@
 #include "DateTime.h"
 
 class Database {
-	//DISABLE_COPY(Database)
 public:
 	typedef Pvlib::Dc Dc;
 	typedef Pvlib::Ac Ac;
@@ -104,6 +103,13 @@ public:
 
 	virtual std::string readConfig(const std::string& key) = 0;
 
+	virtual Location readLocation() {
+	    float longitude = util::convertTo<float>(readConfig("longitude"));
+	    float latitude  = util::convertTo<float>(readConfig("latitude"));
+
+	    return Location(longitude, latitude);
+	}
+
 	/**
 	 * Add plant to Database
 	 */
@@ -142,12 +148,9 @@ public:
 	                         int phaseCount,
 	                         int trackerCount) = 0;
 
-	virtual std::vector<Inverter> inverters() = 0;
-
-	/**
-	 * Returns inverter informations TODO: remove
-	 */
 	virtual Inverter inverter(uint32_t id) = 0;
+
+	virtual std::vector<Inverter> inverters() = 0;
 
 	/**
 	 * Store ac values.
@@ -176,7 +179,9 @@ public:
 	                                                           const DateTime& from,
 	                                                           const DateTime& to) = 0;
 
-	//virtual std::vector<Stats> getStats(uint32_t id, const Time& time) = 0;
+    virtual std::vector<std::pair<DateTime, uint32_t>> readDayPower(uint32_t,
+                                                         const DateTime& fromDay,
+                                                         const DateTime& toDay) = 0;
 
 
 	/**

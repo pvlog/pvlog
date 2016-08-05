@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	struct ExecWrapper : public SqliteDatabase {
 		void exec(const std::string& str)
 		{
-			SqlDatabase::exec(str);
+			SqlDatabase::execQuery(str);
 		}
 	};
 

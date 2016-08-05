@@ -27,7 +27,7 @@ protected:
 	/**
 	 * Wait for timeout
 	 */
-	bool waitForLogTime(int timeout);
+	bool waitForLogTime(int time);
 
 	void logDayData();
 

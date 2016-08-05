@@ -6,7 +6,7 @@
 #include <iostream>
 #include <iomanip>
 
-const double PI = 3.1415926535897932384626433832795028841968;
+static const double PI = 3.1415926535897932384626433832795028841968;
 
 static double sinDeg(double in)
 {

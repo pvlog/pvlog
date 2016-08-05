@@ -19,8 +19,7 @@ DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
 		 PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	 }
 
-	//database->plantLocation(longitude, latitude);
-	Database::Location location(-10.9, 49.7);
+	Database::Location location = database->readLocation();
 	sunriseSunset = std::unique_ptr<SunriseSunset>(new SunriseSunset(location.longitude,
 	        location.latitude));
 
@@ -38,14 +37,12 @@ bool DataLogger::waitForDay()
 	return DateTime::sleepUntil(time);
 }
 
-bool DataLogger::waitForLogTime(int timeout)
+bool DataLogger::waitForLogTime(int time)
 {
 	time_t curTime = DateTime::currentUnixTime();
-	time_t time = curTime + timeout;
+	time_t timeToWait = time - curTime;
 
-	time = ((time + 30) / 60) * 60; //round to minutes
-
-	return DateTime::sleepUntil(DateTime(time));
+	return DateTime::sleepUntil(DateTime(timeToWait));
 }
 
 void DataLogger::logDayData()
@@ -75,12 +72,16 @@ void DataLogger::logData()
 		Pvlib::Dc dc;
 		try {
 			pvlib->getAc(&ac, it);
-			ac.time = DateTime::currentUnixTime();
 			pvlib->getDc(&dc, it);
-			dc.time = DateTime::currentUnixTime();
 		} catch (const PvlogException& ex) {
 			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
 		}
+
+		//round time to multiple of timeout
+		time_t time = (DateTime::currentUnixTime() / timeout) * timeout;
+
+        ac.time = time;
+        dc.time = time;
 
 		database->storeAc(ac, *it);
 		database->storeDc(dc, *it);
@@ -91,15 +92,15 @@ void DataLogger::logData()
 void DataLogger::work()
 {
 	try {
-		int newTimeout = timeout;
 		while (!quit) {
-			LOG(Debug) << "Data logger work cycle, timeout = " << newTimeout;
 			DateTime curTime;
+			time_t time = ((curTime.unixTime() + timeout) / timeout) * timeout;
+
 			DateTime sunset = sunriseSunset->sunset(curTime.julianDay());
 			LOG(Debug) << "Sunset: " << sunset.timeString();
 			LOG(Debug) << "current time: " << curTime.timeString();
 
-			if (curTime + DateTime(newTimeout) >= sunset) {
+			if (time >= sunset.unixTime()) {
 				logDayData();
 				while (waitForDay() == false) {
 					if (quit) return;
@@ -108,23 +109,13 @@ void DataLogger::work()
 
 			if (quit) return;
 
-			LOG(Debug) << "Waiting for log time: " << newTimeout << "seconds";
-			while (waitForLogTime(newTimeout) == false) {
+            time = ((DateTime::currentUnixTime() + timeout) / timeout) * timeout;
+			while (waitForLogTime(time) == false) {
 				if (quit) return;
 			}
 			if (quit) return;
 
-			DateTime startTime;
 			logData();
-			DateTime endTime;
-
-			time_t timeNeeded = endTime - startTime;
-			if (timeNeeded > timeout) {
-				newTimeout = 0;
-				LOG(Warning) << "Timeout < time needed to query data from inverters!";
-			} else {
-				newTimeout = timeout - timeNeeded;
-			}
 		}
 	} catch (const PvlogException& ex) {
 		LOG(Error) << ex.what();
