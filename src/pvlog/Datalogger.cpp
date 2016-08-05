@@ -100,6 +100,7 @@ void DataLogger::work()
 			DateTime sunset = sunriseSunset->sunset(curTime.julianDay());
 			LOG(Debug) << "Sunset: " << sunset.timeString();
 			LOG(Debug) << "current time: " << curTime.timeString();
+			LOG(Debug) << "time till wait: " << DateTime(time).timeString();
 
 			if (time >= sunset.unixTime()) {
 				logDayData();
