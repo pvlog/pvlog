@@ -75,6 +75,7 @@ void DataLogger::logData()
 			pvlib->getDc(&dc, it);
 		} catch (const PvlogException& ex) {
 			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
+			return;
 		}
 
 		//round time to multiple of timeout

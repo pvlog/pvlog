@@ -44,9 +44,9 @@ void SqlDatabase::createSchema()
 		execQuery("CREATE TABLE errors(date INTEGER,"
 			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
 			"message VARCHAR(500), error_code INTEGER);");
-		execQuery("CREATE TABLE ac_values(line INTEGER, inverter INTEGER REFERENCES inverter(id) NOT NULL,"
+		execQuery("CREATE TABLE ac_values(inverter INTEGER REFERENCES inverter(id) NOT NULL,"
 		     "date INTEGER,  power INTEGER, frequency INTEGER,"
-			 "PRIMARY KEY(line, inverter, date));");
+			 "PRIMARY KEY(inverter, date));");
 		execQuery("CREATE TABLE line(inverter INTEGER, date INTEGER, line SMALLINT,"
 			 "power INTEGER, current INTEGER, voltage INTEGER,"
 			 "PRIMARY KEY(inverter, date, line),"
