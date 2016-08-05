@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Daemon.h"
+#include "DateTime.h"
 
 class SunriseSunset;
 class Database;
@@ -27,7 +28,7 @@ protected:
 	/**
 	 * Wait for timeout
 	 */
-	bool waitForLogTime(int time);
+	bool waitForLogTime(DateTime timeToWait);
 
 	void logDayData();
 

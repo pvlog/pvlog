@@ -37,12 +37,9 @@ bool DataLogger::waitForDay()
 	return DateTime::sleepUntil(time);
 }
 
-bool DataLogger::waitForLogTime(int time)
+bool DataLogger::waitForLogTime(DateTime timeToWait)
 {
-	time_t curTime = DateTime::currentUnixTime();
-	time_t timeToWait = time - curTime;
-
-	return DateTime::sleepUntil(DateTime(timeToWait));
+	return DateTime::sleepUntil(timeToWait);
 }
 
 void DataLogger::logDayData()
@@ -112,7 +109,7 @@ void DataLogger::work()
 			if (quit) return;
 
             time = ((DateTime::currentUnixTime() + timeout) / timeout) * timeout;
-			while (waitForLogTime(time) == false) {
+			while (waitForLogTime(DateTime(time)) == false) {
 				if (quit) return;
 			}
 			if (quit) return;
