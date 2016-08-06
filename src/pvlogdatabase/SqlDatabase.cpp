@@ -487,7 +487,7 @@ void SqlDatabase::storeStats(const Stats& stats, uint32_t id)
         if (Stats::isValid(stats.dayYield)) {
             DateTime time;
             prepare("INSERT INTO day_values(inverter, julian_day, power)\n"
-                    "VALUES(:inverter, :julian_day :power);");
+                    "VALUES(:inverter, :julian_day, :power);");
             bindValueAdd(static_cast<int64_t> (id));
             bindValueAdd(static_cast<int32_t> (time.julianDay()));
             bindValueAdd(static_cast<int32_t> (stats.totalYield));
