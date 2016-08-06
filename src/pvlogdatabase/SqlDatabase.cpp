@@ -462,39 +462,44 @@ std::vector<std::pair<uint32_t, uint32_t> > SqlDatabase::readDc(uint32_t id,
 
 void SqlDatabase::storeStats(const Stats& stats, uint32_t id)
 {
-	beginTransaction();
-	prepare("UPDATE inverter\n"
-			"SET\n"
-			"total_power = coalesce(:total_power, total_power),\n"
-			"operation_time = coalesce(:operation_time, operation_time),\n"
-			"feed_in_time = coalesce(:feed_in_time, feed_in_time)\n"
-			"WHERE id = :id;");
-	if (Stats::isValid(stats.totalYield)) bindValueAdd(static_cast<int32_t> (stats.totalYield));
-	else bindValueAdd();
+    try {
+        beginTransaction();
+        prepare("UPDATE inverter\n"
+                "SET\n"
+                "total_power = coalesce(:total_power, total_power),\n"
+                "operation_time = coalesce(:operation_time, operation_time),\n"
+                "feed_in_time = coalesce(:feed_in_time, feed_in_time)\n"
+                "WHERE id = :id;");
+        if (Stats::isValid(stats.totalYield)) bindValueAdd(static_cast<int32_t> (stats.totalYield));
+        else bindValueAdd();
 
-	if (Stats::isValid(stats.operationTime)) bindValueAdd(
-	        static_cast<int32_t> (stats.operationTime));
-	else bindValueAdd();
+        if (Stats::isValid(stats.operationTime)) bindValueAdd(
+                static_cast<int32_t> (stats.operationTime));
+        else bindValueAdd();
 
-	if (Stats::isValid(stats.feedInTime)) bindValueAdd(static_cast<int32_t> (stats.feedInTime));
-	else bindValueAdd();
+        if (Stats::isValid(stats.feedInTime)) bindValueAdd(static_cast<int32_t> (stats.feedInTime));
+        else bindValueAdd();
 
-	bindValueAdd(static_cast<int64_t> (id));
-	execQuery();
+        bindValueAdd(static_cast<int64_t> (id));
+        execQuery();
 
-	//day Value
-	if (Stats::isValid(stats.dayYield)) {
-		DateTime time;
-		prepare("INSERT INTO day_values(inverter, julian_day, power)\n"
-				"VALUES(:inverter, :year, :month, :day, :power);");
-		bindValueAdd(static_cast<int64_t> (id));
-		bindValueAdd(static_cast<int32_t> (time.julianDay()));
-		bindValueAdd(static_cast<int32_t> (stats.totalYield));
+        //day Value
+        if (Stats::isValid(stats.dayYield)) {
+            DateTime time;
+            prepare("INSERT INTO day_values(inverter, julian_day, power)\n"
+                    "VALUES(:inverter, :julian_day :power);");
+            bindValueAdd(static_cast<int64_t> (id));
+            bindValueAdd(static_cast<int32_t> (time.julianDay()));
+            bindValueAdd(static_cast<int32_t> (stats.totalYield));
 
-		execQuery();
-	}
+            execQuery();
+        }
 
-	commitTransaction();
+        commitTransaction();
+    } catch (const PvlogException& exception) {
+        PVLOG_EXCEPT(std::string("StoreStats: ") + exception.what());
+    }
+
 }
 
 std::vector<std::pair<DateTime, uint32_t>> SqlDatabase::readDayPower(uint32_t id,
