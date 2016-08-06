@@ -40,7 +40,7 @@ void SqlDatabase::createSchema()
 			 "feed_in_time INTEGER);");
 		execQuery("CREATE TABLE day_values(julian_day INTEGER NOT NULL,"
 			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
-			"power INTEGER, PRIMARY KEY(julian_day, inverter));");
+			"power INTEGER NOT NULL, PRIMARY KEY(julian_day, inverter));");
 		execQuery("CREATE TABLE errors(date INTEGER,"
 			"inverter INTEGER NOT NULL REFERENCES inverter(id),"
 			"message VARCHAR(500), error_code INTEGER);");
@@ -485,12 +485,10 @@ void SqlDatabase::storeStats(const Stats& stats, uint32_t id)
 	//day Value
 	if (Stats::isValid(stats.dayYield)) {
 		DateTime time;
-		prepare("INSERT INTO day_values(inverter, year, month, day, power)\n"
+		prepare("INSERT INTO day_values(inverter, julian_day, power)\n"
 				"VALUES(:inverter, :year, :month, :day, :power);");
 		bindValueAdd(static_cast<int64_t> (id));
-		bindValueAdd(static_cast<int16_t> (time.year()));
-		bindValueAdd(static_cast<int16_t> (time.month()));
-		bindValueAdd(static_cast<int16_t> (time.monthDay()));
+		bindValueAdd(static_cast<int32_t> (time.julianDay()));
 		bindValueAdd(static_cast<int32_t> (stats.totalYield));
 
 		execQuery();
