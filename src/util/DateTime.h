@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string.h>
 #include <utility>
+#include <cmath>
 
 #include "PvlogException.h"
 
@@ -112,7 +113,7 @@ public:
 
 	int julianDay() const
 	{
-		return static_cast<int>(time / 86400.0 + 2440587.5);
+		return static_cast<int>(std::round(julianDate()));
 	}
 
 	time_t unixTime() const
