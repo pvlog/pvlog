@@ -45,8 +45,8 @@ void Pvlog::initPvlib()
 {
 	pvlib = std::unique_ptr<Pvlib>(new Pvlib(stderr));
 
-	std::set<std::string> connections = pvlib->supportedConnections();
-	std::set<std::string> protocols = pvlib->supportedProtocols();
+	std::unordered_set<std::string> connections = pvlib->supportedConnections();
+	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
 
 	std::vector<Database::Plant> plants = database->plants();
 
@@ -63,10 +63,10 @@ void Pvlog::initPvlib()
 		if (protocols.find(plant.protocol) == protocols.end()) {
 			LOG(Error) << "plant: " << plant.name << "has unsupported protocol: " << plant.protocol;
 		}
-		pvlib->openPlant(plant.name, plant.connection, plant.protocol, plant.conParam1,
-		        plant.password);
+		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+		pvlib->connect(plant.name, plant.conParam1, plant.password);
 
-		LOG(Info) << "Successfully opened plant " << plant.name << " [" << plant.connection << ", "
+		LOG(Info) << "Successfully connected plant " << plant.name << " [" << plant.connection << ", "
 		        << plant.protocol << "]";
 	}
 }

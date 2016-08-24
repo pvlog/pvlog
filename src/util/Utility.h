@@ -70,9 +70,8 @@ static inline T convertTo(const std::string& str,
 
 
 #define DISABLE_COPY(CLASS) \
-	private : \
-    	CLASS(const CLASS&); \
-    	CLASS& operator=(const CLASS&);
+    CLASS(const CLASS&) = delete; \
+    CLASS& operator=(const CLASS&) = delete;
 } //namespace util
 
 #endif // #ifndef UTILITY_H
