@@ -177,7 +177,7 @@ public:
 	    std::string message;
 
         friend std::ostream& operator << (std::ostream& o, const Status& status) {
-            o << "number: " << status.number << "message: " << status.message;
+            o << "number: " << status.number << " message: " << status.message;
             return o;
         }
 	};
