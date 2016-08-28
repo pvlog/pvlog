@@ -34,6 +34,10 @@ protected:
 
 	void logData();
 private:
+	void openPlants();
+
+	void closePlants();
+
 	volatile bool quit;
 	Database* database;
 	Pvlib* pvlib;

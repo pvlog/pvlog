@@ -23,7 +23,42 @@ DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
 	sunriseSunset = std::unique_ptr<SunriseSunset>(new SunriseSunset(location.longitude,
 	        location.latitude));
 
+	openPlants();
+
 	this->timeout = timeout;
+}
+
+void DataLogger::openPlants()
+{
+    std::unordered_set<std::string> connections = pvlib->supportedConnections();
+    std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
+
+    std::vector<Database::Plant> plants = database->plants();
+
+    for (std::vector<Database::Plant>::const_iterator it = plants.begin(); it != plants.end(); ++it) {
+        Database::Plant plant = *it;
+
+        LOG(Info) << "Opening plant " << plant.name << " [" << plant.connection << ", "
+                << plant.protocol << "]";
+
+        if (connections.find(plant.connection) == connections.end()) {
+            LOG(Error) << "plant: " << plant.name << "has unsupported connection: "
+                    << plant.connection;
+        }
+        if (protocols.find(plant.protocol) == protocols.end()) {
+            LOG(Error) << "plant: " << plant.name << "has unsupported protocol: " << plant.protocol;
+        }
+        pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+        pvlib->connect(plant.name, plant.conParam1, plant.password);
+
+        LOG(Info) << "Successfully connected plant " << plant.name << " [" << plant.connection << ", "
+                << plant.protocol << "]";
+    }
+}
+
+void DataLogger::closePlants()
+{
+    pvlib->close();
 }
 
 bool DataLogger::waitForDay()
@@ -103,9 +138,14 @@ void DataLogger::work()
 
 			if (time >= sunset.unixTime()) {
 				logDayData();
+
+				closePlants();
+
 				while (waitForDay() == false) {
 					if (quit) return;
 				}
+
+				openPlants();
 			}
 
 			if (quit) return;

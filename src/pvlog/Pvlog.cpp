@@ -44,31 +44,6 @@ void Pvlog::initDatabase(const std::string& configFile)
 void Pvlog::initPvlib()
 {
 	pvlib = std::unique_ptr<Pvlib>(new Pvlib(stderr));
-
-	std::unordered_set<std::string> connections = pvlib->supportedConnections();
-	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
-
-	std::vector<Database::Plant> plants = database->plants();
-
-	for (std::vector<Database::Plant>::const_iterator it = plants.begin(); it != plants.end(); ++it) {
-		Database::Plant plant = *it;
-
-		LOG(Info) << "Opening plant " << plant.name << " [" << plant.connection << ", "
-		        << plant.protocol << "]";
-
-		if (connections.find(plant.connection) == connections.end()) {
-			LOG(Error) << "plant: " << plant.name << "has unsupported connection: "
-			        << plant.connection;
-		}
-		if (protocols.find(plant.protocol) == protocols.end()) {
-			LOG(Error) << "plant: " << plant.name << "has unsupported protocol: " << plant.protocol;
-		}
-		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
-		pvlib->connect(plant.name, plant.conParam1, plant.password);
-
-		LOG(Info) << "Successfully connected plant " << plant.name << " [" << plant.connection << ", "
-		        << plant.protocol << "]";
-	}
 }
 
 Pvlog::Pvlog(const std::string& configFile)
