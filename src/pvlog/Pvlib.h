@@ -172,6 +172,16 @@ public:
 		} //higest bit set => invalid
 	};
 
+	struct Status {
+	    uint32_t number;
+	    std::string message;
+
+        friend std::ostream& operator << (std::ostream& o, const Status& status) {
+            o << "number: " << status.number << "message: " << status.message;
+            return o;
+        }
+	};
+
 	//struct Stats {
 	//	static bool
 	//}
@@ -304,6 +314,11 @@ public:
 	void getStats(Stats* stats, const std::string& plant, uint32_t inverterId);
 
 	void getStats(Stats* stats, const Pvlib::const_iterator& iterator);
+
+
+    void getStatus(Status* status, const std::string& plant, uint32_t inverterId);
+
+	void getStatus(Status* status, const Pvlib::const_iterator& iterator);
 
 	/**
 	 * Retrieves Status specific values.

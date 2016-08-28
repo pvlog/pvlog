@@ -102,9 +102,11 @@ void DataLogger::logData()
 	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
 		Pvlib::Ac ac;
 		Pvlib::Dc dc;
+		Pvlib::Status status;
 		try {
 			pvlib->getAc(&ac, it);
 			pvlib->getDc(&dc, it);
+			pvlib->getStatus(&status, it);
 		} catch (const PvlogException& ex) {
 			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
 			return;
@@ -118,6 +120,7 @@ void DataLogger::logData()
 
         LOG(Debug) << "ac:\n" << ac << "\n";
         LOG(Debug) << "dc:\n" << dc << "\n";
+        LOG(Debug) << "status:\n" << status << "\n";
 		database->storeAc(ac, *it);
 		database->storeDc(dc, *it);
 	}

@@ -211,3 +211,32 @@ void Pvlib::getStats(Stats* stats, const Pvlib::const_iterator& iterator)
 	if (pvlib_get_stats(plant, inverter, (pvlib_stats_t*) stats) < 0)
 		PVLOG_EXCEPT("Error reading statistics of inverter");
 }
+
+void Pvlib::getStatus(Status* status, const std::string& plantName, uint32_t inverterId)
+{
+    pvlib_plant_t* plant = plantHandle(plantName, inverterId);
+    if (plant == NULL) PVLOG_EXCEPT("Could not find plant!");
+
+    pvlib_status_t pvlib_status;
+
+    if (pvlib_get_status(plant, inverterId, &pvlib_status) < 0)
+        PVLOG_EXCEPT("Error reading status of inverter");
+
+    status->number = pvlib_status.number;
+    status->message = std::string(pvlib_status.message);
+}
+
+
+void Pvlib::getStatus(Status* status, const Pvlib::const_iterator& iterator)
+{
+    pvlib_plant_t* plant = iterator.plant();
+    uint32_t inverter = iterator.inverter();
+
+    pvlib_status_t pvlib_status;
+    if (pvlib_get_status(plant, inverter, &pvlib_status) < 0)
+        PVLOG_EXCEPT("Error reading statistics of inverter");
+
+    status->number = pvlib_status.number;
+    status->message = std::string(pvlib_status.message);
+}
+
