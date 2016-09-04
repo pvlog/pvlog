@@ -120,6 +120,14 @@ void Pvlib::connect(const std::string& plantName,
     connectedPlants.emplace(plantIt->second, inverters);
 }
 
+void Pvlib::disconnect()
+{
+	for (const auto& connectedPlant : connectedPlants) {
+		pvlib_disconnect(connectedPlant.first);
+	}
+	connectedPlants.clear();
+}
+
 std::vector<std::string> Pvlib::openPlants()
 {
 	PlantMap::const_iterator beg = plants.begin();
@@ -155,6 +163,8 @@ void Pvlib::closePlant(const std::string& plantName)
 
 void Pvlib::close()
 {
+	disconnect();
+
 	for (PlantMap::const_iterator i = plants.begin(); i != plants.end(); ++i) {
 		pvlib_close(i->second);
 	}

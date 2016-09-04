@@ -244,6 +244,11 @@ public:
 	void disconnect(const std::string& plantName);
 
 	/**
+	 * Disconnect all plants
+	 */
+	void disconnect();
+
+	/**
 	 * Close plant specified by id
 	 *
 	 * @param plantId id of plant see openPlant(int, uint32_t, const std::string&, const void*, uint32_t).
