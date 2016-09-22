@@ -7,58 +7,58 @@
 #include "Log.h"
 
 DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
-	quit(false), database(database), pvlib(pvlib)
+		quit(false), database(database), pvlib(pvlib)
 {
 	PVLOG_NOT_NULL(database);
 	PVLOG_NOT_NULL(pvlib);
 
-	 if (timeout < 60) {
-		 PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
-	 }
-	 if ((timeout % 60) != 0) {
-		 PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
-	 }
+	if (timeout < 60) {
+		PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
+	}
+	if ((timeout % 60) != 0) {
+		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
+	}
 
 	Database::Location location = database->readLocation();
-	sunriseSunset = std::unique_ptr<SunriseSunset>(new SunriseSunset(location.longitude,
-	        location.latitude));
+	sunriseSunset = std::unique_ptr<SunriseSunset>(
+			new SunriseSunset(location.longitude, location.latitude));
 
 	openPlants();
 
 	this->timeout = timeout;
 }
 
-void DataLogger::openPlants()
-{
-    std::unordered_set<std::string> connections = pvlib->supportedConnections();
-    std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
+void DataLogger::openPlants() {
+	std::unordered_set<std::string> connections = pvlib->supportedConnections();
+	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
 
-    std::vector<Database::Plant> plants = database->plants();
+	std::vector<Database::Plant> plants = database->plants();
 
-    for (std::vector<Database::Plant>::const_iterator it = plants.begin(); it != plants.end(); ++it) {
-        Database::Plant plant = *it;
+	for (std::vector<Database::Plant>::const_iterator it = plants.begin();
+			it != plants.end(); ++it) {
+		Database::Plant plant = *it;
 
-        LOG(Info) << "Opening plant " << plant.name << " [" << plant.connection << ", "
-                << plant.protocol << "]";
+		LOG(Info) << "Opening plant " << plant.name << " ["
+				<< plant.connection << ", " << plant.protocol << "]";
 
-        if (connections.find(plant.connection) == connections.end()) {
-            LOG(Error) << "plant: " << plant.name << "has unsupported connection: "
-                    << plant.connection;
-        }
-        if (protocols.find(plant.protocol) == protocols.end()) {
-            LOG(Error) << "plant: " << plant.name << "has unsupported protocol: " << plant.protocol;
-        }
-        pvlib->openPlant(plant.name, plant.connection, plant.protocol);
-        pvlib->connect(plant.name, plant.conParam1, plant.password);
+		if (connections.find(plant.connection) == connections.end()) {
+			LOG(Error) << "plant: " << plant.name
+					<< "has unsupported connection: " << plant.connection;
+		}
+		if (protocols.find(plant.protocol) == protocols.end()) {
+			LOG(Error) << "plant: " << plant.name
+					<< "has unsupported protocol: " << plant.protocol;
+		}
+		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+		pvlib->connect(plant.name, plant.conParam1, plant.password);
 
-        LOG(Info) << "Successfully connected plant " << plant.name << " [" << plant.connection << ", "
-                << plant.protocol << "]";
-    }
+		LOG(Info) << "Successfully connected plant " << plant.name << " ["
+				<< plant.connection << ", " << plant.protocol << "]";
+	}
 }
 
-void DataLogger::closePlants()
-{
-    pvlib->close();
+void DataLogger::closePlants() {
+	pvlib->close();
 }
 
 bool DataLogger::waitForDay()
@@ -115,12 +115,12 @@ void DataLogger::logData()
 		//round time to multiple of timeout
 		time_t time = (DateTime::currentUnixTime() / timeout) * timeout;
 
-        ac.time = time;
-        dc.time = time;
+		ac.time = time;
+		dc.time = time;
 
-        LOG(Debug) << "ac:\n" << ac << "\n";
-        LOG(Debug) << "dc:\n" << dc << "\n";
-        LOG(Debug) << "status:\n" << status << "\n";
+		LOG(Debug) << "ac:\n" << ac << "\n";
+		LOG(Debug) << "dc:\n" << dc << "\n";
+		LOG(Debug) << "status:\n" << status << "\n";
 		database->storeAc(ac, *it);
 		database->storeDc(dc, *it);
 	}
@@ -153,7 +153,7 @@ void DataLogger::work()
 
 			if (quit) return;
 
-            time = ((DateTime::currentUnixTime() + timeout) / timeout) * timeout;
+			time = ((DateTime::currentUnixTime() + timeout) / timeout) * timeout;
 			while (waitForLogTime(DateTime(time)) == false) {
 				if (quit) return;
 			}
