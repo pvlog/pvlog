@@ -54,6 +54,12 @@ void SqlDatabase::createSchema()
 		execQuery("CREATE TABLE tracker(num INTEGER,"
 			 "inverter INTEGER REFERENCES inverter(id), date INTEGER,"
 			 "voltage INTEGER, current INTEGER, power INTEGER, PRIMARY KEY(num, inverter, date))");
+//		execQuery("CREATE TABLE month("
+//			 "inverter INTEGER REFERENCES inverter(id), year INTEGER,"
+//			 "month INTEGER, power INTEGER NOT NULL, , PRIMARY KEY(inverter, month, year))");
+//		execQuery("CREATE TABLE year("
+//			 "inverter INTEGER REFERENCES inverter(id), year INTEGER,"
+//			 "power INTEGER NOT NULL, , PRIMARY KEY(inverter, month))");
 
 		prepare("INSERT INTO settings (value, data) VALUES(\"version\", :version);");
 		std::stringstream ss;
@@ -485,12 +491,12 @@ void SqlDatabase::storeStats(const Stats& stats, uint32_t id)
 
         //day Value
         if (Stats::isValid(stats.dayYield)) {
-            DateTime time;
+            DateTime time(stats.time);
             prepare("INSERT INTO day_values(inverter, julian_day, power)\n"
                     "VALUES(:inverter, :julian_day, :power);");
             bindValueAdd(static_cast<int64_t> (id));
             bindValueAdd(static_cast<int32_t> (time.julianDay()));
-            bindValueAdd(static_cast<int32_t> (stats.totalYield));
+            bindValueAdd(static_cast<int32_t> (stats.dayYield));
 
             execQuery();
         }

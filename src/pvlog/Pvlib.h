@@ -114,6 +114,16 @@ public:
 		int32_t frequence;
 		time_t time;
 
+		Ac() :
+			totalPower(-1),
+			power{-1},
+			voltage{-1},
+			current{-1},
+			lineNum(0),
+			frequence(-1),
+			time(0) {
+		}
+
 		friend std::ostream& operator << (std::ostream& o, const Ac& ac) {
 		    o << "power: " << ac.totalPower << "W, frequency: " << ac.frequence << "mHz\n";
 		    for (int i = 0; i < ac.lineNum; ++i) {
@@ -141,6 +151,15 @@ public:
 		uint8_t trackerNum;
 		time_t time;
 
+		Dc() :
+			totalPower(-1),
+			power{-1},
+			voltage{-1},
+			current{-1},
+			trackerNum(0),
+			time(0) {
+		}
+
 		static const int32_t INVALID = 0x80000000;
 		static bool isValid(int32_t type)
 		{
@@ -166,6 +185,15 @@ public:
 		uint32_t feedInTime; ///<feed in time in seconds
 
 		time_t time;
+
+		Stats() {
+			totalYield = -1;
+			dayYield = -1;
+			operationTime = -1;
+			feedInTime = -1;
+			time = 0;
+		}
+
 		static bool isValid(int32_t type)
 		{
 			return !(type & 0x80000000);
@@ -173,13 +201,18 @@ public:
 	};
 
 	struct Status {
-	    uint32_t number;
-	    std::string message;
+		uint32_t number;
+		std::string message;
 
-        friend std::ostream& operator << (std::ostream& o, const Status& status) {
-            o << "number: " << status.number << " message: " << status.message;
-            return o;
-        }
+		Status() {
+			number = -1;
+		}
+
+		friend std::ostream& operator <<(std::ostream& o, const Status& status)
+		{
+			o << "number: " << status.number << " message: " << status.message;
+			return o;
+		}
 	};
 
 	//struct Stats {

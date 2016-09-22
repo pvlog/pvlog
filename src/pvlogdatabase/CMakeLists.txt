@@ -24,4 +24,7 @@ endif()
 add_library(pvlogdatabase ${SRC} ${HEADERS})
 target_link_libraries(pvlogdatabase ${LIBS})
 
+add_executable(createExampleDatabase createTestDatabase.cpp)
+target_link_libraries(createExampleDatabase pvlogdatabase)
+
 add_subdirectory(test)

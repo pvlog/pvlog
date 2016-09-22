@@ -6,10 +6,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(PVLOG_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 
 if (CMAKE_COMPILER_IS_GNUCC)
-	set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -pedantic")
+	set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic")
+	#odb is compiled with gcc 4.9 on ubuntu 16.04 so we need to use old api
+	add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 endif (CMAKE_COMPILER_IS_GNUCC)
 
 find_package(sqlite3)
+find_package(ODB REQUIRED COMPONENTS sqlite)
+include(${ODB_USE_FILE})
 
 ###############
 # Unit testing

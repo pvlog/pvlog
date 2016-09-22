@@ -23,7 +23,7 @@ private:
 	static const int VERSION = 0;
 	std::string statment;
 	std::vector<Value> values;
-protected:
+public:
 	virtual void exec(std::vector<Value> & values) = 0;
 
 	inline void bindValueAdd(const Value& value)
