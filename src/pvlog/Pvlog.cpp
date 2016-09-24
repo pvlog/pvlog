@@ -5,9 +5,10 @@
 #include "PvlogException.h"
 #include "ConfigReader.h"
 #include "Datalogger.h"
-#include "SqliteDatabase.h"
 #include "ForgroundDaemon.h"
 #include "Log.h"
+
+using pvlib::Pvlib;
 
 void Pvlog::initDatabase(const std::string& configFile)
 {
@@ -37,8 +38,8 @@ void Pvlog::initDatabase(const std::string& configFile)
 	std::string password = configReader.getValue("password");
 	LOG(Info) << "Successfully parsed database configuration file.";
 
-	database = std::unique_ptr<Database>(new SqliteDatabase());
-	database->open(databaseName, hostname, port, username, password);
+	//database = std::unique_ptr<Database>(new SqliteDatabase());
+	//database->open(databaseName, hostname, port, username, password);
 }
 
 void Pvlog::initPvlib()
@@ -78,10 +79,11 @@ void Pvlog::start()
 
 int Pvlog::readTimeout()
 {
-	std::string timeoutStr = database->readConfig("timeout");
-	std::stringstream ss(timeoutStr);
-	int timeout;
-	ss >> timeout;
-	return timeout;
+	//std::string timeoutStr = database->readConfig("timeout");
+	//std::stringstream ss(timeoutStr);
+	//int timeout;
+	//ss >> timeout;
+	//return timeout;
+	return 60;
 }
 

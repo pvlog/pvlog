@@ -4,16 +4,20 @@
 #include <ctime>
 #include <memory>
 
+#include <odb/database.hxx>
+
 #include "Daemon.h"
 #include "DateTime.h"
+#include "Pvlib.h"
 
 class SunriseSunset;
 class Database;
-class Pvlib;
 
 class DataLogger: public DaemonWork {
 public:
-	DataLogger(Database* database, Pvlib* pvlib, int timeout);
+	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib, int timeout);
+
+	virtual ~DataLogger() = default;
 
 	virtual void work();
 
@@ -39,8 +43,8 @@ private:
 	void closePlants();
 
 	volatile bool quit;
-	Database* database;
-	Pvlib* pvlib;
+	odb::core::database* db;
+	pvlib::Pvlib* pvlib;
 	int timeout;
 	std::unique_ptr<SunriseSunset> sunriseSunset;
 };

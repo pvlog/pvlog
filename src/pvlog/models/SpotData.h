@@ -19,7 +19,7 @@ struct SpotData {
 
 	#pragma db index
 	time_t time;
-	uint64_t power;
+	uint32_t power;
 	odb::nullable<uint32_t> frequency;
 
 	#pragma db table("phase")      \

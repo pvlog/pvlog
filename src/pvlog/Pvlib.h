@@ -7,15 +7,145 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <type_traits>
+#include <limits>
 
 #include <pvlib.h>
 
 #include "Utility.h"
 
+namespace pvlib {
+
+//declare invalid data
+
+//unsigned data are invalid if value is maximum
+template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
+T invalid() {
+	return std::numeric_limits<T>::max();
+}
+
+//signed data is invalid if value is minimum
+template <typename T, typename std::enable_if<std::is_signed<T>::value, int>::type = 0>
+T invalid() {
+	return std::numeric_limits<T>::min();
+}
+
+//check if pvlib data is valid
+//unsigned data are invalid if value is maximum
+template <typename T, typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
+T isValid(T value) {
+	return value != invalid<T>();
+}
+
+//signed data is invalid if value is minimum
+template <typename T, typename std::enable_if<std::is_signed<T>::value, int>::type = 0>
+T isValid(T value) {
+	return value != invalid<T>();
+}
+
+
+struct Ac {
+	uint32_t totalPower;
+
+	uint32_t power[3];
+	uint32_t voltage[3];
+	uint32_t current[3];
+
+	uint8_t lineNum;
+	uint32_t frequency;
+	time_t time;
+
+	Ac() :
+		totalPower(invalid<uint32_t>()),
+		power{invalid<uint32_t>()},
+		voltage{invalid<uint32_t>()},
+		current{invalid<uint32_t>()},
+		lineNum(0),
+		frequency(invalid<uint32_t>()),
+		time(0) {
+	}
+
+	friend std::ostream& operator <<(std::ostream& o, const Ac& ac) {
+		o << "power: " << ac.totalPower << "W, frequency: " << ac.frequency
+				<< "mHz\n";
+		for (int i = 0; i < ac.lineNum; ++i) {
+			o << i << ": power: " << ac.power[i] << "W, voltage: "
+					<< ac.voltage[i] << "mV, current: " << ac.current[i]
+					<< "mA\n";
+		}
+
+		return o;
+	}
+};
+
+struct Dc {
+	uint32_t totalPower;
+
+	uint32_t power[3];
+	uint32_t voltage[3];
+	uint32_t current[3];
+
+	uint8_t trackerNum;
+	time_t time;
+
+	Dc() :
+		totalPower(invalid<uint32_t>()),
+		power{invalid<uint32_t>()},
+		voltage{invalid<uint32_t>()},
+		current{invalid<uint32_t>()},
+		trackerNum(0),
+		time(0) {
+	}
+	friend std::ostream& operator <<(std::ostream& o, const Dc& dc) {
+		o << "power: " << dc.totalPower << "W\n";
+		for (int i = 0; i < dc.trackerNum; ++i) {
+			o << i << ": power: " << dc.power[i] << "W, voltage: "
+					<< dc.voltage[i] << "mV, current: " << dc.current[i]
+					<< "mA\n";
+		}
+
+		return o;
+	}
+};
+
+struct Stats {
+	uint32_t totalYield; ///<total produced power in  watt-hours
+	uint32_t dayYield; ///<total produced power today in  watt-hours
+
+	uint32_t operationTime; /// <operation time in seconds
+	uint32_t feedInTime; ///<feed in time in seconds
+
+	time_t time;
+
+	Stats() {
+		totalYield = -1;
+		dayYield = -1;
+		operationTime = -1;
+		feedInTime = -1;
+		time = 0;
+	}
+};
+
+struct Status {
+	uint32_t number;
+	std::string message;
+
+	Status() {
+		number = -1;
+	}
+
+	friend std::ostream& operator <<(std::ostream& o, const Status& status)
+	{
+		o << "number: " << status.number << " message: " << status.message;
+		return o;
+	}
+};
+
+
 class Pvlib {
 private:
 	typedef std::unordered_map<std::string, pvlib_plant_t*> PlantMap;
-    typedef std::vector<uint32_t> Inverters;
+    typedef std::unordered_set<int64_t> Inverters;
 	typedef std::unordered_map<pvlib_plant_t*, Inverters> InverterMap;
 
 	PlantMap plants;
@@ -102,122 +232,6 @@ public:
 			return !operator==(it);
 		}
 	};
-
-	struct Ac {
-		uint32_t totalPower;
-
-		int32_t power[3];
-		int32_t voltage[3];
-		int32_t current[3];
-
-		uint8_t lineNum;
-		int32_t frequence;
-		time_t time;
-
-		Ac() :
-			totalPower(-1),
-			power{-1},
-			voltage{-1},
-			current{-1},
-			lineNum(0),
-			frequence(-1),
-			time(0) {
-		}
-
-		friend std::ostream& operator << (std::ostream& o, const Ac& ac) {
-		    o << "power: " << ac.totalPower << "W, frequency: " << ac.frequence << "mHz\n";
-		    for (int i = 0; i < ac.lineNum; ++i) {
-		        o << i << ": power: " << ac.power[i] << "W, voltage: " << ac.voltage[i]
-		            << "mV, current: " << ac.current[i] << "mA\n";
-		    }
-
-		    return o;
-		}
-
-		static const int32_t INVALID = 0x80000000;
-		static bool isValid(int32_t type)
-		{
-			return !(type & 0x80000000);
-		} //higest bit set => invalid
-	};
-
-	struct Dc {
-		uint32_t totalPower;
-
-		int32_t power[3];
-		int32_t voltage[3];
-		int32_t current[3];
-
-		uint8_t trackerNum;
-		time_t time;
-
-		Dc() :
-			totalPower(-1),
-			power{-1},
-			voltage{-1},
-			current{-1},
-			trackerNum(0),
-			time(0) {
-		}
-
-		static const int32_t INVALID = 0x80000000;
-		static bool isValid(int32_t type)
-		{
-			return !(type & 0x80000000);
-		} //higest bit set => invalid
-
-        friend std::ostream& operator << (std::ostream& o, const Dc& dc) {
-            o << "power: " << dc.totalPower << "W\n";
-            for (int i = 0; i < dc.trackerNum; ++i) {
-                o << i << ": power: " << dc.power[i] << "W, voltage: " << dc.voltage[i]
-                    << "mV, current: " << dc.current[i] << "mA\n";
-            }
-
-            return o;
-        }
-	};
-
-	struct Stats {
-		uint32_t totalYield; ///<total produced power in  watt-hours
-		uint32_t dayYield; ///<total produced power today in  watt-hours
-
-		uint32_t operationTime; /// <operation time in seconds
-		uint32_t feedInTime; ///<feed in time in seconds
-
-		time_t time;
-
-		Stats() {
-			totalYield = -1;
-			dayYield = -1;
-			operationTime = -1;
-			feedInTime = -1;
-			time = 0;
-		}
-
-		static bool isValid(int32_t type)
-		{
-			return !(type & 0x80000000);
-		} //higest bit set => invalid
-	};
-
-	struct Status {
-		uint32_t number;
-		std::string message;
-
-		Status() {
-			number = -1;
-		}
-
-		friend std::ostream& operator <<(std::ostream& o, const Status& status)
-		{
-			o << "number: " << status.number << " message: " << status.message;
-			return o;
-		}
-	};
-
-	//struct Stats {
-	//	static bool
-	//}
 
 public:
     DISABLE_COPY(Pvlib)
@@ -306,7 +320,7 @@ public:
 	 * @param plantId id assigned to plant.
 	 * @return all inverters assigned to plant.
 	 */
-	const Inverters& inverters(const std::string& plantName) const;
+	const Inverters& getInverters(const std::string& plantName) const;
 
 	/**
 	 * Retrieves AC specific values.
@@ -379,5 +393,7 @@ public:
 		return const_iterator(connectedPlants.end(), connectedPlants.end());
 	}
 };
+
+} //namespace pvlib{
 
 #endif /* #ifndef PVLIB_H_ */

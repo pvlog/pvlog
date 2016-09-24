@@ -2,12 +2,83 @@
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
-#include "Database.h"
 #include "Utility.h"
 #include "Log.h"
+#include "models/Config.h"
+#include "models/Plant.h"
+#include "models/SpotData.h"
+#include "Config_odb.h"
+#include "Plant_odb.h"
+#include "Inverter_odb.h"
+#include "SpotData_odb.h"
 
-DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
-		quit(false), database(database), pvlib(pvlib)
+using model::Config;
+using model::Plant;
+using model::SpotData;
+using model::Phase;
+using model::DcInput;
+using std::unique_ptr;
+using std::shared_ptr;
+using pvlib::Pvlib;
+using pvlib::Ac;
+using pvlib::Dc;
+using pvlib::Status;
+using pvlib::Stats;
+using pvlib::invalid;
+using pvlib::isValid;
+
+using namespace pvlib;
+
+namespace {
+
+//helper functions to test values for validity
+template<typename T>
+void setIfValid(T& s, T t) {
+	if (isValid(t)) {
+		s = t;
+	} else {
+		PVLOG_EXCEPT("Invalid value!");
+	}
+}
+
+template<typename T>
+void setIfValid(odb::nullable<T>& s, T t) {
+	if (isValid(t)) {
+		s = t;
+	}
+}
+
+} //namespace {
+
+static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
+	SpotData spotData;
+
+	setIfValid(spotData.power, ac.totalPower);
+	setIfValid(spotData.frequency, ac.frequency);
+	for (int i = 0; i < ac.lineNum; ++i) {
+		Phase phase;
+		setIfValid(phase.power, ac.power[i]);
+		setIfValid(phase.voltage, ac.voltage[i]);
+		setIfValid(phase.current, ac.current[i]);
+
+		spotData.phases.emplace(i + 1, phase);
+	}
+
+	for (int i = 0; i < dc.trackerNum; ++i) {
+		DcInput dcInput;
+		setIfValid(dcInput.power, dc.power[i]);
+		setIfValid(dcInput.voltage, dc.voltage[i]);
+		setIfValid(dcInput.current, dc.current[i]);
+
+		spotData.dcInput.emplace(i + 1, dcInput);
+	}
+
+	return spotData;
+}
+
+
+DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout) :
+		quit(false), db(database), pvlib(pvlib)
 {
 	PVLOG_NOT_NULL(database);
 	PVLOG_NOT_NULL(pvlib);
@@ -19,9 +90,14 @@ DataLogger::DataLogger(Database* database, Pvlib* pvlib, int timeout) :
 		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	}
 
-	Database::Location location = database->readLocation();
+	shared_ptr<Config> longitudeConf(db->load<Config>("longitude"));
+	shared_ptr<Config> latitudeConf(db->load<Config>("latitude"));
+
+	float longitude = std::stof(longitudeConf->value);
+	float latitude = std::stof(latitudeConf->value);
+
 	sunriseSunset = std::unique_ptr<SunriseSunset>(
-			new SunriseSunset(location.longitude, location.latitude));
+			new SunriseSunset(longitude, latitude));
 
 	openPlants();
 
@@ -32,11 +108,10 @@ void DataLogger::openPlants() {
 	std::unordered_set<std::string> connections = pvlib->supportedConnections();
 	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
 
-	std::vector<Database::Plant> plants = database->plants();
 
-	for (std::vector<Database::Plant>::const_iterator it = plants.begin();
-			it != plants.end(); ++it) {
-		Database::Plant plant = *it;
+	odb::result<Plant> r  = db->query<Plant>();
+	for (odb::result<Plant>::iterator it(r.begin()); it != r.end (); ++it) {
+		const Plant& plant = *it;
 
 		LOG(Info) << "Opening plant " << plant.name << " ["
 				<< plant.connection << ", " << plant.protocol << "]";
@@ -50,11 +125,22 @@ void DataLogger::openPlants() {
 					<< "has unsupported protocol: " << plant.protocol;
 		}
 		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
-		pvlib->connect(plant.name, plant.conParam1, plant.password);
+		pvlib->connect(plant.name, plant.conectionParameter, plant.password);
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
 				<< plant.connection << ", " << plant.protocol << "]";
+
+		std::unordered_set<int64_t> inverterIds = pvlib->getInverters(plant.name);
+
+		for (const auto& inverter : plant.inverters) {
+			if (inverterIds.count(inverter->id) != 1) {
+				LOG(Error) << "Could not open inverter: " << inverter->name;
+			}
+		}
 	}
+
+	//TODO: Error handling check if all inverters are open
+	//What to do if not all inverters are available?
 }
 
 void DataLogger::closePlants() {
@@ -82,7 +168,7 @@ void DataLogger::logDayData()
 	LOG(Debug) << "logging day yield";
 	Pvlib::const_iterator end = pvlib->end();
 	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
-		Pvlib::Stats stats;
+		Stats stats;
 		try {
 			pvlib->getStats(&stats, it);
 		} catch (const PvlogException& ex) {
@@ -90,7 +176,7 @@ void DataLogger::logDayData()
 			return;
 		}
 
-		database->storeStats(stats, *it);
+		//db->storeStats(stats, *it);
 	}
 	LOG(Debug) << "logged day yield";
 }
@@ -100,29 +186,27 @@ void DataLogger::logData()
 	LOG(Debug) << "logging current power, voltage, ...";
 	Pvlib::const_iterator end = pvlib->end();
 	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
-		Pvlib::Ac ac;
-		Pvlib::Dc dc;
-		Pvlib::Status status;
+		Ac ac;
+		Dc dc;
+		Status status;
 		try {
+
 			pvlib->getAc(&ac, it);
 			pvlib->getDc(&dc, it);
 			pvlib->getStatus(&status, it);
 		} catch (const PvlogException& ex) {
 			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
-			return;
+			continue; //Ignore inverter
 		}
 
-		//round time to multiple of timeout
-		time_t time = (DateTime::currentUnixTime() / timeout) * timeout;
+		SpotData spotData = fillSpotData(ac, dc);
+		spotData.time = (std::time(nullptr) / timeout) * timeout;
+		{
+			odb::transaction t (db->begin ());
+			db->persist(spotData);
+			t.commit();
+		}
 
-		ac.time = time;
-		dc.time = time;
-
-		LOG(Debug) << "ac:\n" << ac << "\n";
-		LOG(Debug) << "dc:\n" << dc << "\n";
-		LOG(Debug) << "status:\n" << status << "\n";
-		database->storeAc(ac, *it);
-		database->storeDc(dc, *it);
 	}
 	LOG(Debug) << "logged current power, voltage, ...";
 }

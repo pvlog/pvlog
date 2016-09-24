@@ -3,12 +3,12 @@
 
 #include <string>
 #include <memory>
+#include <odb/database.hxx>
 
 #include "Utility.h"
+#include "Pvlib.h"
 
-class Database;
 class Daemon;
-class Pvlib;
 
 class Pvlog {
 	DISABLE_COPY( Pvlog)
@@ -20,8 +20,8 @@ private:
 	std::string password;
 
 	std::unique_ptr<Daemon> daemon;
-	std::unique_ptr<Database> database;
-	std::unique_ptr<Pvlib> pvlib;
+	std::unique_ptr<odb::core::database> database;
+	std::unique_ptr<pvlib::Pvlib> pvlib;
 
 	int readTimeout();
 	void initDatabase(const std::string& configFile);

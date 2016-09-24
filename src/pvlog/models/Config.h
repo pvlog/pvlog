@@ -18,6 +18,8 @@ struct Config {
 	Config(std::string key, std::string value) : key(std::move(key)), value(std::move(value)) {
 		//nothing to do
 	}
+
+	Config() {}
 };
 
 } //namespace model {

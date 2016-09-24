@@ -5,7 +5,6 @@
 #include <odb/sqlite/database.hxx>
 #include <odb/schema-catalog.hxx>
 
-#include "Database.h"
 #include "PvlogException.h"
 #include "Log.h"
 #include "ConfigReader.h"
@@ -15,6 +14,7 @@
 #include "Inverter_odb.h"
 #include "models/Config.h"
 #include "Config_odb.h"
+#include "Pvlib.h"
 
 
 using model::Plant;
@@ -24,6 +24,8 @@ using std::unique_ptr;
 using odb::core::database;
 using std::shared_ptr;
 using std::make_shared;
+
+using pvlib::Pvlib;
 
 
 int main(int argc, char **argv) {

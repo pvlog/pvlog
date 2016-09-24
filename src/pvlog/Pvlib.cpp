@@ -6,6 +6,8 @@
 #include "PvlogException.h"
 #include "Log.h"
 
+namespace pvlib {
+
 Pvlib::Pvlib(FILE *fd)
 {
 	pvlib_init(fd);
@@ -117,7 +119,9 @@ void Pvlib::connect(const std::string& plantName,
         PVLOG_EXCEPT("Error retrieving inverters!");
     }
 
-    connectedPlants.emplace(plantIt->second, inverters);
+    std::unordered_set<int64_t> inverterSet(inverters.begin(), inverters.end());
+
+    connectedPlants.emplace(plantIt->second, inverterSet);
 }
 
 void Pvlib::disconnect()
@@ -136,7 +140,7 @@ std::vector<std::string> Pvlib::openPlants()
 	        util::const_key_iterator<PlantMap> (end));
 }
 
-const Pvlib::Inverters& Pvlib::inverters(const std::string& plantName) const
+const Pvlib::Inverters& Pvlib::getInverters(const std::string& plantName) const
 {
 	PlantMap::const_iterator it = plants.find(plantName);
 	if (it == plants.end()) {
@@ -249,4 +253,6 @@ void Pvlib::getStatus(Status* status, const Pvlib::const_iterator& iterator)
     status->number = pvlib_status.number;
     status->message = std::string(pvlib_status.message);
 }
+
+} //namespace pvlib {
 

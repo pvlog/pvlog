@@ -20,7 +20,7 @@ struct Inverter {
 	int64_t id;
 
 	#pragma db not_null
-	std::shared_ptr<Plant> plant;
+	std::weak_ptr<Plant> plant;
 
 	std::string name;
 	int32_t wattpeak;

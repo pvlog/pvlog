@@ -29,7 +29,7 @@ struct Plant {
 	std::string password;
 
 	#pragma db value_not_null inverse(plant)
-	std::vector<std::weak_ptr<Inverter>> inverters;
+	std::vector<std::shared_ptr<Inverter>> inverters;
 
 	Plant(std::string name,
 	      std::string connection,
