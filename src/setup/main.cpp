@@ -51,8 +51,6 @@ int main(int argc, char **argv) {
 	std::string password = configReader.getValue("password");
 	LOG(Info) << "Successfully parsed database configuration file.";
 
-	std::string databaseName = "test.db";
-
 	unique_ptr<database> db (new odb::sqlite::database (databaseName, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
 
 	{
