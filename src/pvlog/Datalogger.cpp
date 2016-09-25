@@ -108,7 +108,6 @@ void DataLogger::openPlants() {
 
 	odb::transaction t (db->begin ());
 	odb::result<Plant> r  = db->query<Plant>();
-	t.commit();
 
 	for (odb::result<Plant>::iterator it(r.begin()); it != r.end (); ++it) {
 		const Plant& plant = *it;
@@ -138,6 +137,7 @@ void DataLogger::openPlants() {
 			}
 		}
 	}
+	t.commit();
 
 	//TODO: Error handling check if all inverters are open
 	//What to do if not all inverters are available?
