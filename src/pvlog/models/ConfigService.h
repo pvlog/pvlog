@@ -11,7 +11,9 @@
 
 
 inline std::string readConfig(odb::core::database* db,  const std::string& key) {
+	odb::transaction t (db->begin ());
 	std::shared_ptr<model::Config> config = db->load<model::Config>(key);
+	t.commit();
 	return config->value;
 }
 
