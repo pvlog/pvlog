@@ -5,6 +5,7 @@
 #include "Utility.h"
 #include "Log.h"
 #include "models/Config.h"
+#include "models/ConfigService.h"
 #include "models/Plant.h"
 #include "models/SpotData.h"
 #include "Config_odb.h"
