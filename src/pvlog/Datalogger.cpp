@@ -91,11 +91,8 @@ DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout)
 		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	}
 
-	shared_ptr<Config> longitudeConf(db->load<Config>("longitude"));
-	shared_ptr<Config> latitudeConf(db->load<Config>("latitude"));
-
-	float longitude = std::stof(longitudeConf->value);
-	float latitude = std::stof(latitudeConf->value);
+	float longitude = std::stof(readConfig(db, "longitude"));
+	float latitude = std::stof(readConfig(db, "latitude"));
 
 	sunriseSunset = std::unique_ptr<SunriseSunset>(
 			new SunriseSunset(longitude, latitude));
