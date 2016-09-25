@@ -106,8 +106,10 @@ void DataLogger::openPlants() {
 	std::unordered_set<std::string> connections = pvlib->supportedConnections();
 	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
 
-
+	odb::transaction t (db->begin ());
 	odb::result<Plant> r  = db->query<Plant>();
+	t.commit();
+
 	for (odb::result<Plant>::iterator it(r.begin()); it != r.end (); ++it) {
 		const Plant& plant = *it;
 
