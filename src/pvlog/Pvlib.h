@@ -368,7 +368,7 @@ public:
 	void getStats(Stats* stats, const Pvlib::const_iterator& iterator);
 
 
-    void getStatus(Status* status, const std::string& plant, uint32_t inverterId);
+	void getStatus(Status* status, const std::string& plant, uint32_t inverterId);
 
 	void getStatus(Status* status, const Pvlib::const_iterator& iterator);
 
