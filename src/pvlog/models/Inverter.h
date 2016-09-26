@@ -36,7 +36,7 @@ struct Inverter {
 		//nothing to do
 	}
 
-	Inverter() {}
+	Inverter() : id(0), wattpeak(0), phaseCount(0), trackerCount(0) {}
 
 };
 

@@ -7,10 +7,10 @@
 #include <cstring>
 
 enum Level {
-	Error = 0, Info, Warning, Debug
+	Error = 0, Info, Warning, Debug, Trace
 };
 
-const static char *levelName[4] = { "ERROR", "INFO", "WARNING", "DEBUG" };
+const static char *levelName[] = { "ERROR", "INFO", "WARNING", "DEBUG", "TRACE" };
 
 class Log {
 public:

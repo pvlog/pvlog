@@ -201,6 +201,8 @@ void DataLogger::logData()
 
 		SpotData spotData = fillSpotData(ac, dc);
 		spotData.time = (std::time(nullptr) / timeout) * timeout;
+
+		LOG(Trace) << spotData;
 		{
 			odb::transaction t (db->begin ());
 			db->persist(spotData);

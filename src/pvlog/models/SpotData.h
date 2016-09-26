@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <ostream>
 
 #include <odb/core.hxx>
 #include <odb/nullable.hxx>
@@ -34,6 +35,24 @@ struct SpotData {
 	        key_column("input") \
 	        value_column("")
 	std::unordered_map<int, DcInput> dcInput;
+
+	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
+		o << "time: " << sd.time << " power: " << sd.power << " frequency: "
+		  << sd.frequency << "\n" << "ac Phases: \n";
+
+		for (const auto& ent : sd.phases) {
+			o << ent.first << "(power: " << ent.second.power << "voltage: "
+			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+		}
+
+		o << "dc Inputs:\n";
+		for (const auto& ent : sd.dcInput) {
+			o << ent.first << "(power: " << ent.second.power << "voltage: "
+			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+		}
+
+		return o;
+	}
 };
 
 } //namespace model {
