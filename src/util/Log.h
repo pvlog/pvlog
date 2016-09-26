@@ -62,7 +62,7 @@ private:
 };
 
 #define LOG(LEVEL) \
-if (LEVEL > Log::ReportingLevel()) \
+if (LEVEL >= Log::ReportingLevel()) \
 ; \
 else \
 Log().Get(LEVEL, __FILE__, __LINE__)
