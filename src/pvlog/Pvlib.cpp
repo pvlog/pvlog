@@ -236,7 +236,7 @@ void Pvlib::getStatus(Status* status, const std::string& plantName, uint32_t inv
 		PVLOG_EXCEPT("Error reading status of inverter");
 
 	status->number = pvlib_status.number;
-	status->message = std::string(pvlib_status.message);
+	status->status = pvlib_status.status;
 }
 
 void Pvlib::getStatus(Status* status, const Pvlib::const_iterator& iterator) {
@@ -248,7 +248,7 @@ void Pvlib::getStatus(Status* status, const Pvlib::const_iterator& iterator) {
 		PVLOG_EXCEPT("Error reading statistics of inverter");
 
 	status->number = pvlib_status.number;
-	status->message = std::string(pvlib_status.message);
+	status->status = pvlib_status.status;
 }
 
 } //namespace pvlib {

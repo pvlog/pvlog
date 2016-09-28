@@ -127,8 +127,8 @@ struct Stats {
 };
 
 struct Status {
+	int status;
 	uint32_t number;
-	std::string message;
 
 	Status() {
 		number = -1;
@@ -136,7 +136,7 @@ struct Status {
 
 	friend std::ostream& operator <<(std::ostream& o, const Status& status)
 	{
-		o << "number: " << status.number << " message: " << status.message;
+		o << "number: " << status.number << " status: " << status.status;
 		return o;
 	}
 };
