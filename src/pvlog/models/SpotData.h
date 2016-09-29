@@ -8,6 +8,7 @@
 #include <odb/core.hxx>
 #include <odb/nullable.hxx>
 
+#include "odbHelper.h"
 #include "Phase.h"
 #include "DcInput.h"
 
