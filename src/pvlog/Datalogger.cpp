@@ -57,12 +57,14 @@ static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
 	setIfValid(spotData.power, ac.totalPower);
 	setIfValid(spotData.frequency, ac.frequency);
 	for (int i = 0; i < ac.lineNum; ++i) {
-		Phase phase;
-		setIfValid(phase.power, ac.power[i]);
-		setIfValid(phase.voltage, ac.voltage[i]);
-		setIfValid(phase.current, ac.current[i]);
+		if (isValid(ac.power[i])) {
+			Phase phase;
+			setIfValid(phase.power, ac.power[i]);
+			setIfValid(phase.voltage, ac.voltage[i]);
+			setIfValid(phase.current, ac.current[i]);
 
-		spotData.phases.emplace(i + 1, phase);
+			spotData.phases.emplace(i + 1, phase);
+		}
 	}
 
 	for (int i = 0; i < dc.trackerNum; ++i) {
