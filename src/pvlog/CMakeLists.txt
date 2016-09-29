@@ -24,22 +24,25 @@ set(ODB_HEADER
 	models/SpotData.h
 	models/Phase.h
 	models/DcInput.h
+	models/DayData.h
 )
 
 include_directories(../pvlog/models)
 
 set(LIBS util ${ODB_LIBRARIES})
 
-
-odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA)
+odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION 
+	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
 
 
 #set(LIBS util pvlogdatabase)
+set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
 set(LIBS ${LIBS} rt) #clock_gettime
 set(LIBS ${LIBS} ${ODB_LIBRARIES})
+
 
 add_executable(pvlog ${SRC} ${HEADER})
 target_link_libraries(pvlog ${LIBS})

@@ -11,6 +11,7 @@
 #include "odbHelper.h"
 #include "Phase.h"
 #include "DcInput.h"
+#include "Inverter.h"
 
 namespace model {
 
@@ -18,6 +19,9 @@ namespace model {
 struct SpotData {
 	#pragma db id auto
 	unsigned int id;
+
+	#pragma db not_null
+	std::shared_ptr<Inverter> inverter;
 
 	#pragma db index
 	time_t time;
