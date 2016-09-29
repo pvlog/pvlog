@@ -42,13 +42,13 @@ struct SpotData {
 		  << sd.frequency << "\n" << "ac Phases: \n";
 
 		for (const auto& ent : sd.phases) {
-			o << ent.first << "(power: " << ent.second.power << "voltage: "
+			o << ent.first << ": (power: " << ent.second.power << " voltage: "
 			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
 		}
 
 		o << "dc Inputs:\n";
 		for (const auto& ent : sd.dcInput) {
-			o << ent.first << "(power: " << ent.second.power << "voltage: "
+			o << ent.first << ": (power: " << ent.second.power << " voltage: "
 			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
 		}
 
