@@ -129,11 +129,11 @@ void DataLogger::openPlants() {
 		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
 
 		LOG(Info) << "Connecting to plant " << plant.name << " ["
-				<< plant.conectionParameter << ", " << plant.password << "]";
-		pvlib->connect(plant.name, plant.conectionParameter, plant.password);
+				<< plant.connectionParam << ", " << plant.protocolParam << "]";
+		pvlib->connect(plant.name, plant.connectionParam, plant.protocolParam);
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
-				<< plant.conectionParameter << ", " << plant.password << "]";
+				<< plant.connectionParam << ", " << plant.protocolParam << "]";
 
 		std::unordered_set<int64_t> inverterIds = pvlib->getInverters(plant.name);
 

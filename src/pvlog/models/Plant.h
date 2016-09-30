@@ -23,27 +23,25 @@ struct Plant {
 
 	std::string name;
 	std::string connection;
-	std::string conectionParameter;
 	std::string protocol;
-	std::string protocolParameter;
-	std::string password;
+
+	std::string connectionParam; //for example address
+	std::string protocolParam; //for example password
 
 	#pragma db value_not_null inverse(plant)
 	std::vector<std::shared_ptr<Inverter>> inverters;
 
 	Plant(std::string name,
 	      std::string connection,
-	      std::string connectionParameter,
 	      std::string protocol,
-	      std::string protocolParameter,
-	      std::string password) :
+	      std::string protocolParam,
+	      std::string connectionParam) :
 			id(0),
 			name(std::move(name)),
 			connection(std::move(connection)),
-			conectionParameter(std::move(connectionParameter)),
 			protocol(std::move(protocol)),
-			protocolParameter(std::move(protocolParameter)),
-			password(std::move(password)) {
+			connectionParam(std::move(connectionParam)),
+			protocolParam(std::move(protocolParam)) {
 		//nothing to go
 	}
 

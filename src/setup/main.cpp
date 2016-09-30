@@ -31,8 +31,8 @@ using pvlib::Pvlib;
 int main(int argc, char **argv) {
 	std::string filename;
 
-	if (argc != 2) {
-		std::cerr << "Usage: setup <inverter-serial>" << std::endl;
+	if (argc != 4) {
+		std::cerr << "Usage: setup <connection_parameter> <protocol_parameter> <inverter_verial>" << std::endl;
 	}
 
 	char *home;
@@ -64,9 +64,9 @@ int main(int argc, char **argv) {
 	}
 
 	{
-		shared_ptr<Plant> plant = make_shared<Plant>("sunnyboy", "rfcomm", argv[1],
-				"smadata2plus","", "0000");
-		shared_ptr<Inverter> inverter = make_shared<Inverter>(2100106015, "sunnyboy", 5000, 1, 2);
+		shared_ptr<Plant> plant = make_shared<Plant>("sunnyboy", "rfcomm",
+				"smadata2plus",argv[1], argv[2]);
+		shared_ptr<Inverter> inverter = make_shared<Inverter>(argv[3], "sunnyboy", 5000, 1, 2);
 		plant->inverters.push_back(inverter);
 		inverter->plant = plant;
 		odb::transaction t (db->begin ());
