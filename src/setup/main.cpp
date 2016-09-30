@@ -64,9 +64,11 @@ int main(int argc, char **argv) {
 	}
 
 	{
-		Plant plant("sunnyboy", "rfcomm", argv[1], "smadata2plus","", "0000");
+		shared_ptr<Plant> plant = make_shared<Plant>("sunnyboy", "rfcomm", argv[1],
+				"smadata2plus","", "0000");
 		shared_ptr<Inverter> inverter = make_shared<Inverter>(2100106015, "sunnyboy", 5000, 1, 2);
-		plant.inverters.push_back(inverter);
+		plant->inverters.push_back(inverter);
+		inverter->plant = plant;
 		odb::transaction t (db->begin ());
 		db->persist(inverter);
 		db->persist(plant);
