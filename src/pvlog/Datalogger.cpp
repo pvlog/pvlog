@@ -127,10 +127,13 @@ void DataLogger::openPlants() {
 					<< "has unsupported protocol: " << plant.protocol;
 		}
 		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+
+		LOG(Info) << "Connecting to plant " << plant.name << " ["
+				<< plant.conectionParameter << ", " << plant.password << "]";
 		pvlib->connect(plant.name, plant.conectionParameter, plant.password);
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
-				<< plant.connection << ", " << plant.protocol << "]";
+				<< plant.conectionParameter << ", " << plant.password << "]";
 
 		std::unordered_set<int64_t> inverterIds = pvlib->getInverters(plant.name);
 
