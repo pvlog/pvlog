@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
 		shared_ptr<Inverter> inverter = make_shared<Inverter>(2100106015, "sunnyboy", 5000, 1, 2);
 		plant.inverters.push_back(inverter);
 		odb::transaction t (db->begin ());
+		db->persist(inverter);
 		db->persist(plant);
 		t.commit();
 	}
