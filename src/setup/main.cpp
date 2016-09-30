@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	{
 		shared_ptr<Plant> plant = make_shared<Plant>("sunnyboy", "rfcomm",
 				"smadata2plus",argv[1], argv[2]);
-		shared_ptr<Inverter> inverter = make_shared<Inverter>(argv[3], "sunnyboy", 5000, 1, 2);
+		shared_ptr<Inverter> inverter = make_shared<Inverter>(std::stoll(argv[3]), "sunnyboy", 5000, 1, 2);
 		plant->inverters.push_back(inverter);
 		inverter->plant = plant;
 		odb::transaction t (db->begin ());
