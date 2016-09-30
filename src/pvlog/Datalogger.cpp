@@ -141,6 +141,12 @@ void DataLogger::openPlants() {
 				openInverter.emplace(inverter->id, inverter);
 			}
 		}
+
+		for (int64_t inverterId : inverterIds) {
+			if (openInverter.count(inverterId) != 1) {
+				LOG(Warning) << "Found inverter not in database with id: "  << inverterId;
+			}
+		}
 	}
 	t.commit();
 
