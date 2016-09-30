@@ -34,8 +34,8 @@ struct Plant {
 	Plant(std::string name,
 	      std::string connection,
 	      std::string protocol,
-	      std::string protocolParam,
-	      std::string connectionParam) :
+	      std::string connectionParam,
+	      std::string protocolParam) :
 			id(0),
 			name(std::move(name)),
 			connection(std::move(connection)),
