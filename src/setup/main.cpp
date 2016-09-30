@@ -31,6 +31,10 @@ using pvlib::Pvlib;
 int main(int argc, char **argv) {
 	std::string filename;
 
+	if (argc != 2) {
+		std::cerr << "Usage: setup <inverter-serial>" << std::endl;
+	}
+
 	char *home;
 	home = getenv("HOME");
 	if (home == NULL) {
