@@ -13,6 +13,10 @@
 class SunriseSunset;
 class Database;
 
+namespace model {
+	class Inverter;
+}
+
 class DataLogger: public DaemonWork {
 public:
 	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib, int timeout);
@@ -47,6 +51,7 @@ private:
 	pvlib::Pvlib* pvlib;
 	int timeout;
 	std::unique_ptr<SunriseSunset> sunriseSunset;
+	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> openInverter;
 };
 
 #endif // #ifndef DATA_LOGGER_H

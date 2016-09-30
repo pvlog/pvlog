@@ -18,6 +18,7 @@ using model::Plant;
 using model::SpotData;
 using model::Phase;
 using model::DcInput;
+using model::Inverter;
 using std::unique_ptr;
 using std::shared_ptr;
 using pvlib::Pvlib;
@@ -136,6 +137,8 @@ void DataLogger::openPlants() {
 		for (const auto& inverter : plant.inverters) {
 			if (inverterIds.count(inverter->id) != 1) {
 				LOG(Error) << "Could not open inverter: " << inverter->name;
+			} else {
+				openInverter.emplace(inverter->id, inverter);
 			}
 		}
 	}
@@ -202,6 +205,10 @@ void DataLogger::logData()
 		}
 
 		SpotData spotData = fillSpotData(ac, dc);
+
+		std::shared_ptr<Inverter> inverter = openInverter.at(*it);
+		spotData.inverter = inverter;
+
 		spotData.time = (std::time(nullptr) / timeout) * timeout;
 
 		LOG(Trace) << "spot data: " << spotData;

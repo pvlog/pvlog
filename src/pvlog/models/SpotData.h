@@ -42,6 +42,7 @@ struct SpotData {
 	std::unordered_map<int, DcInput> dcInput;
 
 	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
+		o << "Inverter: " << sd.inverter->id << ": \n";
 		o << "time: " << sd.time << " power: " << sd.power << " frequency: "
 		  << sd.frequency << "\n" << "ac Phases: \n";
 
