@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv)
 {
-	Log::ReportingLevel() = Debug;
+	Log::ReportingLevel() = Trace;
 
 	if (argc != 2) {
 		std::cerr << "Usage %s <config_file_path>" << std::endl;
