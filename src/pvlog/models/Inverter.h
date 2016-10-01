@@ -40,6 +40,8 @@ struct Inverter {
 
 };
 
+using InverterPtr = std::shared_ptr<Inverter>;
+
 } //namespace model
 
 

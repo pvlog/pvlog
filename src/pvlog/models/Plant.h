@@ -49,6 +49,8 @@ struct Plant {
 
 };
 
+using PlantPtr = std::shared_ptr<Plant>;
+
 } //namespace model {
 
 #endif /* SRC_PVLOG_MODELS_PLANT_H_ */

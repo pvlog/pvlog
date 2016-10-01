@@ -20,6 +20,18 @@ struct DayData {
 	boost::gregorian::date date;
 
 	uint32_t dayYield;
+
+	DayData(std::shared_ptr<Inverter> inverter, boost::gregorian::date date, uint32_t dayYield) :
+			id(0),
+			inverter(inverter),
+			date(date),
+			dayYield(dayYield) {
+		//nothing to do
+	}
+
+	DayData() : id(0), dayYield(0) {
+		//hothing to do
+	}
 };
 
 } //namespace model {

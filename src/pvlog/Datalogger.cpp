@@ -1,4 +1,7 @@
 #include "Datalogger.h"
+
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
@@ -8,6 +11,8 @@
 #include "models/ConfigService.h"
 #include "models/Plant.h"
 #include "models/SpotData.h"
+#include "models/DayData.h"
+#include "DayData_odb.h"
 #include "Config_odb.h"
 #include "Plant_odb.h"
 #include "Inverter_odb.h"
@@ -19,6 +24,9 @@ using model::SpotData;
 using model::Phase;
 using model::DcInput;
 using model::Inverter;
+using model::InverterPtr;
+using model::DayData;
+
 using std::unique_ptr;
 using std::shared_ptr;
 using pvlib::Pvlib;
@@ -30,6 +38,8 @@ using pvlib::invalid;
 using pvlib::isValid;
 
 using namespace pvlib;
+
+namespace bg = boost::gregorian;
 
 namespace {
 
@@ -191,7 +201,18 @@ void DataLogger::logDayData()
 			return;
 		}
 
-		//db->storeStats(stats, *it);
+		if (isValid(stats.dayYield)) {
+			InverterPtr inverter = openInverter.at(*it);
+
+			bg::date curDate(bg::day_clock::universal_day());
+			DayData dayData(inverter, curDate, stats.dayYield);
+
+			odb::transaction t(db->begin());
+			db->persist(dayData);
+			t.commit();
+		} else {
+			//FIXME: What to do???
+		}
 	}
 	LOG(Debug) << "logged day yield";
 }
@@ -211,13 +232,26 @@ void DataLogger::logData()
 			pvlib->getStatus(&status, it);
 		} catch (const PvlogException& ex) {
 			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
+			//FIXME: What to do???
 			continue; //Ignore inverter
 		}
 
-		SpotData spotData = fillSpotData(ac, dc);
-
 		std::shared_ptr<Inverter> inverter = openInverter.at(*it);
+
+		if (!isValid(ac.totalPower)) {
+			//TODO: handle invalid power: for now just ignore it!!!
+			LOG(Error) << "Total power of " << inverter->name << " not valid"
+			continue;
+		}
+
+		if (status.status != PVLIB_STATUS_OK) {
+			//TODO: handle error: for know just ignore it!!!
+			LOG(Error) << "Status of " << inverter->name << "not OK but " << status.status;
+		}
+
+		SpotData spotData = fillSpotData(ac, dc);
 		spotData.inverter = inverter;
+
 
 		spotData.time = (std::time(nullptr) / timeout) * timeout;
 
