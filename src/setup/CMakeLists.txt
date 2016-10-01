@@ -9,6 +9,7 @@ set(HEADERS
 	../pvlog/models/SpotData.h
 	../pvlog/models/Phase.h
 	../pvlog/models/DcInput.h
+	../pvlog/models/DayData.h
 )
 
 include_directories(../pvlog)
