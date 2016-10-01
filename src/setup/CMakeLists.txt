@@ -18,7 +18,8 @@ include_directories(../pvlog/models)
 set(LIBS util ${ODB_LIBRARIES} ${Boost_LIBRARIES})
 
 
-odb_compile(SRC FILES ${HEADERS} DB sqlite GENERATE_QUERY GENERATE_SESSION STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA)
+odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION
+	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
 
 add_executable(setup ${SRC} ${HEADER})
 target_link_libraries(setup ${LIBS})
