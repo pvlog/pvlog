@@ -240,7 +240,7 @@ void DataLogger::logData()
 
 		if (!isValid(ac.totalPower)) {
 			//TODO: handle invalid power: for now just ignore it!!!
-			LOG(Error) << "Total power of " << inverter->name << " not valid"
+			LOG(Error) << "Total power of " << inverter->name << " not valid";
 			continue;
 		}
 
