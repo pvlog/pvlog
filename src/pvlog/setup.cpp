@@ -14,6 +14,10 @@
 #include "Inverter_odb.h"
 #include "models/Config.h"
 #include "Config_odb.h"
+#include "DayData_odb.h"
+#include "SpotData_odb.h"
+
+
 #include "Pvlib.h"
 
 
