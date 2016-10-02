@@ -14,7 +14,6 @@ endif (CMAKE_COMPILER_IS_GNUCC)
 find_package(Boost REQUIRED COMPONENTS date_time)
 find_package(sqlite3 REQUIRED)
 find_package(ODB REQUIRED COMPONENTS sqlite boost)
-include(${ODB_USE_FILE})
 
 ###############
 # Unit testing

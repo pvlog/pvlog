@@ -17,40 +17,40 @@ set(HEADER
 	Daemon.h
 )
 
-set(ODB_HEADER
-	models/Inverter.h
-	models/Plant.h
-	models/Config.h
-	models/SpotData.h
-	models/Phase.h
-	models/DcInput.h
-	models/DayData.h
-)
+#set(ODB_HEADER
+#	models/Inverter.h
+#	models/Plant.h
+#	models/Config.h
+#	models/SpotData.h
+#	models/Phase.h
+#	models/DcInput.h
+#	models/DayData.h
+#)
+#
+#include_directories(../pvlog/models)
+#
+#set(LIBS util ${ODB_LIBRARIES})
+#
+#odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION 
+#	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
+#
 
-include_directories(../pvlog/models)
-
-set(LIBS util ${ODB_LIBRARIES})
-
-odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION 
-	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
-
-
-#set(LIBS util pvlogdatabase)
+set(LIBS util pvlogdatabase)
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
 set(LIBS ${LIBS} rt) #clock_gettime
-set(LIBS ${LIBS} ${ODB_LIBRARIES})
+#set(LIBS ${LIBS} ${ODB_LIBRARIES})
 
 
 add_executable(pvlog ${SRC} ${HEADER})
 target_link_libraries(pvlog ${LIBS})
-target_include_directories(pvlog
-	PRIVATE
-		${ODB_INCLUDE_DIRS}
-		${ODB_COMPILE_OUTPUT_DIR})
-target_compile_definitions(pvlog
-	PRIVATE
-		DATABASE_SQLITE)
+#target_include_directories(pvlog
+#	PRIVATE
+#		${ODB_INCLUDE_DIRS}
+#		${ODB_COMPILE_OUTPUT_DIR})
+#target_compile_definitions(pvlog
+#	PRIVATE
+#		DATABASE_SQLITE)
 
