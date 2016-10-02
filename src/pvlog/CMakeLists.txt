@@ -1,5 +1,3 @@
-project(pvlog)
-
 set(SRC 
 	Datalogger.cpp
 	main.cpp
@@ -26,4 +24,5 @@ set(LIBS ${LIBS} rt) #clock_gettime
 
 add_executable(pvlog ${SRC} ${HEADER})
 target_link_libraries(pvlog ${LIBS})
+install(TARGETS pvlog DESTINATION bin)
 

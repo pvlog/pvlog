@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(PvlogProject)
+project(Pvlog)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -14,6 +14,7 @@ endif (CMAKE_COMPILER_IS_GNUCC)
 find_package(Boost REQUIRED COMPONENTS date_time)
 find_package(sqlite3 REQUIRED)
 find_package(ODB REQUIRED COMPONENTS sqlite boost)
+
 
 ###############
 # Unit testing
@@ -35,5 +36,10 @@ endmacro(add_unittest)
 
 
 add_subdirectory(src)
+
+if (UNIX)
+	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/pvlog.conf" DESTINATION /etc/pvlog/)
+	#install(DIRECTORY DESTINATION /var/lib/pvlog)
+endif (UNIX)
 
 
