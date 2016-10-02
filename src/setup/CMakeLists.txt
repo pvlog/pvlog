@@ -1,32 +1,10 @@
+project(pvlog)
+
 set(SRC 
 	main.cpp
 )
 
-#set(HEADERS
-#	../pvlog/models/Inverter.h
-#	../pvlog/models/Plant.h
-#	../pvlog/models/Config.h
-#	../pvlog/models/SpotData.h
-#	../pvlog/models/Phase.h
-#	../pvlog/models/DcInput.h
-#	../pvlog/models/DayData.h
-#)
-
-include_directories(../pvlog)
-
-#set(LIBS util {ODB_LIBRARIES} ${Boost_LIBRARIES})
 set(LIBS util pvlogdatabase ${Boost_LIBRARIES})
 
-
-#odb_compile(SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION
-#	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
-
-add_executable(setup ${SRC} ${HEADER})
+add_executable(setup ${SRC})
 target_link_libraries(setup ${LIBS})
-#target_include_directories(setup
-#	PRIVATE
-#		${ODB_INCLUDE_DIRS}
-#		${ODB_COMPILE_OUTPUT_DIR})
-#target_compile_definitions(setup
-#	PRIVATE
-#		DATABASE_SQLITE)
