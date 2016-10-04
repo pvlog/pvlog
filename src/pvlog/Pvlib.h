@@ -45,23 +45,23 @@ T isValid(T value) {
 
 
 struct Ac {
-	uint32_t totalPower;
+	int32_t totalPower;
 
-	uint32_t power[3];
-	uint32_t voltage[3];
-	uint32_t current[3];
+	int32_t power[3];
+	int32_t voltage[3];
+	int32_t current[3];
 
 	uint8_t lineNum;
-	uint32_t frequency;
+	int32_t frequency;
 	time_t time;
 
 	Ac() :
-		totalPower(invalid<uint32_t>()),
-		power{invalid<uint32_t>()},
-		voltage{invalid<uint32_t>()},
-		current{invalid<uint32_t>()},
+		totalPower(invalid<int32_t>()),
+		power{invalid<int32_t>()},
+		voltage{invalid<int32_t>()},
+		current{invalid<int32_t>()},
 		lineNum(0),
-		frequency(invalid<uint32_t>()),
+		frequency(invalid<int32_t>()),
 		time(0) {
 	}
 
@@ -79,20 +79,20 @@ struct Ac {
 };
 
 struct Dc {
-	uint32_t totalPower;
+	int32_t totalPower;
 
-	uint32_t power[3];
-	uint32_t voltage[3];
-	uint32_t current[3];
+	int32_t power[3];
+	int32_t voltage[3];
+	int32_t current[3];
 
 	uint8_t trackerNum;
 	time_t time;
 
 	Dc() :
-		totalPower(invalid<uint32_t>()),
-		power{invalid<uint32_t>()},
-		voltage{invalid<uint32_t>()},
-		current{invalid<uint32_t>()},
+		totalPower(invalid<int32_t>()),
+		power{invalid<int32_t>()},
+		voltage{invalid<int32_t>()},
+		current{invalid<int32_t>()},
 		trackerNum(0),
 		time(0) {
 	}
@@ -109,11 +109,11 @@ struct Dc {
 };
 
 struct Stats {
-	uint32_t totalYield; ///<total produced power in  watt-hours
-	uint32_t dayYield; ///<total produced power today in  watt-hours
+	int64_t totalYield; ///<total produced power in  watt-hours
+	int64_t dayYield; ///<total produced power today in  watt-hours
 
-	uint32_t operationTime; /// <operation time in seconds
-	uint32_t feedInTime; ///<feed in time in seconds
+	int64_t operationTime; /// <operation time in seconds
+	int64_t feedInTime; ///<feed in time in seconds
 
 	time_t time;
 

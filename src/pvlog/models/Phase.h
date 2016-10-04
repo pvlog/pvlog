@@ -10,9 +10,9 @@ namespace model {
 
 #pragma db value
 struct Phase {
-	uint32_t power;
-	odb::nullable<uint32_t> voltage;
-	odb::nullable<uint32_t> current;
+	int32_t power;
+	odb::nullable<int32_t> voltage;
+	odb::nullable<int32_t> current;
 };
 
 } //namespace model {

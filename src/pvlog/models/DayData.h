@@ -19,9 +19,9 @@ struct DayData {
 
 	boost::gregorian::date date;
 
-	uint32_t dayYield;
+	int64_t dayYield;
 
-	DayData(std::shared_ptr<Inverter> inverter, boost::gregorian::date date, uint32_t dayYield) :
+	DayData(std::shared_ptr<Inverter> inverter, boost::gregorian::date date, int64_t dayYield) :
 			id(0),
 			inverter(inverter),
 			date(date),
