@@ -3,12 +3,15 @@
 
 #include <ctime>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 
 #include <odb/database.hxx>
 
 #include "Daemon.h"
 #include "DateTime.h"
 #include "Pvlib.h"
+#include "models/SpotData.h"
 
 class SunriseSunset;
 class Database;
@@ -50,8 +53,10 @@ private:
 	odb::core::database* db;
 	pvlib::Pvlib* pvlib;
 	int timeout;
+	int updateInterval;
 	std::unique_ptr<SunriseSunset> sunriseSunset;
 	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> openInverter;
+	std::unordered_map<int64_t, std::vector<model::SpotData>> curSpotData;
 };
 
 #endif // #ifndef DATA_LOGGER_H

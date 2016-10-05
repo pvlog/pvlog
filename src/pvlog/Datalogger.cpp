@@ -60,6 +60,97 @@ void setIfValid(odb::nullable<T>& s, T t) {
 	}
 }
 
+template<typename T>
+void sumUp(odb::nullable<T>& sumed, const odb::nullable<T>& val) {
+	if (!sumed.null() && ! !val.null()) {
+		sumed = sumed.get() + val.get();
+
+	} else if (!sumed.null() || !val.null()) {
+		PVLOG_EXCEPT("Invalid spot data!");
+	}
+}
+
+//Average over spotData
+SpotData average(const std::vector<SpotData>& spotData) {
+	if (spotData.empty()) {
+		PVLOG_EXCEPT("Can not average spotData vector of length 0");
+	}
+
+	SpotData sum = spotData.at(0);
+
+	for (auto it = ++spotData.begin(); it != spotData.end(); ++it) {
+		if (sum.phases.size() != it->phases.size()
+				|| (sum.dcInput.size() != it->dcInput.size())) {
+			PVLOG_EXCEPT("Invalid spot data!");
+		}
+
+		sum.power += it->power;
+
+		sumUp(sum.frequency, it->frequency);
+
+		for (const auto& entry : it->dcInput) {
+			int dcLine = entry.first;
+			const DcInput& dcInput = entry.second;
+
+			auto valueIt = sum.dcInput.find(dcLine);
+			if (valueIt == sum.dcInput.end()) {
+				PVLOG_EXCEPT("Invalid data!");
+			}
+
+			sumUp(valueIt->second.power, dcInput.power);
+			sumUp(valueIt->second.voltage, dcInput.voltage);
+			sumUp(valueIt->second.current, dcInput.current);
+		}
+
+		for (const auto& entry : it->phases) {
+			int numPhase = entry.first;
+			const Phase& phase = entry.second;
+
+			auto valueIt = sum.dcInput.find(numPhase);
+			if (valueIt == sum.dcInput.end()) {
+				PVLOG_EXCEPT("Invalid data!");
+			}
+
+			valueIt->second.power = phase.power;
+			sumUp(valueIt->second.voltage, phase.voltage);
+			sumUp(valueIt->second.current, phase.current);
+		}
+	}
+
+	int num = spotData.size();
+
+	sum.power /= spotData.size();
+	if (!sum.frequency.null()) {
+		sum.frequency = sum.frequency.get() / num;
+	}
+
+	for (auto& entry : sum.phases) {
+		Phase& p = entry.second;
+		p.power = p.power / num;
+		if (!p.voltage.null()) {
+			p.voltage = p.voltage.get() / num;
+		}
+		if (!p.current.null()) {
+			p.current = p.current.get() / num;
+		}
+	}
+
+	for (auto& entry : sum.dcInput) {
+		DcInput& p = entry.second;
+		if (!p.power.null()) {
+			p.power = p.power.get() / num;
+		}
+		if (!p.voltage.null()) {
+			p.voltage = p.voltage.get() / num;
+		}
+		if (!p.current.null()) {
+			p.current =  p.current.get() / num;
+		}
+	}
+
+	return sum;
+}
+
 } //namespace {
 
 static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
@@ -113,6 +204,7 @@ DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout)
 	openPlants();
 
 	this->timeout = timeout;
+	this->updateInterval = 20;
 }
 
 void DataLogger::openPlants() {
@@ -219,7 +311,6 @@ void DataLogger::logDayData()
 
 void DataLogger::logData()
 {
-	LOG(Debug) << "logging current power, voltage, ...";
 	Pvlib::const_iterator end = pvlib->end();
 	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
 		Ac ac;
@@ -253,17 +344,29 @@ void DataLogger::logData()
 		spotData.inverter = inverter;
 
 
-		spotData.time = (std::time(nullptr) / timeout) * timeout;
+		spotData.time = (std::time(nullptr) / updateInterval) * updateInterval;
 
-		LOG(Trace) << "spot data: " << spotData;
-		{
-			odb::transaction t (db->begin ());
-			db->persist(spotData);
-			t.commit();
+		if (spotData.time % timeout == 0) {
+			LOG(Debug) << "logging current power, voltage, ...";
+			for (const auto& entry : curSpotData) {
+				try {
+					SpotData averagedSpotData = average(entry.second);
+					averagedSpotData.time = (std::time(nullptr) / timeout) * timeout;
+
+					LOG(Trace) << "Persisting spot data: " << averagedSpotData;
+					odb::transaction t (db->begin ());
+					db->persist(averagedSpotData);
+					t.commit();
+				} catch (const PvlogException& e) {
+					LOG(Error) << "Error averaging spot data.";
+				}
+			}
+			curSpotData.clear();
+		} else {
+			curSpotData[inverter->id].push_back(spotData);
 		}
 
 	}
-	LOG(Debug) << "logged current power, voltage, ...";
 }
 
 void DataLogger::work()
@@ -292,7 +395,9 @@ void DataLogger::work()
 
 			if (quit) return;
 
-			time = ((DateTime::currentUnixTime() + timeout) / timeout) * timeout;
+
+			//TODO extra loop
+			time = ((DateTime::currentUnixTime() + updateInterval) / updateInterval) * updateInterval;
 			while (waitForLogTime(DateTime(time)) == false) {
 				if (quit) return;
 			}
