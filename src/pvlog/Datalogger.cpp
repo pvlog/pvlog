@@ -62,7 +62,7 @@ void setIfValid(odb::nullable<T>& s, T t) {
 
 template<typename T>
 void sumUp(odb::nullable<T>& sumed, const odb::nullable<T>& val) {
-	if (!sumed.null() && ! !val.null()) {
+	if (!sumed.null() && !val.null()) {
 		sumed = sumed.get() + val.get();
 
 	} else if (!sumed.null() || !val.null()) {
@@ -342,9 +342,9 @@ void DataLogger::logData()
 
 		SpotData spotData = fillSpotData(ac, dc);
 		spotData.inverter = inverter;
-
-
 		spotData.time = (std::time(nullptr) / updateInterval) * updateInterval;
+
+		curSpotData[inverter->id].push_back(spotData);
 
 		if (spotData.time % timeout == 0) {
 			LOG(Debug) << "logging current power, voltage, ...";
@@ -358,14 +358,11 @@ void DataLogger::logData()
 					db->persist(averagedSpotData);
 					t.commit();
 				} catch (const PvlogException& e) {
-					LOG(Error) << "Error averaging spot data.";
+					LOG(Error) << "Error averaging spot data: " << e.what() ;
 				}
 			}
 			curSpotData.clear();
-		} else {
-			curSpotData[inverter->id].push_back(spotData);
 		}
-
 	}
 }
 
