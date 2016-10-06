@@ -5,7 +5,7 @@
  * it creates an object of type Serializer and calls it appropriately.
  */
 
-#include "../jsonserializer/Serialize.h"
+#include "../ThorSerialize/Serialize.h"
 
 namespace ThorsAnvil
 {

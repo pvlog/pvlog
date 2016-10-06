@@ -1,13 +1,13 @@
-#include "../jsonserializer/Serialize.h"
+#include "../ThorSerialize/Serialize.h"
 
 #ifdef COVERAGE_TEST
 /*
  * This code is only compiled into the unit tests for code coverage purposes
  * It is not part of the live code.
  */
-#include "../jsonserializer/Serialize.tpp"
-#include "../jsonserializer/SerUtil.h"
-#include "../jsonserializer/JsonThor.h"
+#include "../ThorSerialize/Serialize.tpp"
+#include "../ThorSerialize/SerUtil.h"
+#include "../ThorSerialize/JsonThor.h"
 #include "test/SerializeTest.h"
 #include "test/BinaryParserTest.h"
 

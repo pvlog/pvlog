@@ -33,7 +33,8 @@
 
 #include <iostream>
 #include <utility>
-#include "../jsonserializer/Traits.h"
+
+#include "../ThorSerialize/Traits.h"
 
 namespace ThorsAnvil
 {
@@ -291,7 +292,7 @@ inline Serializer::~Serializer()
 }
 
 #ifndef COVERAGE_TEST
-#include "../jsonserializer/Serialize.tpp"
+#include "../ThorSerialize/Serialize.tpp"
 #endif
 
 #endif

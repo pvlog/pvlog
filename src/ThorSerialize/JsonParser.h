@@ -20,8 +20,9 @@
 #include <istream>
 #include <string>
 #include <vector>
-#include "../jsonserializer/JsonLexer.h"
-#include "../jsonserializer/Serialize.h"
+
+#include "../ThorSerialize/JsonLexer.h"
+#include "../ThorSerialize/Serialize.h"
 
 namespace ThorsAnvil
 {

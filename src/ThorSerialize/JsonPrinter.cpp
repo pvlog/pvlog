@@ -1,4 +1,4 @@
-#include "../jsonserializer/JsonPrinter.h"
+#include "../ThorSerialize/JsonPrinter.h"
 
 using namespace ThorsAnvil::Serialize;
 

@@ -6,7 +6,8 @@
  */
 
 #include <vector>
-#include "../jsonserializer/Serialize.h"
+
+#include "../ThorSerialize/Serialize.h"
 
 namespace ThorsAnvil
 {

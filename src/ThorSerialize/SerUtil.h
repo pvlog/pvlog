@@ -14,8 +14,8 @@
 #include <array>
 #include <tuple>
 #include <initializer_list>
-#include "../jsonserializer/Serialize.h"
 #include "../jsonserializer/Traits.h"
+#include "../ThorSerialize/Serialize.h"
 
 /*
  * GetValueType

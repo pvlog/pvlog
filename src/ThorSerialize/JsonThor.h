@@ -11,10 +11,10 @@
  *      std::cin  >> jsonImport(object); // converts Json to a C++ object from an input stream
  */
 
-#include "../jsonserializer/Exporter.h"
-#include "../jsonserializer/Importer.h"
-#include "../jsonserializer/JsonParser.h"
-#include "../jsonserializer/JsonPrinter.h"
+#include "../ThorSerialize/Exporter.h"
+#include "../ThorSerialize/Importer.h"
+#include "../ThorSerialize/JsonParser.h"
+#include "../ThorSerialize/JsonPrinter.h"
 
 namespace ThorsAnvil
 {

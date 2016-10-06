@@ -2,7 +2,7 @@
 #define THORS_ANVIL_SERIALIZE_JSON_LEXEMES_H
 
 #include <string>
-#include "../jsonserializer/Serialize.h"
+#include "Serialize.h"
 
 namespace ThorsAnvil
 {
