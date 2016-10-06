@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(PVLOG_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 
 if (CMAKE_COMPILER_IS_GNUCC)
-	set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic -Wno-unknown-pragmas")
+	set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -pedantic -Wno-unknown-pragmas")
 	#odb is compiled with gcc 4.9 on ubuntu 16.04 so we need to use old api
 	add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 endif (CMAKE_COMPILER_IS_GNUCC)
