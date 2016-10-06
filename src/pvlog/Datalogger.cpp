@@ -1,11 +1,17 @@
 #include "Datalogger.h"
 
+#include <thread>
+#include <chrono>
+
 #include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/conversion.hpp>
 
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
 #include "Utility.h"
+#include "TimeUtil.h"
 #include "Log.h"
 #include "models/Config.h"
 #include "models/ConfigService.h"
@@ -40,6 +46,7 @@ using pvlib::isValid;
 using namespace pvlib;
 
 namespace bg = boost::gregorian;
+namespace pt = boost::posix_time;
 
 namespace {
 
@@ -203,8 +210,8 @@ DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout)
 
 	openPlants();
 
-	this->timeout = timeout;
-	this->updateInterval = 20;
+	this->timeout        = pt::seconds(timeout);
+	this->updateInterval = pt::seconds(20);
 }
 
 void DataLogger::openPlants() {
@@ -264,20 +271,29 @@ void DataLogger::closePlants() {
 	pvlib->close();
 }
 
-bool DataLogger::waitForDay()
-{
-	/*	if (sunriseSunset->isDay(DateTime().julianDay())) {
-	 return true;
-	 }
-	 */
-	LOG(Debug) << "Waiting for day begin...";
-	DateTime time = sunriseSunset->sunrise(DateTime().julianDay() + 1);
-	return DateTime::sleepUntil(time);
-}
+//bool DataLogger::waitForDay()
+//{
+//	/*	if (sunriseSunset->isDay(DateTime().julianDay())) {
+//	 return true;
+//	 }
+//	 */
+//	LOG(Debug) << "Waiting for day begin...";
+//	DateTime time = sunriseSunset->sunrise(DateTime().julianDay() + 1);
+//	return DateTime::sleepUntil(time);
+//}
+//
+//bool DataLogger::waitForLogTime(DateTime timeToWait)
+//{
+//	return DateTime::sleepUntil(timeToWait);
+//}
 
-bool DataLogger::waitForLogTime(DateTime timeToWait)
-{
-	return DateTime::sleepUntil(timeToWait);
+void DataLogger::sleepUntill(pt::ptime time) {
+	using system_clock = std::chrono::system_clock;
+
+	time_t unixTime = pt::to_time_t(time);
+	system_clock::time_point sleep = system_clock::from_time_t(unixTime);
+
+	std::this_thread::sleep_until(sleep);
 }
 
 void DataLogger::logDayData()
@@ -342,16 +358,16 @@ void DataLogger::logData()
 
 		SpotData spotData = fillSpotData(ac, dc);
 		spotData.inverter = inverter;
-		spotData.time = (std::time(nullptr) / updateInterval) * updateInterval;
+		spotData.time = pt::to_time_t(util::roundUp(pt::second_clock::universal_time(), updateInterval));
 
 		curSpotData[inverter->id].push_back(spotData);
 
-		if (spotData.time % timeout == 0) {
+		if (spotData.time % timeout.total_seconds() == 0) {
 			LOG(Debug) << "logging current power, voltage, ...";
 			for (const auto& entry : curSpotData) {
 				try {
 					SpotData averagedSpotData = average(entry.second);
-					averagedSpotData.time = (std::time(nullptr) / timeout) * timeout;
+					averagedSpotData.time = pt::to_time_t(util::roundUp(pt::second_clock::universal_time(), timeout));
 
 					LOG(Trace) << "Persisting spot data: " << averagedSpotData;
 					odb::transaction t (db->begin ());
@@ -369,35 +385,34 @@ void DataLogger::logData()
 void DataLogger::work()
 {
 	try {
+
+		int julianDay = bg::day_clock::universal_day().julian_day();
+		pt::ptime sunset  = sunriseSunset->sunset(julianDay);
+
 		while (!quit) {
-			DateTime curTime;
-			time_t time = ((curTime.unixTime() + timeout) / timeout) * timeout;
+			pt::ptime curTime = pt::second_clock::universal_time();
+			pt::ptime nextUpdate = util::roundUp(curTime, timeout);
 
-			DateTime sunset = sunriseSunset->sunset(curTime.julianDay());
-			LOG(Debug) << "Sunset: " << sunset.timeString();
-			LOG(Debug) << "current time: " << curTime.timeString();
-			LOG(Debug) << "time till wait: " << DateTime(time).timeString();
+			LOG(Debug) << "Sunset: " << pt::to_simple_string(sunset);
+			LOG(Debug) << "current time: " << pt::to_simple_string(curTime);
+			LOG(Debug) << "time till wait: " << pt::to_simple_string(nextUpdate);
 
-			if (time >= sunset.unixTime()) {
+			if (nextUpdate >= sunset) {
 				logDayData();
 
 				closePlants();
 
-				while (waitForDay() == false) {
-					if (quit) return;
-				}
+				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
+				pt::ptime nextSunrise = sunriseSunset->sunset(nextJulianDay);
+				sleepUntill(nextSunrise);
+
+				if (quit) return;
 
 				openPlants();
 			}
 
-			if (quit) return;
-
-
-			//TODO extra loop
-			time = ((DateTime::currentUnixTime() + updateInterval) / updateInterval) * updateInterval;
-			while (waitForLogTime(DateTime(time)) == false) {
-				if (quit) return;
-			}
+			nextUpdate = util::roundUp(curTime, updateInterval);
+			sleepUntill(nextUpdate);
 			if (quit) return;
 
 			logData();

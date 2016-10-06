@@ -6,6 +6,11 @@
 #include <iostream>
 #include <iomanip>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
+using boost::posix_time::ptime;
+using boost::posix_time::from_time_t;
+
 namespace {
 const double PI = 3.1415926535897932384626433832795028841968;
 //*********************************************************************/
@@ -485,14 +490,14 @@ double calcSunsetUTC(double JD, double latitude, double longitude) {
 
 } //namespace {
 
-static std::pair<double, double> calcSunriseSunset(int julianDay,
-		double longitude, double latitude) {
-	double sunrise = calcSunriseUTC(julianDay, latitude, longitude);
-	double sunset = calcSunsetUTC(julianDay, latitude, longitude);
-
-	return std::make_pair(julianDay - 0.5 + sunrise / 1440,
-			julianDay - 0.5 + sunset / 1440);
-}
+//static std::pair<double, double> calcSunriseSunset(int julianDay,
+//		double longitude, double latitude) {
+//	double sunrise = calcSunriseUTC(julianDay, latitude, longitude);
+//	double sunset = calcSunsetUTC(julianDay, latitude, longitude);
+//
+//	return std::make_pair(julianDay - 0.5 + sunrise / 1440,
+//			julianDay - 0.5 + sunset / 1440);
+//}
 
 SunriseSunset::SunriseSunset(float longitude, float latitude) :
 		longitude(longitude), latitude(latitude), lastJulianDay(-1)
@@ -500,29 +505,25 @@ SunriseSunset::SunriseSunset(float longitude, float latitude) :
 	//nothing to do
 }
 
-void SunriseSunset::calculate(int julianDay) {
-	std::pair<double, double> sun = calcSunriseSunset(julianDay, longitude,
-			latitude);
-	curSunrise = DateTime(sun.first);
-	curSunset = DateTime(sun.second);
+//void SunriseSunset::calculate(int julianDay) {
+//	std::pair<double, double> sun = calcSunriseSunset(julianDay, longitude,
+//			latitude);
+//	curSunrise = from_time_t((sun.first - 2440587.5) * 86400.0);
+//	curSunset = from_time_t((sun.second - 2440587.5) * 86400.0);;
+//}
+
+ptime SunriseSunset::sunrise(int julianDay) {
+	double sunrise = julianDay - 0.5 + calcSunriseUTC(julianDay, latitude, longitude) / 1440;
+
+	//convert to time_t
+	time_t sunriseUnix = (sunrise - 2440587.5) * 86400.0;
+	return from_time_t(sunriseUnix);
 }
 
-DateTime SunriseSunset::sunrise(int julianDay) {
-	if ((lastJulianDay == -1) || lastJulianDay != julianDay) {
-		calculate(julianDay);
-		lastJulianDay = julianDay;
-		return curSunrise;
-	} else {
-		return curSunrise;
-	}
-}
+ptime SunriseSunset::sunset(int julianDay) {
+	double sunset = julianDay - 0.5 + calcSunsetUTC(julianDay, latitude, longitude) / 1440;
 
-DateTime SunriseSunset::sunset(int julianDay) {
-	if ((lastJulianDay == -1) || lastJulianDay != julianDay) {
-		calculate(julianDay);
-		lastJulianDay = julianDay;
-		return curSunset;
-	} else {
-		return curSunset;
-	}
+	//convert to time_t
+	time_t sunsetUnix = (sunset - 2440587.5) * 86400.0;
+	return from_time_t(sunsetUnix);
 }
