@@ -22,4 +22,5 @@ find_package(FLEX REQUIRED)
 FLEX_TARGET(MyScanner JsonLexer.l  ${CMAKE_CURRENT_BINARY_DIR}/JsonLexer.lex.cpp
 	COMPILE_FLAGS "--header-file=${CMAKE_CURRENT_BINARY_DIR}/JsonLexer.lex.h")
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_library(thorsserializer ${SRC} ${HEADERS} ${FLEX_MyScanner_OUTPUTS})
