@@ -137,7 +137,7 @@ function(odb_compile outvar)
 	foreach(dir ${PARAM_INCLUDE} ${ODB_INCLUDE_DIRS})
 		list(APPEND ODB_ARGS "-I${dir}")
 	endforeach()
-	
+
 	foreach(profile ${PARAM_PROFILE})
 		list(APPEND ODB_ARGS --profile "${profile}")
 	endforeach()

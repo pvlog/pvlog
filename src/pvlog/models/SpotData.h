@@ -64,7 +64,7 @@ struct SpotData {
 	}
 };
 
-Json::Value toJson(const SpotData& spotData) {
+inline Json::Value toJson(const SpotData& spotData) {
 	using util::toJson;
 	Json::Value json;
 

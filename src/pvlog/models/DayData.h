@@ -35,7 +35,7 @@ struct DayData {
 	}
 };
 
-Json::Value toJson(const DayData& dayData) {
+inline Json::Value toJson(const DayData& dayData) {
 	Json::Value json;
 
 	json["inverter"] =  static_cast<Json::Int64>(dayData.inverter->id);

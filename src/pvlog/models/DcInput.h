@@ -18,7 +18,7 @@ struct DcInput {
 	boost::optional<int32_t> current;
 };
 
-Json::Value toJson(const DcInput& dcInput) {
+inline Json::Value toJson(const DcInput& dcInput) {
 	using util::toJson;
 	Json::Value json;
 

@@ -18,7 +18,7 @@ struct Phase {
 	boost::optional<int32_t> current;
 };
 
-Json::Value toJson(const Phase& phase) {
+inline Json::Value toJson(const Phase& phase) {
 	using util::toJson;
 	Json::Value json;
 
