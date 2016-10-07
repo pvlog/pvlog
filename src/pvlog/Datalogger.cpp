@@ -399,7 +399,8 @@ void DataLogger::work()
 				closePlants();
 
 				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
-				pt::ptime nextSunrise = sunriseSunset->sunset(nextJulianDay);
+				pt::ptime nextSunrise = sunriseSunset->sunrise(nextJulianDay);
+				sunset = sunriseSunset->sunset(nextJulianDay);
 				sleepUntill(nextSunrise);
 
 				if (quit) return;
