@@ -19,9 +19,8 @@ function(odb_compile outvar)
 		DEFAULT_PTR
 		HEADER_PROLOGUE INLINE_PROLOGUE SOURCE_PROLOGUE
 		HEADER_EPILOGUE INLINE_EPILOGUE SOURCE_EPILOGUE
-		MULTI_DATABASE
-		PROFILE)
-	set(multiValueParams FILES INCLUDE DB)
+		MULTI_DATABASE)
+	set(multiValueParams FILES INCLUDE DB PROFILE)
 
 	cmake_parse_arguments(PARAM "${options}" "${oneValueParams}" "${multiValueParams}" ${ARGN})
 
@@ -106,10 +105,6 @@ function(odb_compile outvar)
 		list(APPEND ODB_ARGS --cxx-epilogue-file "${PARAM_SOURCE_EPILOGUE}")
 	endif()
 
-	if(PARAM_PROFILE)
-		list(APPEND ODB_ARGS --profile "${PARAM_PROFILE}")
-	endif()
-
 	if(PARAM_DEFAULT_PTR)
 		list(APPEND ODB_ARGS --default-pointer "${PARAM_DEFAULT_PTR}")
 	endif()
@@ -141,6 +136,10 @@ function(odb_compile outvar)
 
 	foreach(dir ${PARAM_INCLUDE} ${ODB_INCLUDE_DIRS})
 		list(APPEND ODB_ARGS "-I${dir}")
+	endforeach()
+	
+	foreach(profile ${PARAM_PROFILE})
+		list(APPEND ODB_ARGS --profile "${profile}")
 	endforeach()
 
 	file(REMOVE_RECURSE "${ODB_COMPILE_OUTPUT_DIR}")

@@ -6,6 +6,7 @@
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
+#include <boost/optional.hpp>
 
 #include "Log.h"
 #include "SunriseSunset.h"
@@ -61,19 +62,26 @@ void setIfValid(T& s, T t) {
 }
 
 template<typename T>
-void setIfValid(odb::nullable<T>& s, T t) {
+void setIfValid(boost::optional<T>& s, T t) {
 	if (isValid(t)) {
 		s = t;
 	}
 }
 
 template<typename T>
-void sumUp(odb::nullable<T>& sumed, const odb::nullable<T>& val) {
-	if (!sumed.null() && !val.null()) {
+void sumUp(boost::optional<T>& sumed, const boost::optional<T>& val) {
+	if (!sumed && !val) {
 		sumed = sumed.get() + val.get();
 
-	} else if (!sumed.null() || !val.null()) {
+	} else if (!sumed || !val) {
 		PVLOG_EXCEPT("Invalid spot data!");
+	}
+}
+
+template<typename T>
+void divideIfValid(boost::optional<T>& val, int divider) {
+	if (val) {
+		val = val.get() / divider;
 	}
 }
 
@@ -87,7 +95,7 @@ SpotData average(const std::vector<SpotData>& spotData) {
 
 	for (auto it = ++spotData.begin(); it != spotData.end(); ++it) {
 		if (sum.phases.size() != it->phases.size()
-				|| (sum.dcInput.size() != it->dcInput.size())) {
+				|| (sum.dcInputs.size() != it->dcInputs.size())) {
 			PVLOG_EXCEPT("Invalid spot data!");
 		}
 
@@ -95,12 +103,12 @@ SpotData average(const std::vector<SpotData>& spotData) {
 
 		sumUp(sum.frequency, it->frequency);
 
-		for (const auto& entry : it->dcInput) {
+		for (const auto& entry : it->dcInputs) {
 			int dcLine = entry.first;
 			const DcInput& dcInput = entry.second;
 
-			auto valueIt = sum.dcInput.find(dcLine);
-			if (valueIt == sum.dcInput.end()) {
+			auto valueIt = sum.dcInputs.find(dcLine);
+			if (valueIt == sum.dcInputs.end()) {
 				PVLOG_EXCEPT("Invalid data!");
 			}
 
@@ -113,8 +121,8 @@ SpotData average(const std::vector<SpotData>& spotData) {
 			int numPhase = entry.first;
 			const Phase& phase = entry.second;
 
-			auto valueIt = sum.dcInput.find(numPhase);
-			if (valueIt == sum.dcInput.end()) {
+			auto valueIt = sum.dcInputs.find(numPhase);
+			if (valueIt == sum.dcInputs.end()) {
 				PVLOG_EXCEPT("Invalid data!");
 			}
 
@@ -127,32 +135,20 @@ SpotData average(const std::vector<SpotData>& spotData) {
 	int num = spotData.size();
 
 	sum.power /= spotData.size();
-	if (!sum.frequency.null()) {
-		sum.frequency = sum.frequency.get() / num;
-	}
+	divideIfValid(sum.frequency, num);
 
 	for (auto& entry : sum.phases) {
 		Phase& p = entry.second;
 		p.power = p.power / num;
-		if (!p.voltage.null()) {
-			p.voltage = p.voltage.get() / num;
-		}
-		if (!p.current.null()) {
-			p.current = p.current.get() / num;
-		}
+		divideIfValid(p.voltage, num);
+		divideIfValid(p.current, num);
 	}
 
-	for (auto& entry : sum.dcInput) {
+	for (auto& entry : sum.dcInputs) {
 		DcInput& p = entry.second;
-		if (!p.power.null()) {
-			p.power = p.power.get() / num;
-		}
-		if (!p.voltage.null()) {
-			p.voltage = p.voltage.get() / num;
-		}
-		if (!p.current.null()) {
-			p.current =  p.current.get() / num;
-		}
+		divideIfValid(p.power, num);
+		divideIfValid(p.voltage, num);
+		divideIfValid(p.current, num);
 	}
 
 	return sum;
@@ -182,7 +178,7 @@ static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
 		setIfValid(dcInput.voltage, dc.voltage[i]);
 		setIfValid(dcInput.current, dc.current[i]);
 
-		spotData.dcInput.emplace(i + 1, dcInput);
+		spotData.dcInputs.emplace(i + 1, dcInput);
 	}
 
 	return spotData;

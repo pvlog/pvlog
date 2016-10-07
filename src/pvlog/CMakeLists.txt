@@ -27,14 +27,21 @@ set(ODB_HEADER
 
 set(LIBS util ${ODB_LIBRARIES})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
+set(LIBS ${LIBS} ${JSONCPP_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
 set(LIBS ${LIBS} rt) #clock_gettime
 
+include_directories("${JSONCPP_INCLUDE_DIRS}")
+
+get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+
 include(${ODB_USE_FILE})
 odb_compile(ODB_SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION
-	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr" GENERATE_SCHEMA PROFILE "boost/date-time/gregorian")
+	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr"
+	GENERATE_SCHEMA PROFILE boost/date-time boost/optional
+	INCLUDE ${DIRS})
 
 
 include_directories(models)

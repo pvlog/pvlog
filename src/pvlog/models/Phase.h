@@ -3,17 +3,31 @@
 
 #include <cstdint>
 
+#include <jsoncpp/json/value.h>
+#include <boost/optional.hpp>
 #include <odb/core.hxx>
-#include <odb/nullable.hxx>
+
+#include "Utility.h"
 
 namespace model {
 
 #pragma db value
 struct Phase {
 	int32_t power;
-	odb::nullable<int32_t> voltage;
-	odb::nullable<int32_t> current;
+	boost::optional<int32_t> voltage;
+	boost::optional<int32_t> current;
 };
+
+Json::Value toJson(const Phase& phase) {
+	using util::toJson;
+	Json::Value json;
+
+	json["power"]   = phase.power;
+	json["voltage"] = toJson(phase.voltage);
+	json["current"] = toJson(phase.current);
+
+	return json;
+}
 
 } //namespace model {
 

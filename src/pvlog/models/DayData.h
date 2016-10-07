@@ -3,7 +3,8 @@
 
 #include <memory>
 
-#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <jsoncpp/json/value.h>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "Inverter.h"
 
@@ -33,6 +34,16 @@ struct DayData {
 		//hothing to do
 	}
 };
+
+Json::Value toJson(const DayData& dayData) {
+	Json::Value json;
+
+	json["inverter"] =  static_cast<Json::Int64>(dayData.inverter->id);
+	json["date"]     = boost::gregorian::to_iso_string(dayData.date);
+	json["day_yield"] = static_cast<Json::Int64>(dayData.dayYield);
+
+	return json;
+}
 
 } //namespace model {
 

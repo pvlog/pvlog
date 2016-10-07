@@ -5,13 +5,16 @@
 #include <unordered_map>
 #include <ostream>
 
+#include <jsoncpp/json/value.h>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <odb/core.hxx>
-#include <odb/nullable.hxx>
 
 #include "odbHelper.h"
 #include "Phase.h"
 #include "DcInput.h"
 #include "Inverter.h"
+#include "Utility.h"
 
 namespace model {
 
@@ -26,7 +29,7 @@ struct SpotData {
 	#pragma db index
 	time_t time;
 	int32_t power;
-	odb::nullable<int32_t> frequency;
+	boost::optional<int32_t> frequency;
 
 	#pragma db table("phase")      \
 	           id_column("id")     \
@@ -39,7 +42,7 @@ struct SpotData {
 	        id_column("id")        \
 	        key_column("input") \
 	        value_column("")
-	std::unordered_map<int, DcInput> dcInput;
+	std::unordered_map<int, DcInput> dcInputs;
 
 	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
 		o << "Inverter: " << sd.inverter->id << ": \n";
@@ -52,7 +55,7 @@ struct SpotData {
 		}
 
 		o << "dc Inputs:\n";
-		for (const auto& ent : sd.dcInput) {
+		for (const auto& ent : sd.dcInputs) {
 			o << ent.first << ": (power: " << ent.second.power << " voltage: "
 			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
 		}
@@ -60,6 +63,37 @@ struct SpotData {
 		return o;
 	}
 };
+
+Json::Value toJson(const SpotData& spotData) {
+	using util::toJson;
+	Json::Value json;
+
+	json["inverter"]  = static_cast<Json::Int64>(spotData.inverter->id);
+	json["time"]      = static_cast<Json::Int64>(spotData.time);
+	json["power"]     = spotData.power;
+	json["frequency"] = toJson(spotData.frequency);
+
+	Json::Value phases;
+	for (const auto& phaseEntry : spotData.phases) {
+		int phaseNum       = phaseEntry.first;
+		const Phase& phase = phaseEntry.second;
+
+		phases[std::to_string(phaseNum)] = toJson(phase);
+	}
+
+	Json::Value dcInputs;
+	for (const auto& dcInputEntry : spotData.dcInputs) {
+		int input              = dcInputEntry.first;
+		const DcInput& dcInput = dcInputEntry.second;
+
+		phases[std::to_string(input)] = toJson(dcInput);
+	}
+
+	json["phases"]    = phases;
+	json["dc_inputs"] = dcInputs;
+
+	return json;
+}
 
 } //namespace model {
 

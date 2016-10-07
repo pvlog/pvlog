@@ -8,12 +8,13 @@ set(PVLOG_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 if (CMAKE_COMPILER_IS_GNUCC)
 	set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -pedantic -Wno-unknown-pragmas")
 	#odb is compiled with gcc 4.9 on ubuntu 16.04 so we need to use old api
-	add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+	#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 endif (CMAKE_COMPILER_IS_GNUCC)
 
 find_package(Boost REQUIRED COMPONENTS date_time)
 find_package(sqlite3 REQUIRED)
 find_package(ODB REQUIRED COMPONENTS sqlite boost)
+find_package(Jsoncpp REQUIRED)
 
 
 ###############

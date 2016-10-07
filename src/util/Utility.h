@@ -3,6 +3,10 @@
 
 #include <sstream>
 #include <typeinfo>
+
+#include <boost/optional.hpp>
+#include <jsoncpp/json/value.h>
+
 #include "PvlogException.h"
 
 namespace util {
@@ -66,6 +70,19 @@ static inline T convertTo(const std::string& str,
     }
 
     return ret;
+}
+
+template<typename T>
+inline Json::Value toJson(const boost::optional<T>& opt) {
+	Json::Value value;
+
+	if (opt) {
+		value = opt.get();
+	} else {
+		value = nullptr;
+	}
+
+	return value;
 }
 
 
