@@ -28,7 +28,7 @@ struct SpotData {
 	#pragma db not_null
 	std::shared_ptr<Inverter> inverter;
 
-	#pragma db index
+	#pragma db index type("INTEGER")
 	boost::posix_time::ptime time;
 
 	int32_t power;
@@ -73,7 +73,7 @@ inline Json::Value toJson(const SpotData& spotData) {
 	using util::toJson;
 	Json::Value json;
 
-	json["inverter"]  = static_cast<Json::Int64>(spotData.inverter->id);
+	//son["inverter"]  = static_cast<Json::Int64>(spotData.inverter->id);
 	//json["time"]      = static_cast<Json::Int64>(boost::posix_time::to_time_t(spotData.time));
 	json["power"]     = spotData.power;
 	json["frequency"] = toJson(spotData.frequency);

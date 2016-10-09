@@ -42,10 +42,11 @@ std::unordered_map<InverterPtr, std::vector<SpotDataPtr>> JsonRpcServer::readSpo
 	pt::ptime end(date, pt::hours(24));
 
 	Query filterData(Query::time >= Query::_ref(begin) && Query::time < Query::_ref(end));
-	Query sortResult("ORDER BY" + Query::inverter + Query::time);
+	Query sortResult("ORDER BY" + Query::inverter + "," + Query::time);
 
 	InverterSpotData resultData;
 
+	odb::session s; //Session is needed for SpotData
 	odb::transaction t(db->begin());
 	Result r(db->query<SpotData>(filterData + sortResult));
 
@@ -71,11 +72,11 @@ Json::Value JsonRpcServer::getSpotData(const std::string& dateString) {
 
 	Json::Value jsonResult;
 	for (auto const& entry : spotData) {
-		InverterPtr const& inverter = entry.first;
-		const std::vector<SpotDataPtr> inverterSpotData;
+		const InverterPtr& inverter = entry.first;
+		const std::vector<SpotDataPtr>& inverterSpotData = entry.second;
 
 		Json::Value jsonInverterSpotData;
-		for (SpotDataPtr const& spotData : inverterSpotData) {
+		for (const SpotDataPtr& spotData : inverterSpotData) {
 			jsonInverterSpotData.append(toJson(*spotData));
 		}
 
