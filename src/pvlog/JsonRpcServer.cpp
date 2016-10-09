@@ -62,7 +62,7 @@ Json::Value JsonRpcServer::getSpotData(const std::string& dateString) {
 
 	Json::Value value;
 
-	bg::date date = bg::date_from_iso_string(dateString);
+	bg::date date = bg::from_simple_string(dateString);
 	if (date.is_not_a_date()) {
 		return value;
 	}
