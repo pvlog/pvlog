@@ -26,7 +26,7 @@ class DataLogger: public DaemonWork {
 public:
 	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib, int timeout);
 
-	virtual ~DataLogger() = default;
+	virtual ~DataLogger();
 
 	virtual void work();
 

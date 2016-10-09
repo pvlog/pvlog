@@ -210,6 +210,10 @@ DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout)
 	this->updateInterval = pt::seconds(20);
 }
 
+DataLogger::~DataLogger() {
+	//nothing to do
+}
+
 void DataLogger::openPlants() {
 	std::unordered_set<std::string> connections = pvlib->supportedConnections();
 	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
@@ -354,16 +358,16 @@ void DataLogger::logData()
 
 		SpotData spotData = fillSpotData(ac, dc);
 		spotData.inverter = inverter;
-		spotData.time = pt::to_time_t(util::roundUp(pt::second_clock::universal_time(), updateInterval));
+		spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
 
 		curSpotData[inverter->id].push_back(spotData);
 
-		if (spotData.time % timeout.total_seconds() == 0) {
+		if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
 			LOG(Debug) << "logging current power, voltage, ...";
 			for (const auto& entry : curSpotData) {
 				try {
 					SpotData averagedSpotData = average(entry.second);
-					averagedSpotData.time = pt::to_time_t(util::roundUp(pt::second_clock::universal_time(), timeout));
+					averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
 
 					LOG(Trace) << "Persisting spot data: " << averagedSpotData;
 					odb::transaction t (db->begin ());

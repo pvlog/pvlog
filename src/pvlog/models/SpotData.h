@@ -3,11 +3,13 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <memory>
 #include <ostream>
 
 #include <jsoncpp/json/value.h>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
 #include <odb/core.hxx>
 
 #include "odbHelper.h"
@@ -27,7 +29,8 @@ struct SpotData {
 	std::shared_ptr<Inverter> inverter;
 
 	#pragma db index
-	time_t time;
+	boost::posix_time::ptime time;
+
 	int32_t power;
 	boost::optional<int32_t> frequency;
 
@@ -45,31 +48,33 @@ struct SpotData {
 	std::unordered_map<int, DcInput> dcInputs;
 
 	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
-		o << "Inverter: " << sd.inverter->id << ": \n";
-		o << "time: " << sd.time << " power: " << sd.power << " frequency: "
-		  << sd.frequency << "\n" << "ac Phases: \n";
-
-		for (const auto& ent : sd.phases) {
-			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
-		}
-
-		o << "dc Inputs:\n";
-		for (const auto& ent : sd.dcInputs) {
-			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
-		}
+//		o << "Inverter: " << sd.inverter->id << ": \n";
+//		o << "time: " << sd.time << " power: " << sd.power << " frequency: "
+//		  << sd.frequency << "\n" << "ac Phases: \n";
+//
+//		for (const auto& ent : sd.phases) {
+//			o << ent.first << ": (power: " << ent.second.power << " voltage: "
+//			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+//		}
+//
+//		o << "dc Inputs:\n";
+//		for (const auto& ent : sd.dcInputs) {
+//			o << ent.first << ": (power: " << ent.second.power << " voltage: "
+//			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+//		}
 
 		return o;
 	}
 };
+
+using SpotDataPtr = std::shared_ptr<SpotData>;
 
 inline Json::Value toJson(const SpotData& spotData) {
 	using util::toJson;
 	Json::Value json;
 
 	json["inverter"]  = static_cast<Json::Int64>(spotData.inverter->id);
-	json["time"]      = static_cast<Json::Int64>(spotData.time);
+	//json["time"]      = static_cast<Json::Int64>(boost::posix_time::to_time_t(spotData.time));
 	json["power"]     = spotData.power;
 	json["frequency"] = toJson(spotData.frequency);
 

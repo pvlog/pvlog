@@ -1,0 +1,42 @@
+[
+	{
+		"name": "getSpotData",
+		"params": { 
+			"date"    : "2016-10-30"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getLiveSpotData",
+		"params": { 
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getMonthData",
+		"params": { 
+			"month"   : "2016-10"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getYearData",
+		"params": { 
+			"year"   : "2016"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getInverter",
+		"params": { 
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getPlants",
+		"params": { 
+		},
+		"returns" : {"data": "data"}
+	}
+	
+]

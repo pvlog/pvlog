@@ -1,8 +1,48 @@
 #include <cstdlib>
 #include <iostream>
+#include <memory>
+#include <odb/database.hxx>
+#include <odb/sqlite/database.hxx>
+#include <jsonrpccpp/server/connectors/httpserver.h>
 
-#include "Pvlog.h"
+#include "Pvlib.h"
 #include "Log.h"
+#include "Datalogger.h"
+#include "JsonRpcServer.h"
+#include "ConfigReader.h"
+
+using pvlib::Pvlib;
+
+std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
+{
+	std::string filename;
+
+	if (configFile.empty()) {
+		char *home;
+		home = getenv("HOME");
+		if (home == NULL) {
+			PVLOG_EXCEPT("Could not get environment variable \"HOME\"!");
+		} else {
+			filename = std::string(home) + "/.pvlog/pvlog.conf";
+		}
+	} else {
+		filename = configFile;
+	}
+
+	LOG(Info) << "Reading database configuration file.";
+	ConfigReader configReader(filename);
+	configReader.parse();
+
+	std::string databaseType = configReader.getValue("database_type");
+	std::string databaseName = configReader.getValue("database_name");
+	std::string hostname = configReader.getValue("hostname");
+	std::string port = configReader.getValue("port");
+	std::string username = configReader.getValue("username");
+	std::string password = configReader.getValue("password");
+	LOG(Info) << "Successfully parsed database configuration file.";
+
+	return std::unique_ptr<odb::database>(new odb::sqlite::database(databaseName, SQLITE_OPEN_READWRITE));
+}
 
 int main(int argc, char **argv)
 {
@@ -13,18 +53,21 @@ int main(int argc, char **argv)
 		exit( EXIT_FAILURE);
 	}
 
-	Pvlog pvlog(argv[1]);
-	pvlog.start();
+	LOG(Info) << "Opening database.";
+	std::unique_ptr<odb::database> db = openDatabase(argv[1]);
+	LOG(Info) << "Successfully opened database.";
 
-	/*
-	 Database* database = new SqliteDatabase();
-	 database->open(argv[1], "", "", "", "");
-	 database->createSchema();
-	 database->addPlant("sunnyboy", "rfcomm", argv[2], "", "smabluetooth", "0000");
-	 database->addLogicalPlant("sunnyboy", Database::Location(-10.9, 49.7), 45, 170);
-	 database->addInverter(2100106015, "sunnyboy", "sunnyboy", "sunnyboy", 5000);
-	 database->close();
 
-	 delete database;
-	 */
+	std::unique_ptr<Pvlib> pvlib = std::unique_ptr<Pvlib>(new Pvlib(stderr));
+
+	DataLogger dataLogger(db.get(), pvlib.get(), 300);
+
+	//start json server
+	jsonrpc::HttpServer httpserver(8383);
+	JsonRpcServer server(httpserver, db.get());
+	server.StartListening();
+
+
+	//start datalogger work
+	dataLogger.work();
 }

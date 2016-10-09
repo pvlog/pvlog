@@ -4,6 +4,7 @@ set(SRC
 	Pvlib.cpp
 	Pvlog.cpp
 	SunriseSunset.cpp
+	JsonRpcServer.cpp
 )
 
 set(HEADER
@@ -13,6 +14,8 @@ set(HEADER
 	SunriseSunset.h
 	ForgroundDaemon.h
 	Daemon.h
+	abstractpvlogserver.h
+	JsonRpcServer.h
 )
 
 set(ODB_HEADER
