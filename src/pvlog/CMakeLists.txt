@@ -31,6 +31,7 @@ set(ODB_HEADER
 set(LIBS util ${ODB_LIBRARIES})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(LIBS ${LIBS} ${JSONCPP_LIBRARIES})
+set(LIBS ${LIBS} ${JSON_RPC_CPP_SERVER_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
