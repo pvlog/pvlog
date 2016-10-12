@@ -12,6 +12,7 @@
 #include "SpotData_odb.h"
 #include "models/Inverter.h"
 #include "Inverter_odb.h"
+#include "Log.h"
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;
@@ -61,26 +62,31 @@ std::unordered_map<InverterPtr, std::vector<SpotDataPtr>> JsonRpcServer::readSpo
 
 Json::Value JsonRpcServer::getSpotData(const std::string& dateString) {
 
-	Json::Value value;
-
-	bg::date date = bg::from_simple_string(dateString);
-	if (date.is_not_a_date()) {
-		return value;
-	}
-
-	InverterSpotData spotData = readSpotData(date);
-
 	Json::Value jsonResult;
-	for (auto const& entry : spotData) {
-		const InverterPtr& inverter = entry.first;
-		const std::vector<SpotDataPtr>& inverterSpotData = entry.second;
 
-		Json::Value jsonInverterSpotData;
-		for (const SpotDataPtr& spotData : inverterSpotData) {
-			jsonInverterSpotData.append(toJson(*spotData));
+	try {
+		bg::date date = bg::from_simple_string(dateString);
+		if (date.is_not_a_date()) {
+			return jsonResult;
 		}
 
-		jsonResult[std::to_string(inverter->id)] = jsonInverterSpotData;
+		InverterSpotData spotData = readSpotData(date);
+
+		Json::Value jsonResult;
+		for (auto const& entry : spotData) {
+			const InverterPtr& inverter = entry.first;
+			const std::vector<SpotDataPtr>& inverterSpotData = entry.second;
+
+			Json::Value jsonInverterSpotData;
+			for (const SpotDataPtr& spotData : inverterSpotData) {
+				jsonInverterSpotData.append(toJson(*spotData));
+			}
+
+			jsonResult[std::to_string(inverter->id)] = jsonInverterSpotData;
+		}
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error gettig spot data" <<  ex.what();
+		jsonResult = Json::Value();
 	}
 
 	return jsonResult;
