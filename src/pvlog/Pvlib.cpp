@@ -42,7 +42,7 @@ Pvlib::~Pvlib() {
 	pvlib_shutdown();
 }
 
-pvlib_plant_t* Pvlib::plantHandle(const std::string& plantName,
+pvlib_plant* Pvlib::plantHandle(const std::string& plantName,
 		uint32_t inverterId) const
 {
 	PlantMap::const_iterator it = plants.find(plantName);
@@ -88,7 +88,7 @@ void Pvlib::openPlant(const std::string& plantName,
 	if ((prot = protocols.find(protocol)) == protocols.end())
 		PVLOG_EXCEPT(std::string("Invalid protocol: ") + protocol);
 
-	pvlib_plant_t *plant = pvlib_open(con->second, prot->second,
+	pvlib_plant *plant = pvlib_open(con->second, prot->second,
 			connectionParam, protocolParam);
 	if (plant == NULL)
 		PVLOG_EXCEPT("Error opening plant!");
@@ -178,59 +178,59 @@ void Pvlib::close() {
 }
 
 void Pvlib::getDc(Dc* dc, const std::string& plantName, uint32_t inverterId) {
-	pvlib_plant_t* plant = plantHandle(plantName, inverterId);
+	pvlib_plant* plant = plantHandle(plantName, inverterId);
 	if (plant == NULL)
 		PVLOG_EXCEPT("Could not find plant!");
 
-	if (pvlib_get_dc_values(plant, inverterId, (pvlib_dc_t*) dc) < 0)
+	if (pvlib_get_dc_values(plant, inverterId, dc) < 0)
 		PVLOG_EXCEPT("Error reading dc parameters!");
 }
 
 void Pvlib::getDc(Dc *dc, const Pvlib::const_iterator& iterator) {
-	pvlib_plant_t* plant = iterator.plant();
+	pvlib_plant* plant = iterator.plant();
 	uint32_t inverter = iterator.inverter();
-	if (pvlib_get_dc_values(plant, inverter, (pvlib_dc_t*) dc) < 0)
+	if (pvlib_get_dc_values(plant, inverter, dc) < 0)
 		PVLOG_EXCEPT("Error reading dc parameters!");
 }
 
 void Pvlib::getAc(Ac* ac, const std::string& plantName, uint32_t inverterId) {
-	pvlib_plant_t* plant = plantHandle(plantName, inverterId);
+	pvlib_plant* plant = plantHandle(plantName, inverterId);
 	if (plant == NULL)
 		PVLOG_EXCEPT("Could not find plant!");
 
-	if (pvlib_get_ac_values(plant, inverterId, (pvlib_ac_t*) ac) < 0)
+	if (pvlib_get_ac_values(plant, inverterId, ac) < 0)
 		PVLOG_EXCEPT("Error reading ac parameters");
 }
 
 void Pvlib::getAc(Ac *ac, const Pvlib::const_iterator& iterator) {
-	pvlib_plant_t* plant = iterator.plant();
+	pvlib_plant* plant = iterator.plant();
 	uint32_t inverter = iterator.inverter();
-	if (pvlib_get_ac_values(plant, inverter, (pvlib_ac_t*) ac) < 0)
+	if (pvlib_get_ac_values(plant, inverter, ac) < 0)
 		PVLOG_EXCEPT("Error reading dc parameters!");
 }
 
 void Pvlib::getStats(Stats* stats, const std::string& plantName, uint32_t inverterId) {
-	pvlib_plant_t* plant = plantHandle(plantName, inverterId);
+	pvlib_plant* plant = plantHandle(plantName, inverterId);
 	if (plant == NULL)
 		PVLOG_EXCEPT("Could not find plant!");
 
-	if (pvlib_get_stats(plant, inverterId, (pvlib_stats_t*) stats) < 0)
+	if (pvlib_get_stats(plant, inverterId, stats) < 0)
 		PVLOG_EXCEPT("Error reading statistics of inverter");
 }
 
 void Pvlib::getStats(Stats* stats, const Pvlib::const_iterator& iterator) {
-	pvlib_plant_t* plant = iterator.plant();
+	pvlib_plant* plant = iterator.plant();
 	uint32_t inverter = iterator.inverter();
-	if (pvlib_get_stats(plant, inverter, (pvlib_stats_t*) stats) < 0)
+	if (pvlib_get_stats(plant, inverter, stats) < 0)
 		PVLOG_EXCEPT("Error reading statistics of inverter");
 }
 
 void Pvlib::getStatus(Status* status, const std::string& plantName, uint32_t inverterId) {
-	pvlib_plant_t* plant = plantHandle(plantName, inverterId);
+	pvlib_plant* plant = plantHandle(plantName, inverterId);
 	if (plant == NULL)
 		PVLOG_EXCEPT("Could not find plant!");
 
-	pvlib_status_t pvlib_status;
+	pvlib_status pvlib_status;
 
 	if (pvlib_get_status(plant, inverterId, &pvlib_status) < 0)
 		PVLOG_EXCEPT("Error reading status of inverter");
@@ -240,10 +240,10 @@ void Pvlib::getStatus(Status* status, const std::string& plantName, uint32_t inv
 }
 
 void Pvlib::getStatus(Status* status, const Pvlib::const_iterator& iterator) {
-	pvlib_plant_t* plant = iterator.plant();
+	pvlib_plant* plant = iterator.plant();
 	uint32_t inverter = iterator.inverter();
 
-	pvlib_status_t pvlib_status;
+	pvlib_status pvlib_status;
 	if (pvlib_get_status(plant, inverter, &pvlib_status) < 0)
 		PVLOG_EXCEPT("Error reading statistics of inverter");
 

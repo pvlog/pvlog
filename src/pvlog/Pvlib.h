@@ -44,31 +44,25 @@ T isValid(T value) {
 }
 
 
-struct Ac {
-	int32_t totalPower;
-
-	int32_t power[3];
-	int32_t voltage[3];
-	int32_t current[3];
-
-	uint8_t lineNum;
-	int32_t frequency;
+struct Ac : public pvlib_ac {
 	time_t time;
 
-	Ac() :
-		totalPower(invalid<int32_t>()),
-		power{invalid<int32_t>()},
-		voltage{invalid<int32_t>()},
-		current{invalid<int32_t>()},
-		lineNum(0),
-		frequency(invalid<int32_t>()),
-		time(0) {
+	Ac()  {
+		totalPower = invalid<int32_t>();
+		for (size_t i = 0; i < sizeof(power) / sizeof(power[0]); ++i) {
+			power[i]   = invalid<int32_t>();
+			voltage[i] = invalid<int32_t>();
+			current[i] = invalid<int32_t>();
+		}
+		phaseNum   = 0;
+		frequency  = invalid<int32_t>();
+		time = 0;
 	}
 
 	friend std::ostream& operator <<(std::ostream& o, const Ac& ac) {
 		o << "power: " << ac.totalPower << "W, frequency: " << ac.frequency
 				<< "mHz\n";
-		for (int i = 0; i < ac.lineNum; ++i) {
+		for (int i = 0; i < ac.phaseNum; ++i) {
 			o << i << ": power: " << ac.power[i] << "W, voltage: "
 					<< ac.voltage[i] << "mV, current: " << ac.current[i]
 					<< "mA\n";
@@ -78,23 +72,18 @@ struct Ac {
 	}
 };
 
-struct Dc {
-	int32_t totalPower;
-
-	int32_t power[3];
-	int32_t voltage[3];
-	int32_t current[3];
-
-	uint8_t trackerNum;
+struct Dc : public pvlib_dc {
 	time_t time;
 
-	Dc() :
-		totalPower(invalid<int32_t>()),
-		power{invalid<int32_t>()},
-		voltage{invalid<int32_t>()},
-		current{invalid<int32_t>()},
-		trackerNum(0),
-		time(0) {
+	Dc() {
+		totalPower = invalid<int32_t>();
+		for (size_t i = 0; i < sizeof(power) / sizeof(power[0]); ++i) {
+			power[i]   = invalid<int32_t>();
+			voltage[i] = invalid<int32_t>();
+			current[i] = invalid<int32_t>();
+		}
+		trackerNum = 0;
+		time       = 0;
 	}
 	friend std::ostream& operator <<(std::ostream& o, const Dc& dc) {
 		o << "power: " << dc.totalPower << "W\n";
@@ -108,28 +97,19 @@ struct Dc {
 	}
 };
 
-struct Stats {
-	int64_t totalYield; ///<total produced power in  watt-hours
-	int64_t dayYield; ///<total produced power today in  watt-hours
-
-	int64_t operationTime; /// <operation time in seconds
-	int64_t feedInTime; ///<feed in time in seconds
-
+struct Stats : public pvlib_stats {
 	time_t time;
 
 	Stats() {
-		totalYield = -1;
-		dayYield = -1;
-		operationTime = -1;
-		feedInTime = -1;
+		totalYield    = invalid<int64_t>();
+		dayYield      = invalid<int64_t>();
+		operationTime = invalid<int64_t>();
+		feedInTime    = invalid<int64_t>();
 		time = 0;
 	}
 };
 
-struct Status {
-	int status;
-	uint32_t number;
-
+struct Status : pvlib_status {
 	Status() {
 		number = -1;
 	}
@@ -144,9 +124,9 @@ struct Status {
 
 class Pvlib {
 private:
-	typedef std::unordered_map<std::string, pvlib_plant_t*> PlantMap;
+	typedef std::unordered_map<std::string, pvlib_plant*> PlantMap;
     typedef std::unordered_set<int64_t> Inverters;
-	typedef std::unordered_map<pvlib_plant_t*, Inverters> InverterMap;
+	typedef std::unordered_map<pvlib_plant*, Inverters> InverterMap;
 
 	PlantMap plants;
 	InverterMap connectedPlants;
@@ -155,7 +135,7 @@ private:
 	NameIdMap protocols;
 	NameIdMap connections;
 
-	pvlib_plant_t* plantHandle(const std::string& plantName, uint32_t inverterId) const;
+	pvlib_plant* plantHandle(const std::string& plantName, uint32_t inverterId) const;
 
 public:
 	class const_iterator: public std::iterator<std::input_iterator_tag, std::pair<int, uint32_t> > {
@@ -176,7 +156,7 @@ public:
 			}
 		}
 
-		pvlib_plant_t *plant() const
+		pvlib_plant *plant() const
 		{
 			return plantCurrent->first;
 		}

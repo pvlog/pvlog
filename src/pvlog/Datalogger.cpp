@@ -161,7 +161,7 @@ static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
 
 	setIfValid(spotData.power, ac.totalPower);
 	setIfValid(spotData.frequency, ac.frequency);
-	for (int i = 0; i < ac.lineNum; ++i) {
+	for (int i = 0; i < ac.phaseNum; ++i) {
 		if (isValid(ac.power[i])) {
 			Phase phase;
 			setIfValid(phase.power, ac.power[i]);
