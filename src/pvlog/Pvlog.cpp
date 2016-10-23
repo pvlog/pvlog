@@ -66,7 +66,7 @@ Pvlog::Pvlog(const std::string& configFile)
 	LOG(Info) << "Successfully read log timeout: " << timeout << " seconds.";
 
 	std::unique_ptr<DaemonWork> dataLogger = std::unique_ptr<DaemonWork>(new DataLogger(
-	        database.get(), pvlib.get(), timeout));
+	        database.get(), pvlib.get()));
 
 	daemon = std::unique_ptr<Daemon>(new ForgroundDaemon(std::move(dataLogger)));
 }

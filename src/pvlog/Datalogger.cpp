@@ -187,11 +187,12 @@ static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
 }
 
 static void updateOrInsert(odb::database* db, DayData& dayData) {
-	using Result = odb::result<DayData>;
 	using Query  = odb::query<DayData>;
 
-	std::shared_ptr<DayData> res = db->query_one<DayData>(Query::date == Query::_ref(dayData.date)
-			&& Query::inverter == Query::_ref(dayData.inverter));
+	Query query((Query::date == Query::_ref(dayData.date))
+			&& (Query::inverter == Query::_ref(dayData.inverter->id)));
+
+	std::shared_ptr<DayData> res(db->query_one<DayData>(query));
 	if (res != nullptr) {
 		res->dayYield = dayData.dayYield;
 		db->update(*res);
