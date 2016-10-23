@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
 	std::unique_ptr<Pvlib> pvlib = std::unique_ptr<Pvlib>(new Pvlib(stderr));
 
-	DataLogger dataLogger(db.get(), pvlib.get(), 300);
+	DataLogger dataLogger(db.get(), pvlib.get());
 
 	//start json server
 	jsonrpc::HttpServer httpserver(8383);

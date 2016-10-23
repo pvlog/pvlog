@@ -8,6 +8,8 @@
 #include <boost/date_time/posix_time/conversion.hpp>
 #include <boost/optional.hpp>
 
+#include <odb/query.hxx>
+
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
@@ -184,29 +186,48 @@ static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
 	return spotData;
 }
 
+static void updateOrInsert(odb::database* db, DayData& dayData) {
+	using Result = odb::result<DayData>;
+	using Query  = odb::query<DayData>;
 
-DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib, int timeout) :
+	std::shared_ptr<DayData> res = db->query_one<DayData>(Query::date == Query::_ref(dayData.date)
+			&& Query::inverter == Query::_ref(dayData.inverter));
+	if (res != nullptr) {
+		res->dayYield = dayData.dayYield;
+		db->update(*res);
+	} else {
+		db->persist(dayData);
+	}
+}
+
+
+DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib) :
 		quit(false), db(database), pvlib(pvlib)
 {
 	PVLOG_NOT_NULL(database);
 	PVLOG_NOT_NULL(pvlib);
 
-	if (timeout < 60) {
+	timeout = pt::seconds(std::stoi(readConfig(db, "timeout")));
+	LOG(Info) << "Timeout: " << timeout;
+
+	if (timeout.seconds() < 60) {
 		PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
 	}
-	if ((timeout % 60) != 0) {
+	if ((timeout.seconds() % 60) != 0) {
 		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	}
 
 	float longitude = std::stof(readConfig(db, "longitude"));
 	float latitude = std::stof(readConfig(db, "latitude"));
 
+	LOG(Info) << "Location longitude " << longitude << " latitude: " << latitude;
+
+
 	sunriseSunset = std::unique_ptr<SunriseSunset>(
 			new SunriseSunset(longitude, latitude));
 
 	openPlants();
 
-	this->timeout        = pt::seconds(timeout);
 	this->updateInterval = pt::seconds(20);
 }
 
@@ -312,12 +333,10 @@ void DataLogger::logDayData()
 		if (isValid(stats.dayYield)) {
 			InverterPtr inverter = openInverter.at(*it);
 
-			bg::date curDate(bg::day_clock::universal_day());
+			bg::date curDate(bg::day_clock::local_day());
 			DayData dayData(inverter, curDate, stats.dayYield);
 
-			odb::transaction t(db->begin());
-			db->persist(dayData);
-			t.commit();
+			updateOrInsert(db, dayData);
 		} else {
 			//FIXME: What to do???
 		}

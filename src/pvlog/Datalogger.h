@@ -24,7 +24,7 @@ namespace model {
 
 class DataLogger: public DaemonWork {
 public:
-	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib, int timeout);
+	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib);
 
 	virtual ~DataLogger();
 
