@@ -1,18 +1,20 @@
-#include "Datalogger.h"
-
 #include <thread>
 #include <chrono>
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
+#include "boost/date_time/local_time_adjustor.hpp"
+#include "boost/date_time/c_local_time_adjustor.hpp"
 #include <boost/optional.hpp>
-
+#include <Datalogger.h>
 #include <odb/query.hxx>
+#include <pvlib.h>
 
 #include "Log.h"
 #include "SunriseSunset.h"
 #include "Pvlib.h"
+#include "pvlibhelper.h"
 #include "Utility.h"
 #include "TimeUtil.h"
 #include "Log.h"
@@ -28,6 +30,7 @@
 #include "SpotData_odb.h"
 
 using model::Config;
+using model::ConfigPtr;
 using model::Plant;
 using model::SpotData;
 using model::Phase;
@@ -38,7 +41,7 @@ using model::DayData;
 
 using std::unique_ptr;
 using std::shared_ptr;
-using pvlib::Pvlib;
+//using pvlib::Pvlib;
 using pvlib::Ac;
 using pvlib::Dc;
 using pvlib::Status;
@@ -50,6 +53,8 @@ using namespace pvlib;
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;
+
+typedef boost::date_time::c_local_adjustor<pt::ptime> local_adj;
 
 namespace {
 
@@ -202,11 +207,10 @@ static void updateOrInsert(odb::database* db, DayData& dayData) {
 }
 
 
-DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib) :
-		quit(false), db(database), pvlib(pvlib)
+Datalogger::Datalogger(odb::core::database* database) :
+		quit(false), db(database)
 {
 	PVLOG_NOT_NULL(database);
-	PVLOG_NOT_NULL(pvlib);
 
 	timeout = pt::seconds(std::stoi(readConfig(db, "timeout")));
 	LOG(Info) << "Timeout: " << timeout;
@@ -227,18 +231,23 @@ DataLogger::DataLogger(odb::core::database* database, Pvlib* pvlib) :
 	sunriseSunset = std::unique_ptr<SunriseSunset>(
 			new SunriseSunset(longitude, latitude));
 
+	int julianDay = bg::day_clock::universal_day().julian_day();
+	sunset  = sunriseSunset->sunset(julianDay);
+
 	openPlants();
+
+	updateArchiveData();
 
 	this->updateInterval = pt::seconds(20);
 }
 
-DataLogger::~DataLogger() {
+Datalogger::~Datalogger() {
 	//nothing to do
 }
 
-void DataLogger::openPlants() {
-	std::unordered_set<std::string> connections = pvlib->supportedConnections();
-	std::unordered_set<std::string> protocols = pvlib->supportedProtocols();
+void Datalogger::openPlants() {
+	std::unordered_map<std::string, uint32_t> connections = getConnections();
+	std::unordered_map<std::string, uint32_t> protocols   = getProtocols();
 
 	odb::session s;
 	odb::transaction t (db->begin ());
@@ -250,47 +259,114 @@ void DataLogger::openPlants() {
 		LOG(Info) << "Opening plant " << plant.name << " ["
 				<< plant.connection << ", " << plant.protocol << "]";
 
-		if (connections.find(plant.connection) == connections.end()) {
+		auto connectionIt = connections.find(plant.connection);
+		if (connectionIt == connections.end()) {
 			LOG(Error) << "plant: " << plant.name
 					<< "has unsupported connection: " << plant.connection;
+			continue;
 		}
-		if (protocols.find(plant.protocol) == protocols.end()) {
+
+		auto protocolIt = protocols.find(plant.protocol);
+		if (protocolIt == protocols.end()) {
 			LOG(Error) << "plant: " << plant.name
 					<< "has unsupported protocol: " << plant.protocol;
+			continue;
 		}
-		pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+		//pvlib->openPlant(plant.name, plant.connection, plant.protocol);
+		pvlib_plant* pvlibPlant = pvlib_open(connectionIt->second, protocolIt->second, nullptr, nullptr);
+		if (pvlibPlant  == nullptr) {
+			LOG(Error) << "Could not open plant: " << plant.name;
+			continue;
+		}
 
 		LOG(Info) << "Connecting to plant " << plant.name << " ["
 				<< plant.connectionParam << ", " << plant.protocolParam << "]";
-		pvlib->connect(plant.name, plant.connectionParam, plant.protocolParam);
+		if (pvlib_connect(pvlibPlant, plant.connectionParam.c_str(), plant.protocolParam.c_str(), nullptr, nullptr) < 0) {
+			LOG(Error) << "Error Connecting to plant: " << plant.name;
+		}
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
 				<< plant.connectionParam << ", " << plant.protocolParam << "]";
 
-		std::unordered_set<int64_t> inverterIds = pvlib->getInverters(plant.name);
+		Inverters availableInverterIds = getInverters(pvlibPlant);
 
 		for (const auto& inverter : plant.inverters) {
-			if (inverterIds.count(inverter->id) != 1) {
+			if (availableInverterIds.count(inverter->id) != 1) {
 				LOG(Error) << "Could not open inverter: " << inverter->name;
-			} else {
-				openInverter.emplace(inverter->id, inverter);
 			}
 		}
 
-		for (int64_t inverterId : inverterIds) {
-			if (openInverter.count(inverterId) != 1) {
-				LOG(Warning) << "Found inverter not in database with id: "  << inverterId;
+		std::unordered_set<int64_t> plantInverterIds;
+		for (InverterPtr inverter : plant.inverters) {
+			plantInverterIds.insert(inverter->id);
+		}
+
+		for (auto inverterIt = availableInverterIds.begin(); inverterIt != availableInverterIds.end(); ) {
+			if (plantInverterIds.count(*inverterIt) == 0) {
+				LOG(Warning) << "Found inverter not in database. Id: " << *inverterIt;
+				inverterIt = availableInverterIds.erase(inverterIt);
+			} else {
+				++inverterIt;
+			}
+		}
+
+		plants.emplace(pvlibPlant, availableInverterIds);
+
+	}
+	t.commit();
+}
+
+void Datalogger::updateArchiveData() {
+	ConfigPtr config = db->load<Config>("archive_last_read");
+
+	std::string lr;
+	if (config == nullptr) {
+		lr = "2010-01-01T00:00:00";
+	} else {
+		lr = config->value;
+	}
+
+	pt::ptime lastRead   = pt::from_iso_string(lr);
+	pt::ptime currentTime = pt::second_clock::universal_time();
+	int ret;
+
+	for (auto plantEntry : plants) {
+		pvlib_plant* plant = plantEntry.first;
+		for (int64_t inverterId : plantEntry.second) {
+			InverterPtr inverter = inverterInfo.at(inverterId);
+
+			pvlib_day_yield* y;
+			if ((ret = pvlib_get_day_yield(plant, inverterId, pt::to_time_t(lastRead), pt::to_time_t(currentTime), &y)) < 0) {
+				LOG(Error) << "Reading archive day data for " << inverter->name << " Error code: " << ret;
+				continue; //Ignore inverter
+			}
+			std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
+
+			for (int i = 0; i < ret; ++i) {
+				pvlib_day_yield* dy = &dayYields[i];
+
+				//Local time so we can convert it to local date
+				pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date));
+				bg::date date = time.date();
+
+				DayData dayData(inverter, date, dy->dayYield);
+				updateOrInsert(db, dayData);
 			}
 		}
 	}
-	t.commit();
 
-	//TODO: Error handling check if all inverters are open
-	//What to do if not all inverters are available?
+	//update last updated
+	config->value = pt::to_iso_extended_string(currentTime);
+	db->update(config);
 }
 
-void DataLogger::closePlants() {
-	pvlib->close();
+void Datalogger::closePlants() {
+	for (auto plantEntry : plants) {
+		pvlib_plant* p = plantEntry.first;
+		pvlib_close(p);
+	}
+
+	plants.clear();
 }
 
 //bool DataLogger::waitForDay()
@@ -309,7 +385,7 @@ void DataLogger::closePlants() {
 //	return DateTime::sleepUntil(timeToWait);
 //}
 
-void DataLogger::sleepUntill(pt::ptime time) {
+void Datalogger::sleepUntill(pt::ptime time) {
 	using system_clock = std::chrono::system_clock;
 
 	time_t unixTime = pt::to_time_t(time);
@@ -318,97 +394,95 @@ void DataLogger::sleepUntill(pt::ptime time) {
 	std::this_thread::sleep_until(sleep);
 }
 
-void DataLogger::logDayData()
-{
+void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
+	Stats stats;
+	InverterPtr inverter = inverterInfo.at(inverterId);
+
 	LOG(Debug) << "logging day yield";
-	Pvlib::const_iterator end = pvlib->end();
-	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
-		Stats stats;
-		try {
-			pvlib->getStats(&stats, it);
-		} catch (const PvlogException& ex) {
-			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
-			return;
-		}
+	if (pvlib_get_stats(plant, inverterId, &stats) < 0) {
+		LOG(Error) << "Failed getting statistics of inverter: " << inverter->name;
+		return;
+	}
 
-		if (isValid(stats.dayYield)) {
-			InverterPtr inverter = openInverter.at(*it);
+	if (isValid(stats.dayYield)) {
+		bg::date curDate(bg::day_clock::local_day());
+		DayData dayData(inverter, curDate, stats.dayYield);
 
-			bg::date curDate(bg::day_clock::local_day());
-			DayData dayData(inverter, curDate, stats.dayYield);
-
-			updateOrInsert(db, dayData);
-		} else {
-			//FIXME: What to do???
-		}
+		updateOrInsert(db, dayData);
+	} else {
+		LOG(Error) << "Could not read dayYield (Invalid value!)";
 	}
 	LOG(Debug) << "logged day yield";
 }
 
-void DataLogger::logData()
-{
-	Pvlib::const_iterator end = pvlib->end();
-	for (Pvlib::const_iterator it = pvlib->begin(); it != end; ++it) {
-		Ac ac;
-		Dc dc;
-		Status status;
-		try {
+void Datalogger::logData() {
+	for (auto plantEntry : plants) {
+		pvlib_plant* plant  = plantEntry.first;
+		Inverters inverters = plantEntry.second;
+		for (int64_t inverterId : inverters) {
+			InverterPtr inverter = inverterInfo.at(inverterId);
 
-			pvlib->getAc(&ac, it);
-			pvlib->getDc(&dc, it);
-			pvlib->getStatus(&status, it);
-		} catch (const PvlogException& ex) {
-			LOG(Error) << "Failed getting statistics of inverter" << *it << ": " << ex.what();
-			//FIXME: What to do???
-			continue; //Ignore inverter
-		}
+			int ret;
+			Ac ac;
+			Dc dc;
+			Status status;
 
-		std::shared_ptr<Inverter> inverter = openInverter.at(*it);
-
-		if (!isValid(ac.totalPower)) {
-			//TODO: handle invalid power: for now just ignore it!!!
-			LOG(Error) << "Total power of " << inverter->name << " not valid";
-			continue;
-		}
-
-		if (status.status != PVLIB_STATUS_OK) {
-			//TODO: handle error: for know just ignore it!!!
-			LOG(Error) << "Status of " << inverter->name << "not OK but " << status.status;
-		}
-
-		SpotData spotData = fillSpotData(ac, dc);
-		spotData.inverter = inverter;
-		spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
-
-		curSpotData[inverter->id].push_back(spotData);
-
-		if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
-			LOG(Debug) << "logging current power, voltage, ...";
-			for (const auto& entry : curSpotData) {
-				try {
-					SpotData averagedSpotData = average(entry.second);
-					averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-
-					LOG(Trace) << "Persisting spot data: " << averagedSpotData;
-					odb::transaction t (db->begin ());
-					db->persist(averagedSpotData);
-					t.commit();
-				} catch (const PvlogException& e) {
-					LOG(Error) << "Error averaging spot data: " << e.what() ;
-				}
+			if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
+				(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
+				(ret = pvlib_get_status(plant, inverterId, &status)) < 0) {
+				LOG(Error) << "Error reading inverter data. Error: " << ret;
 			}
-			curSpotData.clear();
+
+			pt::ptime curTime = pt::second_clock::universal_time();
+
+			if (status.status != PVLIB_STATUS_OK) {
+				//TODO: handle error: for know just ignore it!!!
+				LOG(Error) << "Status of " << inverter->name << "not OK but " << status.status;
+			}
+
+			if (!isValid(ac.totalPower) || ac.totalPower == 0) {
+				pt::time_duration diff = sunset - curTime;
+				if (diff <= pt::hours(1)) {
+					//TODO: handle invalid power: for now just ignore it!!!
+					LOG(Error) << "Total power of " << inverter->name << " 0";
+				} else if (diff <= pt::hours(0)) {
+					//sunset and 0 power so we can log day data
+					logDayData(plant, inverterId);
+					continue;
+				}
+
+			}
+
+			SpotData spotData = fillSpotData(ac, dc);
+			spotData.inverter = inverter;
+			spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
+
+			curSpotData[inverterId].push_back(spotData);
+
+			if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
+				LOG(Debug) << "logging current power, voltage, ...";
+				for (const auto& entry : curSpotData) {
+					try {
+						SpotData averagedSpotData = average(entry.second);
+						averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
+
+						LOG(Trace) << "Persisting spot data: " << averagedSpotData;
+						odb::transaction t (db->begin ());
+						db->persist(averagedSpotData);
+						t.commit();
+					} catch (const PvlogException& e) {
+						LOG(Error) << "Error averaging spot data: " << e.what() ;
+					}
+				}
+				curSpotData.clear();
+			}
 		}
 	}
 }
 
-void DataLogger::work()
+void Datalogger::work()
 {
 	try {
-
-		int julianDay = bg::day_clock::universal_day().julian_day();
-		pt::ptime sunset  = sunriseSunset->sunset(julianDay);
-
 		while (!quit) {
 			pt::ptime curTime = pt::second_clock::universal_time();
 			pt::ptime nextUpdate = util::roundUp(curTime, timeout);
@@ -417,10 +491,8 @@ void DataLogger::work()
 			LOG(Debug) << "current time: " << pt::to_simple_string(curTime);
 			LOG(Debug) << "time till wait: " << pt::to_simple_string(nextUpdate);
 
-			if (nextUpdate >= sunset) {
-				logDayData();
-
-				closePlants();
+			if (plants.empty()) {
+				//no more plants are open => wait for next day
 
 				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
 				pt::ptime nextSunrise = sunriseSunset->sunrise(nextJulianDay);
@@ -430,6 +502,8 @@ void DataLogger::work()
 				if (quit) return;
 
 				openPlants();
+
+				updateArchiveData();
 			}
 
 			nextUpdate = util::roundUp(curTime, updateInterval);

@@ -29,8 +29,6 @@ using odb::core::database;
 using std::shared_ptr;
 using std::make_shared;
 
-using pvlib::Pvlib;
-
 
 int main(int argc, char **argv) {
 	std::string filename;

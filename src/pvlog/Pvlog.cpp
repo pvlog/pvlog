@@ -1,3 +1,4 @@
+#include <Datalogger.h>
 #include "Pvlog.h"
 
 #include <cstdlib>
@@ -9,7 +10,6 @@
 #include "PvlogException.h"
 #include "ConfigReader.h"
 #include "models/ConfigService.h"
-#include "Datalogger.h"
 #include "ForgroundDaemon.h"
 #include "Log.h"
 
@@ -65,7 +65,7 @@ Pvlog::Pvlog(const std::string& configFile)
 	int timeout = readTimeout();
 	LOG(Info) << "Successfully read log timeout: " << timeout << " seconds.";
 
-	std::unique_ptr<DaemonWork> dataLogger = std::unique_ptr<DaemonWork>(new DataLogger(
+	std::unique_ptr<DaemonWork> dataLogger = std::unique_ptr<DaemonWork>(new Datalogger(
 	        database.get(), pvlib.get()));
 
 	daemon = std::unique_ptr<Daemon>(new ForgroundDaemon(std::move(dataLogger)));

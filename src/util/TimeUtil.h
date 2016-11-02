@@ -44,6 +44,12 @@ inline boost::posix_time::ptime roundDown(const boost::posix_time::ptime& time,
 	return pt::from_time_t(pt::to_time_t(time) / d * d);
 }
 
+inline boost::posix_time::time_duration abs(boost::posix_time::time_duration duration) {
+	if (duration.is_negative()) {
+		duration *= -1;
+	}
+	return duration;
+}
 
 } //namespace util {
 

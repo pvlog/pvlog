@@ -1,3 +1,4 @@
+#include <Datalogger.h>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -7,11 +8,8 @@
 
 #include "Pvlib.h"
 #include "Log.h"
-#include "Datalogger.h"
 #include "JsonRpcServer.h"
 #include "ConfigReader.h"
-
-using pvlib::Pvlib;
 
 std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 {
@@ -58,9 +56,7 @@ int main(int argc, char **argv)
 	LOG(Info) << "Successfully opened database.";
 
 
-	std::unique_ptr<Pvlib> pvlib = std::unique_ptr<Pvlib>(new Pvlib(stderr));
-
-	DataLogger dataLogger(db.get(), pvlib.get());
+	Datalogger dataLogger(db.get());
 
 	//start json server
 	jsonrpc::HttpServer httpserver(8383);

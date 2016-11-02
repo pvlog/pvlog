@@ -3,6 +3,7 @@
 
 #include <string>
 #include <utility>
+#include <memory>
 
 #include <odb/core.hxx>
 
@@ -21,6 +22,8 @@ struct Config {
 
 	Config() {}
 };
+
+using ConfigPtr = std::shared_ptr<Config>;
 
 } //namespace model {
 

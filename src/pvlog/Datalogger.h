@@ -16,17 +16,19 @@
 
 class SunriseSunset;
 class Database;
+struct pvlib_plant;
 
 namespace model {
 	class Inverter;
 }
 
 
-class DataLogger: public DaemonWork {
+//Logs one day of inverter data
+class Datalogger: public DaemonWork {
 public:
-	DataLogger(odb::core::database* database, pvlib::Pvlib* pvlib);
+	Datalogger(odb::core::database* database);
 
-	virtual ~DataLogger();
+	virtual ~Datalogger();
 
 	virtual void work();
 
@@ -43,7 +45,7 @@ protected:
 //	 */
 //	bool waitForLogTime(DateTime timeToWait);
 
-	void logDayData();
+	void logDayData(pvlib_plant* plant, int64_t inverterId);
 
 	void logData();
 
@@ -53,13 +55,21 @@ private:
 
 	void closePlants();
 
+	void updateArchiveData();
+
 	volatile bool quit;
 	odb::core::database* db;
-	pvlib::Pvlib* pvlib;
+	//pvlib::Pvlib* pvlib;
 	boost::posix_time::time_duration timeout;
 	boost::posix_time::time_duration updateInterval;
 	std::unique_ptr<SunriseSunset> sunriseSunset;
-	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> openInverter;
+	boost::posix_time::ptime sunset;
+
+	using Inverters = std::unordered_set<int64_t>;
+	using Plants    = std::unordered_map<pvlib_plant*, Inverters>;
+
+	Plants plants;
+	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> inverterInfo;
 	std::unordered_map<int64_t, std::vector<model::SpotData>> curSpotData;
 };
 

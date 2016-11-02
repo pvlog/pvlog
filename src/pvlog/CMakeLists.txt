@@ -2,7 +2,6 @@ set(SRC
 	Datalogger.cpp
 	main.cpp
 	Pvlib.cpp
-	Pvlog.cpp
 	SunriseSunset.cpp
 	JsonRpcServer.cpp
 )
