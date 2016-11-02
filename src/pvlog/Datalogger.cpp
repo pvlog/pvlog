@@ -215,10 +215,10 @@ Datalogger::Datalogger(odb::core::database* database) :
 	timeout = pt::seconds(std::stoi(readConfig(db, "timeout")));
 	LOG(Info) << "Timeout: " << timeout;
 
-	if (timeout.seconds() < 60) {
+	if (timeout.total_seconds() < 60) {
 		PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
 	}
-	if ((timeout.seconds() % 60) != 0) {
+	if ((timeout.seconds()) != 0) {
 		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
 	}
 
