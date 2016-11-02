@@ -283,6 +283,7 @@ void Datalogger::openPlants() {
 				<< plant.connectionParam << ", " << plant.protocolParam << "]";
 		if (pvlib_connect(pvlibPlant, plant.connectionParam.c_str(), plant.protocolParam.c_str(), nullptr, nullptr) < 0) {
 			LOG(Error) << "Error Connecting to plant: " << plant.name;
+			continue;
 		}
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
