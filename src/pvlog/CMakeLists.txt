@@ -4,6 +4,7 @@ set(SRC
 	Pvlib.cpp
 	SunriseSunset.cpp
 	JsonRpcServer.cpp
+	pvlibhelper.cpp
 )
 
 set(HEADER

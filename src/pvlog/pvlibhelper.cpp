@@ -1,10 +1,14 @@
 #include "pvlibhelper.h"
+
+#include <vector>
+#include <pvlib.h>
+
 #include "Log.h"
 #include "PvlogException.h"
 
 
 std::unordered_map<std::string, uint32_t>  getConnections() {
-	std::unordered_map<uint32_t, std::string> connections;
+	std::unordered_map<std::string, uint32_t> connections;
 	int conNum = pvlib_connection_num();
 
 	if (conNum != 0) {
@@ -22,7 +26,7 @@ std::unordered_map<std::string, uint32_t>  getConnections() {
 }
 
 std::unordered_map<std::string, uint32_t> getProtocols() {
-	std::unordered_map<uint32_t, std::string> protocols;
+	std::unordered_map<std::string, uint32_t> protocols;
 	int protNum = pvlib_protocol_num();
 
 	if (protNum != 0) {
