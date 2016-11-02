@@ -289,6 +289,10 @@ void Datalogger::openPlants() {
 				<< plant.connectionParam << ", " << plant.protocolParam << "]";
 
 		Inverters availableInverterIds = getInverters(pvlibPlant);
+		LOG(Info) << "Available inverters: ";
+		for (int64_t id : availableInverterIds) {
+			LOG(Info) << id;
+		}
 
 		for (const auto& inverter : plant.inverters) {
 			if (availableInverterIds.count(inverter->id) != 1) {
@@ -317,6 +321,7 @@ void Datalogger::openPlants() {
 }
 
 void Datalogger::updateArchiveData() {
+	odb::transaction t(db->begin());
 	ConfigPtr config = db->load<Config>("archive_last_read");
 
 	std::string lr;
@@ -358,6 +363,8 @@ void Datalogger::updateArchiveData() {
 	//update last updated
 	config->value = pt::to_iso_extended_string(currentTime);
 	db->update(config);
+
+	t.commit();
 }
 
 void Datalogger::closePlants() {
