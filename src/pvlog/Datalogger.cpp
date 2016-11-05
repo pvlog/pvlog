@@ -331,7 +331,7 @@ void Datalogger::updateArchiveData() {
 	for (auto plantEntry : plants) {
 		pvlib_plant* plant = plantEntry.first;
 		for (int64_t inverterId : plantEntry.second) {
-			InverterPtr inverter = inverterInfo.at(inverterId);
+			InverterPtr inverter(db->load<Inverter>(inverterId));
 
 			pt::ptime lastRead = inverter->archiveLastRead.get_value_or(pt::from_iso_string("20000101T000000"));
 			pt::ptime currentTime = pt::second_clock::universal_time();
