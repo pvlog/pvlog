@@ -358,6 +358,8 @@ void Datalogger::updateArchiveData() {
 				bg::date date = time.date();
 
 				DayData dayData(inverter, date, dy->dayYield);
+
+				LOG(Debug) << "Updating or inserting DayData " << dayData.date << " " << dayData.dayYield;
 				updateOrInsert(db, dayData);
 			}
 
