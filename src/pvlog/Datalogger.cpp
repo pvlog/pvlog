@@ -317,24 +317,27 @@ void Datalogger::openPlants() {
 
 		plants.emplace(pvlibPlant, availableInverterIds);
 
+		LOG(Info) << "Opened plant " << plant.name << " ["
+				<< plant.connection << ", " << plant.protocol << "]";
+
 	}
 	t.commit();
 }
 
 void Datalogger::updateArchiveData() {
 	odb::transaction t(db->begin());
-	ConfigPtr config = db->load<Config>("archive_last_read");
+	ConfigPtr config;
+	config = db->load<Config>("archive_last_read");
 
 	std::string lr;
-	if (config == nullptr) {
-		lr = "2010-01-01T00:00:00";
-	} else {
-		lr = config->value;
-	}
+	lr = config->value;
+
 
 	pt::ptime lastRead   = pt::from_iso_string(lr);
 	pt::ptime currentTime = pt::second_clock::universal_time();
 	int ret;
+
+	LOG(Info) << "Reading archive data" << lastRead << " -> " << currentTime;
 
 	for (auto plantEntry : plants) {
 		pvlib_plant* plant = plantEntry.first;
@@ -347,6 +350,8 @@ void Datalogger::updateArchiveData() {
 				continue; //Ignore inverter
 			}
 			std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
+
+			LOG(Debug) << "Got " << ret << " archive entries";
 
 			for (int i = 0; i < ret; ++i) {
 				pvlib_day_yield* dy = &dayYields[i];
