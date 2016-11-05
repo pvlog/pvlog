@@ -367,7 +367,7 @@ void Datalogger::updateArchiveData() {
 	}
 
 	//update last updated
-	config->value = pt::to_iso_extended_string(currentTime);
+	config->value = pt::to_iso_string(currentTime);
 	db->update(config);
 
 	t.commit();
