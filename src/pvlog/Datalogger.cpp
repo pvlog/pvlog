@@ -326,6 +326,7 @@ void Datalogger::openPlants() {
 }
 
 void Datalogger::updateArchiveData() {
+	odb::session session;
 	odb::transaction t(db->begin());
 	ConfigPtr config;
 	config = db->load<Config>("archive_last_read");
