@@ -304,6 +304,7 @@ void Datalogger::openPlants() {
 		std::unordered_set<int64_t> plantInverterIds;
 		for (InverterPtr inverter : plant.inverters) {
 			plantInverterIds.insert(inverter->id);
+			inverterInfo.emplace(inverter->id, inverter);
 		}
 
 		for (auto inverterIt = availableInverterIds.begin(); inverterIt != availableInverterIds.end(); ) {
@@ -337,7 +338,7 @@ void Datalogger::updateArchiveData() {
 	pt::ptime currentTime = pt::second_clock::universal_time();
 	int ret;
 
-	LOG(Info) << "Reading archive data" << lastRead << " -> " << currentTime;
+	LOG(Info) << "Reading archive data " << lastRead << " -> " << currentTime;
 
 	for (auto plantEntry : plants) {
 		pvlib_plant* plant = plantEntry.first;
