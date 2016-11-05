@@ -366,6 +366,8 @@ void Datalogger::updateArchiveData() {
 			inverter->archiveLastRead = currentTime;
 			db->update(inverter);
 			t.commit();
+
+			LOG(Info) << "Read archive data for " << inverter->name << " " << lastRead << " -> " << currentTime;
 		}
 	}
 }
