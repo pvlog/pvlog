@@ -5,6 +5,8 @@
 #include <string>
 #include <memory>
 #include <utility>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/optional.hpp>
 
 #include <odb/core.hxx>
 
@@ -26,6 +28,8 @@ struct Inverter {
 	int32_t wattpeak;
 	int phaseCount;
 	int trackerCount;
+
+	boost::optional<boost::posix_time::ptime> archiveLastRead;
 
 	Inverter(int64_t id, std::string name, int32_t wattpeak, int phaseCount, int trackerCount) :
 			id(id),

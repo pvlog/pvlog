@@ -327,27 +327,21 @@ void Datalogger::openPlants() {
 
 void Datalogger::updateArchiveData() {
 	odb::session session;
-	odb::transaction t(db->begin());
-	ConfigPtr config;
-	config = db->load<Config>("archive_last_read");
-
-	std::string lr;
-	lr = config->value;
-
-
-	pt::ptime lastRead   = pt::from_iso_string(lr);
-	pt::ptime currentTime = pt::second_clock::universal_time();
-	int ret;
-
-	LOG(Info) << "Reading archive data " << lastRead << " -> " << currentTime;
 
 	for (auto plantEntry : plants) {
 		pvlib_plant* plant = plantEntry.first;
 		for (int64_t inverterId : plantEntry.second) {
 			InverterPtr inverter = inverterInfo.at(inverterId);
 
+			pt::ptime lastRead = inverter->archiveLastRead.get_value_or(pt::from_iso_string("20000101T000000"));
+			pt::ptime currentTime = pt::second_clock::universal_time();
+
+			LOG(Info) << "Reading archive data for " << inverter->name << " " << lastRead << " -> " << currentTime;
+
 			pvlib_day_yield* y;
-			if ((ret = pvlib_get_day_yield(plant, inverterId, pt::to_time_t(lastRead), pt::to_time_t(currentTime), &y)) < 0) {
+			int ret;
+			if ((ret = pvlib_get_day_yield(plant, inverterId, pt::to_time_t(lastRead),
+					pt::to_time_t(currentTime), &y)) < 0) {
 				LOG(Error) << "Reading archive day data for " << inverter->name << " Error code: " << ret;
 				continue; //Ignore inverter
 			}
@@ -355,24 +349,23 @@ void Datalogger::updateArchiveData() {
 
 			LOG(Debug) << "Got " << ret << " archive entries";
 
+			odb::transaction t(db->begin());
 			for (int i = 0; i < ret; ++i) {
 				pvlib_day_yield* dy = &dayYields[i];
 
 				//Local time so we can convert it to local date
-				pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date));
+				pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date + 12 * 3600));
 				bg::date date = time.date();
 
 				DayData dayData(inverter, date, dy->dayYield);
 				updateOrInsert(db, dayData);
 			}
+
+			inverter->archiveLastRead = currentTime;
+			db->update(inverter);
+			t.commit();
 		}
 	}
-
-	//update last updated
-	config->value = pt::to_iso_string(currentTime);
-	db->update(config);
-
-	t.commit();
 }
 
 void Datalogger::closePlants() {
