@@ -331,6 +331,7 @@ void Datalogger::updateArchiveData() {
 	for (auto plantEntry : plants) {
 		pvlib_plant* plant = plantEntry.first;
 		for (int64_t inverterId : plantEntry.second) {
+			odb::transaction t(db->begin());
 			InverterPtr inverter(db->load<Inverter>(inverterId));
 
 			pt::ptime lastRead = inverter->archiveLastRead.get_value_or(pt::from_iso_string("20000101T000000"));
@@ -349,7 +350,6 @@ void Datalogger::updateArchiveData() {
 
 			LOG(Debug) << "Got " << ret << " archive entries";
 
-			odb::transaction t(db->begin());
 			for (int i = 0; i < ret; ++i) {
 				pvlib_day_yield* dy = &dayYields[i];
 
