@@ -417,6 +417,7 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	}
 
 	if (isValid(stats.dayYield)) {
+		odb::session session;
 		odb::transaction t (db->begin ());
 		bg::date curDate(bg::day_clock::local_day());
 		DayData dayData(inverter, curDate, stats.dayYield);
