@@ -41,10 +41,10 @@ struct DayDataMonth {
 	#pragma db column("sum(" + DayData::dayYield + ")")
 	int64_t yield;
 
-	#pragma db column("strftime(%m," + DayData::date + ") AS month")
+	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
 	int month;
 
-	#pragma db column("strftime(%y," + DayData::date + ") AS year")
+	#pragma db column("strftime('%Y'," + DayData::date + ") AS year")
 	int year;
 };
 
