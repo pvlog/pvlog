@@ -466,7 +466,7 @@ void Datalogger::logData() {
 					//close inverter for this day
 					Inverters& openIverters = plants.at(plant);
 					openIverters.erase(inverterId);
-					if (!openIverters.empty()) {
+					if (openIverters.empty()) {
 						plants.erase(plant);
 					}
 
