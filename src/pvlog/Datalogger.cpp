@@ -469,6 +469,8 @@ void Datalogger::logData() {
 					//close inverter for this day
 					Inverters& openInverters = plants.at(plant);
 					openInverters.erase(inverterId);
+
+					LOG(Info) << "Closed inverter: " << inverter->name;
 					if (openInverters.empty()) {
 						LOG(Info) << "Closing plant!";
 						pvlib_close(plant);
