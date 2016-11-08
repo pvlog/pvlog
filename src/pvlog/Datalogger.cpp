@@ -417,10 +417,12 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	}
 
 	if (isValid(stats.dayYield)) {
+		odb::transaction t (db->begin ());
 		bg::date curDate(bg::day_clock::local_day());
 		DayData dayData(inverter, curDate, stats.dayYield);
 
 		updateOrInsert(db, dayData);
+		t.commit();
 	} else {
 		LOG(Error) << "Could not read dayYield (Invalid value!)";
 	}
