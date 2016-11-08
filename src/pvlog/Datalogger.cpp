@@ -428,7 +428,9 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 }
 
 void Datalogger::logData() {
-	for (auto plantEntry : plants) {
+	Plants plantsCopy(plants); //Copy plants: so wen can delete plant from original plant
+
+	for (auto plantEntry : plantsCopy) {
 		pvlib_plant* plant  = plantEntry.first;
 		Inverters inverters = plantEntry.second;
 		for (int64_t inverterId : inverters) {
@@ -454,12 +456,20 @@ void Datalogger::logData() {
 
 			if (!isValid(ac.totalPower) || ac.totalPower == 0) {
 				pt::time_duration diff = sunset - curTime;
-				if (diff <= pt::hours(1)) {
+				if (diff >= pt::hours(1)) {
 					//TODO: handle invalid power: for now just ignore it!!!
 					LOG(Error) << "Total power of " << inverter->name << " 0";
 				} else if (diff <= pt::hours(0)) {
 					//sunset and 0 power so we can log day data
 					logDayData(plant, inverterId);
+
+					//close inverter for this day
+					Inverters& openIverters = plants.at(plant);
+					openIverters.erase(inverterId);
+					if (!openIverters.empty()) {
+						plants.erase(plant);
+					}
+
 					continue;
 				}
 
