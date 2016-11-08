@@ -517,8 +517,6 @@ void Datalogger::work()
 			pt::ptime nextUpdate = util::roundUp(curTime, timeout);
 
 			LOG(Debug) << "Sunset: " << pt::to_simple_string(sunset);
-			LOG(Debug) << "current time: " << pt::to_simple_string(curTime);
-			LOG(Debug) << "time till wait: " << pt::to_simple_string(nextUpdate);
 
 			if (plants.empty()) {
 				//no more plants are open => wait for next day
@@ -526,6 +524,8 @@ void Datalogger::work()
 				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
 				pt::ptime nextSunrise = sunriseSunset->sunrise(nextJulianDay);
 				sunset = sunriseSunset->sunset(nextJulianDay);
+
+				LOG(Info) << "Waiting for next days sunrise: " << nextSunrise;
 				sleepUntill(nextSunrise);
 
 				if (quit) return;
@@ -534,6 +534,9 @@ void Datalogger::work()
 
 				updateArchiveData();
 			}
+
+			LOG(Debug) << "current time: " << pt::to_simple_string(curTime);
+			LOG(Debug) << "time till wait: " << pt::to_simple_string(nextUpdate);
 
 			nextUpdate = util::roundUp(curTime, updateInterval);
 			sleepUntill(nextUpdate);
