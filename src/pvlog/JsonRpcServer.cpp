@@ -12,6 +12,8 @@
 #include "SpotData_odb.h"
 #include "models/Inverter.h"
 #include "Inverter_odb.h"
+#include "models/DayData.h"
+#include "DayData_odb.h"
 #include "Log.h"
 
 namespace bg = boost::gregorian;
@@ -23,6 +25,7 @@ using model::SpotDataPtr;
 using model::Inverter;
 using model::InverterPtr;
 using model::toJson;
+using model::DayDataMonth;
 
 
 JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database) :
@@ -104,6 +107,18 @@ Json::Value JsonRpcServer::getMonthData(const std::string& month) {
 
 Json::Value JsonRpcServer::getYearData(const std::string& year) {
 	Json::Value result;
+	using Query  = odb::query<DayDataMonth>;
+	using Result = odb::result<DayDataMonth>;
+
+	int y = std::stoi(year);
+
+	odb::transaction t(db->begin());
+	t.tracer (odb::stderr_tracer);
+	Result r(db->query<DayDataMonth> ("year =" + Query::_ref(y)));
+	for (const DayDataMonth& d: r) {
+		result[d.month] = static_cast<Json::Int64>(d.yield);
+	}
+	t.commit();
 	return result;
 }
 
