@@ -44,7 +44,7 @@ std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 
 int main(int argc, char **argv)
 {
-	Log::ReportingLevel() = Trace;
+	Log::reportingLevel() = Trace;
 
 	if (argc != 2) {
 		std::cerr << "Usage %s <config_file_path>" << std::endl;
