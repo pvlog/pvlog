@@ -114,7 +114,7 @@ Json::Value JsonRpcServer::getYearData(const std::string& year) {
 
 	odb::transaction t(db->begin());
 	t.tracer (odb::stderr_tracer);
-	Result r(db->query<DayDataMonth> ("year =" + Query::_ref(y)));
+	Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
 	for (const DayDataMonth& d: r) {
 		result[std::to_string(d.month)] = static_cast<Json::Int64>(d.yield);
 	}
