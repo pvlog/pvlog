@@ -7,6 +7,7 @@
 #include <utility>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
+#include <jsoncpp/json/value.h>
 
 #include <odb/core.hxx>
 
@@ -45,6 +46,19 @@ struct Inverter {
 };
 
 using InverterPtr = std::shared_ptr<Inverter>;
+
+inline Json::Value toJson(const Inverter& inverter) {
+	Json::Value json;
+
+	json["id"]       = static_cast<Json::Int64>(inverter.id);
+	//json["plant_id"] = static_cast<Json::Int64>(inverter.plant->id);
+	json["name"]     = inverter.name;
+	json["wattpeak"] = inverter.wattpeak;
+	json["phase_number"]   = inverter.phaseCount;
+	json["tracker_number"] = inverter.trackerCount;
+
+	return json;
+}
 
 } //namespace model
 

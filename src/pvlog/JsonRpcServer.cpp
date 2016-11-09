@@ -143,7 +143,7 @@ Json::Value JsonRpcServer::getYearData() {
 	using Result = odb::result<DayDataYear>;
 
 	odb::transaction t(db->begin());
-	Result r(db->query<DayDataYear> ());
+	Result r(db->query<DayDataYear>());
 	for (const DayDataYear& d: r) {
 		Json::Value m;
 		m[std::to_string(d.year)] = static_cast<Json::Int64>(d.yield);
@@ -155,6 +155,15 @@ Json::Value JsonRpcServer::getYearData() {
 
 Json::Value JsonRpcServer::getInverter() {
 	Json::Value result;
+	using Result = odb::result<Inverter>;
+
+	odb::transaction t(db->begin());
+	Result r(db->query<Inverter>());
+	for (const Inverter& i : r) {
+		result.append(toJson(i));
+	}
+	t.commit();
+
 	return result;
 }
 
