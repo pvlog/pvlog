@@ -9,6 +9,7 @@
 
 #include <odb/core.hxx>
 #include <odb/nullable.hxx>
+#include <jsoncpp/json/value.h>
 
 #include "Inverter.h"
 
@@ -50,6 +51,19 @@ struct Plant {
 };
 
 using PlantPtr = std::shared_ptr<Plant>;
+
+inline Json::Value toJson(const Plant& plant) {
+	Json::Value json;
+
+	json["id"]       = static_cast<Json::Int64>(plant.id);
+	json["name"]     = plant.name;
+	json["connection"] = plant.connection;
+	json["protocol"]   = plant.protocol;
+	json["connection_param"] = plant.connectionParam;
+	json["protocol_param"]   = plant.protocolParam;
+
+	return json;
+}
 
 } //namespace model {
 

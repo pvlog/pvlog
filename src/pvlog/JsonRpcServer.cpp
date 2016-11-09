@@ -12,6 +12,8 @@
 #include "SpotData_odb.h"
 #include "models/Inverter.h"
 #include "Inverter_odb.h"
+#include "models/Plant.h"
+#include "Plant_odb.h"
 #include "models/DayData.h"
 #include "DayData_odb.h"
 #include "Log.h"
@@ -28,6 +30,7 @@ using model::toJson;
 using model::DayData;
 using model::DayDataMonth;
 using model::DayDataYear;
+using model::Plant;
 
 JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database) :
 		AbstractPvlogServer(conn), db(database) {
@@ -170,5 +173,15 @@ Json::Value JsonRpcServer::getInverter() {
 
 Json::Value JsonRpcServer::getPlants() {
 	Json::Value result;
+	using Result = odb::result<Plant>;
+
+	odb::session session;
+	odb::transaction t(db->begin());
+	Result r(db->query<Plant>());
+	for (const Plant& p : r) {
+		result.append(toJson(p));
+	}
+	t.commit();
+
 	return result;
 }
