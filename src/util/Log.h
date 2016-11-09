@@ -15,7 +15,6 @@ public:
 	Log() {
 		//nothing to do
 	}
-
 	virtual ~Log();
 
 	std::ostringstream& get(Level level, const char* file, int line);
@@ -27,10 +26,19 @@ public:
 protected:
 	std::ostringstream os;
 
-private:
+	static const char *filename(const char *file);
 
 	static Level messageLevel;
 };
+
+struct print_array {
+	const uint8_t *array;
+	size_t size;
+
+	print_array(const uint8_t *array, size_t size) : array(array), size(size) {}
+};
+
+std::ostream& operator<<(std::ostream& o, const print_array& a);
 
 #define LOG(LEVEL) \
 if (LEVEL > Log::reportingLevel()) \
