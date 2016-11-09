@@ -157,6 +157,7 @@ Json::Value JsonRpcServer::getInverter() {
 	Json::Value result;
 	using Result = odb::result<Inverter>;
 
+	odb::session session;
 	odb::transaction t(db->begin());
 	Result r(db->query<Inverter>());
 	for (const Inverter& i : r) {
