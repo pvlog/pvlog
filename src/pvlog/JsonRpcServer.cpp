@@ -116,6 +116,8 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 		m[bg::to_simple_string(d.date)] = static_cast<Json::Int64>(d.dayYield);
 		result[std::to_string(d.inverter->id)].append(m);
 	}
+
+	return result;
 }
 
 Json::Value JsonRpcServer::getMonthData(const std::string& year) {
