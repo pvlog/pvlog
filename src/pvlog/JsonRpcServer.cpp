@@ -109,6 +109,7 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 	bg::date fromTime = bg::from_simple_string(from);
 	bg::date toTime   = bg::from_simple_string(to);
 
+	odb::session session;
 	odb::transaction t(db->begin());
 	Result r(db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
 	for (const DayData& d : r) {
