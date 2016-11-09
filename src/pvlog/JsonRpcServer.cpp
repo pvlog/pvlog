@@ -26,7 +26,7 @@ using model::Inverter;
 using model::InverterPtr;
 using model::toJson;
 using model::DayDataMonth;
-
+using model::DayDataYear;
 
 JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database) :
 		AbstractPvlogServer(conn), db(database) {
@@ -100,23 +100,34 @@ Json::Value JsonRpcServer::getLiveSpotData() {
 	return result;
 }
 
-Json::Value JsonRpcServer::getMonthData(const std::string& month) {
+Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string& to) {
 	Json::Value result;
 	return result;
 }
 
-Json::Value JsonRpcServer::getYearData(const std::string& year) {
+Json::Value JsonRpcServer::getMonthData(const std::string& year) {
 	Json::Value result;
-	using Query  = odb::query<DayDataMonth>;
 	using Result = odb::result<DayDataMonth>;
 
 	int y = std::stoi(year);
 
 	odb::transaction t(db->begin());
-	t.tracer (odb::stderr_tracer);
 	Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
 	for (const DayDataMonth& d: r) {
 		result[std::to_string(d.month)] = static_cast<Json::Int64>(d.yield);
+	}
+	t.commit();
+	return result;
+}
+
+Json::Value JsonRpcServer::getYearData() {
+	Json::Value result;
+	using Result = odb::result<DayDataYear>;
+
+	odb::transaction t(db->begin());
+	Result r(db->query<DayDataYear> ());
+	for (const DayDataYear& d: r) {
+		result[std::to_string(d.year)] = static_cast<Json::Int64>(d.yield);
 	}
 	t.commit();
 	return result;

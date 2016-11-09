@@ -35,29 +35,37 @@ struct DayData {
 	}
 };
 
-#pragma db view object(DayData) \
-	query((?) + "GROUP BY year, month")
+#pragma db view object(DayData) object(Inverter)\
+	query((?) + "GROUP BY year, month, " + Inverter::id)
 struct DayDataMonth {
 	#pragma db column("sum(" + DayData::dayYield + ")")
 	int64_t yield;
 
+	//FIXME: support other databases than sqlite
 	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
 	int month;
 
+	//FIXME: support other databases than sqlite
 	#pragma db column("strftime('%Y'," + DayData::date + ") AS year")
 	int year;
+
+	#pragma db column(Inverter::id)
+	int64_t inverterId;
 };
 
-//#pragma db view object(DayData)
-//struct DayDataYear {
-//	int64_t yield;
-//	int year;
-//};
-//
-//#pragma db view object(DayData)
-//struct DayDataTotal {
-//	int64_t yield;
-//};
+#pragma db view object(DayData) object(Inverter)\
+		query((?) + "GROUP BY year," + Inverter::id)
+struct DayDataYear {
+	#pragma db column("sum(" + DayData::dayYield + ")")
+	int64_t yield;
+
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%Y'," + DayData::date + ") AS year")
+	int year;
+
+	#pragma db column(Inverter::id)
+	int64_t inverterId;
+};
 
 
 inline Json::Value toJson(const DayData& dayData) {
@@ -65,7 +73,7 @@ inline Json::Value toJson(const DayData& dayData) {
 
 	json["inverter"] =  static_cast<Json::Int64>(dayData.inverter->id);
 	json["date"]     = boost::gregorian::to_iso_string(dayData.date);
-	json["day_yield"] = static_cast<Json::Int64>(dayData.dayYield);
+	json["yield"] = static_cast<Json::Int64>(dayData.dayYield);
 
 	return json;
 }

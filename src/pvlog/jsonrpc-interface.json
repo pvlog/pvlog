@@ -13,16 +13,23 @@
 		"returns" : {"data": "data"}
 	},
 	{
+		"name" : "getDayData",
+		"params": {
+			"from" : "2016-10-01",
+			"to" : "2016-10-01"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
 		"name" : "getMonthData",
 		"params": { 
-			"month"   : "2016-10"
+			"year"   : "2016"
 		},
 		"returns" : {"data": "data"}
 	},
 	{
 		"name" : "getYearData",
 		"params": { 
-			"year"   : "2016"
 		},
 		"returns" : {"data": "data"}
 	},
