@@ -25,6 +25,7 @@ using model::SpotDataPtr;
 using model::Inverter;
 using model::InverterPtr;
 using model::toJson;
+using model::DayData;
 using model::DayDataMonth;
 using model::DayDataYear;
 
@@ -102,7 +103,19 @@ Json::Value JsonRpcServer::getLiveSpotData() {
 
 Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string& to) {
 	Json::Value result;
-	return result;
+	using Result = odb::result<DayData>;
+	using Query  = odb::query<DayData>;
+
+	bg::date fromTime = bg::from_simple_string(from);
+	bg::date toTime   = bg::from_simple_string(to);
+
+	odb::transaction t(db->begin());
+	Result r(db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
+	for (const DayData& d : r) {
+		Json::Value m;
+		m[bg::to_simple_string(d.date)] = static_cast<Json::Int64>(d.dayYield);
+		result[std::to_string(d.inverter->id)].append(m);
+	}
 }
 
 Json::Value JsonRpcServer::getMonthData(const std::string& year) {
