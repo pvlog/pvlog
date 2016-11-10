@@ -73,8 +73,6 @@ inline Json::Value toJson(const SpotData& spotData) {
 	using util::toJson;
 	Json::Value json;
 
-	//son["inverter"]  = static_cast<Json::Int64>(spotData.inverter->id);
-	//json["time"]      = static_cast<Json::Int64>(boost::posix_time::to_time_t(spotData.time));
 	json["power"]     = spotData.power;
 	json["frequency"] = toJson(spotData.frequency);
 
@@ -91,7 +89,7 @@ inline Json::Value toJson(const SpotData& spotData) {
 		int input              = dcInputEntry.first;
 		const DcInput& dcInput = dcInputEntry.second;
 
-		phases[std::to_string(input)] = toJson(dcInput);
+		dcInputs[std::to_string(input)] = toJson(dcInput);
 	}
 
 	json["phases"]    = phases;
