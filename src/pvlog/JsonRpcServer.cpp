@@ -66,9 +66,7 @@ Json::Value JsonRpcServer::getSpotData(const std::string& date) {
 		Result r(db->query<SpotData>(filterData + sortResult));
 
 		for (const SpotData& d : r) {
-			Json::Value entry;
-			entry[std::to_string(pt::to_time_t(d.time))] = toJson(d);
-			result[std::to_string(d.inverter->id)].append(entry);
+			result[std::to_string(d.inverter->id)][std::to_string(pt::to_time_t(d.time))] = toJson(d);
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
@@ -97,11 +95,11 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		Result r(db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
+		Result r(
+				db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
 		for (const DayData& d : r) {
-			Json::Value m;
-			m[bg::to_simple_string(d.date)] = static_cast<Json::Int64>(d.dayYield);
-			result[std::to_string(d.inverter->id)].append(m);
+			result[std::to_string(d.inverter->id)][bg::to_simple_string(d.date)] =
+					static_cast<Json::Int64>(d.dayYield);
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
@@ -124,9 +122,8 @@ Json::Value JsonRpcServer::getMonthData(const std::string& year) {
 		odb::transaction t(db->begin());
 		Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
 		for (const DayDataMonth& d: r) {
-			Json::Value m;
-			m[std::to_string(d.month)] = static_cast<Json::Int64>(d.yield);
-			result[std::to_string(d.inverterId)].append(m);
+			result[std::to_string(d.inverterId)][std::to_string(d.month)] =
+					static_cast<Json::Int64>(d.yield);
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
@@ -147,9 +144,8 @@ Json::Value JsonRpcServer::getYearData() {
 		odb::transaction t(db->begin());
 		Result r(db->query<DayDataYear>());
 		for (const DayDataYear& d: r) {
-			Json::Value m;
-			m[std::to_string(d.year)] = static_cast<Json::Int64>(d.yield);
-			result[std::to_string(d.inverterId)].append(m);
+			result[std::to_string(d.inverterId)][std::to_string(d.year)] =
+					static_cast<Json::Int64>(d.yield);
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
