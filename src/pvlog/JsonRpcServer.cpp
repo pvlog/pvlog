@@ -17,6 +17,7 @@
 #include "models/DayData.h"
 #include "DayData_odb.h"
 #include "Log.h"
+#include "TimeUtil.h"
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;
