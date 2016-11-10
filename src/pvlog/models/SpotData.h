@@ -9,7 +9,7 @@
 #include <jsoncpp/json/value.h>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <odb/core.hxx>
 
 #include "odbHelper.h"
@@ -48,20 +48,20 @@ struct SpotData {
 	std::unordered_map<int, DcInput> dcInputs;
 
 	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
-//		o << "Inverter: " << sd.inverter->id << ": \n";
-//		o << "time: " << sd.time << " power: " << sd.power << " frequency: "
-//		  << sd.frequency << "\n" << "ac Phases: \n";
-//
-//		for (const auto& ent : sd.phases) {
-//			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-//			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
-//		}
-//
-//		o << "dc Inputs:\n";
-//		for (const auto& ent : sd.dcInputs) {
-//			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-//			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
-//		}
+		o << "Inverter: " << sd.inverter->id << ": \n";
+		o << "time: " << boost::posix_time::to_simple_string(sd.time) << " power: " << sd.power << " frequency: "
+		  << sd.frequency << "\n" << "ac Phases: \n";
+
+		for (const auto& ent : sd.phases) {
+			o << ent.first << ": (power: " << ent.second.power << " voltage: "
+			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+		}
+
+		o << "dc Inputs:\n";
+		for (const auto& ent : sd.dcInputs) {
+			o << ent.first << ": (power: " << ent.second.power << " voltage: "
+			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+		}
 
 		return o;
 	}
