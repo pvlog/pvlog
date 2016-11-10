@@ -461,12 +461,13 @@ void Datalogger::logData() {
 			if (!isValid(ac.totalPower) || ac.totalPower == 0) {
 				pt::time_duration diffSunset  = sunset - curTime;
 				pt::time_duration diffSunrise = curTime - sunrise;
-				if (diffSunset >= pt::hours(1) || diffSunrise >= pt::hours(1)) {
+
+				if (diffSunrise < pt::hours(1) || diffSunset < pt::hours(1)) {
+					//wait till day end or day start
+					continue;
+				} else if (diffSunset >= pt::hours(1) || diffSunrise >= pt::hours(1)) {
 					//TODO: handle invalid power: for now just ignore it!!!
 					LOG(Error) << "Total power of " << inverter->name << " 0";
-				} else if (diffSunrise < pt::hours(1)) {
-					//wait till production
-					continue;
 				} else if (diffSunset <= pt::hours(0)) {
 					//sunset and 0 power so we can log day data
 					logDayData(plant, inverterId);
