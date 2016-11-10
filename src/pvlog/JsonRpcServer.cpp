@@ -41,62 +41,41 @@ JsonRpcServer::~JsonRpcServer() {
 	//Nothing to do
 }
 
-std::unordered_map<InverterPtr, std::vector<SpotDataPtr>> JsonRpcServer::readSpotData(const bg::date& date) {
+Json::Value JsonRpcServer::getSpotData(const std::string& date) {
+	Json::Value result;
 	using Query  = odb::query<SpotData>;
 	using Result = odb::result<SpotData>;
 
-	//use local day begin
-	pt::ptime begin = dt::c_local_adjustor<pt::ptime>::utc_to_local(pt::ptime(date));
-	pt::ptime end(date, pt::hours(24));
-
-	Query filterData(Query::time >= Query::_ref(begin) && Query::time < Query::_ref(end));
-	Query sortResult("ORDER BY" + Query::inverter + "," + Query::time);
-
-	InverterSpotData resultData;
-
-	odb::session s; //Session is needed for SpotData
-	odb::transaction t(db->begin());
-	Result r(db->query<SpotData>(filterData + sortResult));
-
-	for (Result::iterator i (r.begin ()); i != r.end (); ++i) {
-		SpotDataPtr spotData = i.load();
-		resultData[spotData->inverter].push_back(spotData);
-	}
-	t.commit();
-
-	return resultData;
-}
-
-Json::Value JsonRpcServer::getSpotData(const std::string& dateString) {
-
-	Json::Value jsonResult;
-
 	try {
-		bg::date date = bg::from_simple_string(dateString);
-		if (date.is_not_a_date()) {
-			return jsonResult;
+		LOG(Debug) << "JsonRpcServer::getSpotData: " << date;
+
+		bg::date d = bg::from_simple_string(date);
+		if (d.is_not_a_date()) {
+			return result;
 		}
 
-		InverterSpotData spotData = readSpotData(date);
+		pt::ptime begin = dt::c_local_adjustor<pt::ptime>::utc_to_local(pt::ptime(d));
+		pt::ptime end(d, pt::hours(24));
 
-		Json::Value jsonResult;
-		for (auto const& entry : spotData) {
-			const InverterPtr& inverter = entry.first;
-			const std::vector<SpotDataPtr>& inverterSpotData = entry.second;
+		Query filterData(Query::time >= Query::_ref(begin) && Query::time < Query::_ref(end));
+		Query sortResult("ORDER BY" + Query::inverter + "," + Query::time);
 
-			Json::Value jsonInverterSpotData;
-			for (const SpotDataPtr& spotData : inverterSpotData) {
-				jsonInverterSpotData.append(toJson(*spotData));
-			}
+		odb::session session; //Session is needed for SpotData
+		odb::transaction t(db->begin());
+		Result r(db->query<SpotData>(filterData + sortResult));
 
-			jsonResult[std::to_string(inverter->id)] = jsonInverterSpotData;
+		for (const SpotData& d : r) {
+			Json::Value entry;
+			entry[std::to_string(pt::to_time_t(d.time))] = toJson(d);
+			result[std::to_string(d.inverter->id)].append(entry);
 		}
+		t.commit();
 	} catch (const std::exception& ex) {
-		LOG(Error) << "Error gettig spot data" <<  ex.what();
-		jsonResult = Json::Value();
+		LOG(Error) << "Error getting spot data" <<  ex.what();
+		result = Json::Value();
 	}
 
-	return jsonResult;
+	return result;
 }
 
 Json::Value JsonRpcServer::getLiveSpotData() {
@@ -109,16 +88,24 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 	using Result = odb::result<DayData>;
 	using Query  = odb::query<DayData>;
 
-	bg::date fromTime = bg::from_simple_string(from);
-	bg::date toTime   = bg::from_simple_string(to);
+	try {
+		LOG(Debug) << "JsonRpcServer::getDayData: " << from << "->" << to;
 
-	odb::session session;
-	odb::transaction t(db->begin());
-	Result r(db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
-	for (const DayData& d : r) {
-		Json::Value m;
-		m[bg::to_simple_string(d.date)] = static_cast<Json::Int64>(d.dayYield);
-		result[std::to_string(d.inverter->id)].append(m);
+		bg::date fromTime = bg::from_simple_string(from);
+		bg::date toTime   = bg::from_simple_string(to);
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
+		for (const DayData& d : r) {
+			Json::Value m;
+			m[bg::to_simple_string(d.date)] = static_cast<Json::Int64>(d.dayYield);
+			result[std::to_string(d.inverter->id)].append(m);
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting day data" <<  ex.what();
+		result = Json::Value();
 	}
 
 	return result;
@@ -128,16 +115,24 @@ Json::Value JsonRpcServer::getMonthData(const std::string& year) {
 	Json::Value result;
 	using Result = odb::result<DayDataMonth>;
 
-	int y = std::stoi(year);
+	try {
+		LOG(Debug) << "JsonRpcServer::getMonthData: " << year;
 
-	odb::transaction t(db->begin());
-	Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
-	for (const DayDataMonth& d: r) {
-		Json::Value m;
-		m[std::to_string(d.month)] = static_cast<Json::Int64>(d.yield);
-		result[std::to_string(d.inverterId)].append(m);
+		int y = std::stoi(year);
+
+		odb::transaction t(db->begin());
+		Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
+		for (const DayDataMonth& d: r) {
+			Json::Value m;
+			m[std::to_string(d.month)] = static_cast<Json::Int64>(d.yield);
+			result[std::to_string(d.inverterId)].append(m);
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting month data" <<  ex.what();
+		result = Json::Value();
 	}
-	t.commit();
+
 	return result;
 }
 
@@ -145,14 +140,22 @@ Json::Value JsonRpcServer::getYearData() {
 	Json::Value result;
 	using Result = odb::result<DayDataYear>;
 
-	odb::transaction t(db->begin());
-	Result r(db->query<DayDataYear>());
-	for (const DayDataYear& d: r) {
-		Json::Value m;
-		m[std::to_string(d.year)] = static_cast<Json::Int64>(d.yield);
-		result[std::to_string(d.inverterId)].append(m);
+	try {
+		LOG(Debug) << "JsonRpcServer::getYearData";
+
+		odb::transaction t(db->begin());
+		Result r(db->query<DayDataYear>());
+		for (const DayDataYear& d: r) {
+			Json::Value m;
+			m[std::to_string(d.year)] = static_cast<Json::Int64>(d.yield);
+			result[std::to_string(d.inverterId)].append(m);
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting year data" <<  ex.what();
+		result = Json::Value();
 	}
-	t.commit();
+
 	return result;
 }
 
@@ -160,13 +163,20 @@ Json::Value JsonRpcServer::getInverter() {
 	Json::Value result;
 	using Result = odb::result<Inverter>;
 
-	odb::session session;
-	odb::transaction t(db->begin());
-	Result r(db->query<Inverter>());
-	for (const Inverter& i : r) {
-		result.append(toJson(i));
+	try {
+		LOG(Debug) << "JsonRpcServer::getInverters";
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<Inverter>());
+		for (const Inverter& i : r) {
+			result.append(toJson(i));
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting inverters" <<  ex.what();
+		result = Json::Value();
 	}
-	t.commit();
 
 	return result;
 }
@@ -175,13 +185,20 @@ Json::Value JsonRpcServer::getPlants() {
 	Json::Value result;
 	using Result = odb::result<Plant>;
 
-	odb::session session;
-	odb::transaction t(db->begin());
-	Result r(db->query<Plant>());
-	for (const Plant& p : r) {
-		result.append(toJson(p));
+	try {
+		LOG(Debug) << "JsonRpcServer::getPlants";
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<Plant>());
+		for (const Plant& p : r) {
+			result.append(toJson(p));
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting plants" <<  ex.what();
+		result = Json::Value();
 	}
-	t.commit();
 
 	return result;
 }
