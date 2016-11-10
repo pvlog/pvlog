@@ -64,6 +64,7 @@ private:
 	boost::posix_time::time_duration updateInterval;
 	std::unique_ptr<SunriseSunset> sunriseSunset;
 	boost::posix_time::ptime sunset;
+	boost::posix_time::ptime sunrise;
 
 	using Inverters = std::unordered_set<int64_t>;
 	using Plants    = std::unordered_map<pvlib_plant*, Inverters>;

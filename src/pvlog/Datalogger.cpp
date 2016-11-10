@@ -233,6 +233,7 @@ Datalogger::Datalogger(odb::core::database* database) :
 
 	int julianDay = bg::day_clock::universal_day().julian_day();
 	sunset  = sunriseSunset->sunset(julianDay);
+	sunrise = sunriseSunset->sunrise(julianDay);
 
 	openPlants();
 
@@ -458,11 +459,15 @@ void Datalogger::logData() {
 			}
 
 			if (!isValid(ac.totalPower) || ac.totalPower == 0) {
-				pt::time_duration diff = sunset - curTime;
-				if (diff >= pt::hours(1)) {
+				pt::time_duration diffSunset  = sunset - curTime;
+				pt::time_duration diffSunrise = curTime - sunrise;
+				if (diffSunset >= pt::hours(1) || diffSunrise >= pt::hours(1)) {
 					//TODO: handle invalid power: for now just ignore it!!!
 					LOG(Error) << "Total power of " << inverter->name << " 0";
-				} else if (diff <= pt::hours(0)) {
+				} else if (diffSunrise < pt::hours(1)) {
+					//wait till production
+					continue;
+				} else if (diffSunset <= pt::hours(0)) {
 					//sunset and 0 power so we can log day data
 					logDayData(plant, inverterId);
 
@@ -522,11 +527,11 @@ void Datalogger::work()
 				//no more plants are open => wait for next day
 
 				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
-				pt::ptime nextSunrise = sunriseSunset->sunrise(nextJulianDay);
-				sunset = sunriseSunset->sunset(nextJulianDay);
+				sunrise = sunriseSunset->sunrise(nextJulianDay);
+				sunset  = sunriseSunset->sunset(nextJulianDay);
 
-				LOG(Info) << "Waiting for next days sunrise: " << nextSunrise;
-				sleepUntill(nextSunrise);
+				LOG(Info) << "Waiting for next days sunrise: " << sunrise;
+				sleepUntill(sunrise);
 
 				if (quit) return;
 
