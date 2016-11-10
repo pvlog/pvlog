@@ -462,12 +462,11 @@ void Datalogger::logData() {
 				pt::time_duration diffSunset  = sunset - curTime;
 				pt::time_duration diffSunrise = curTime - sunrise;
 
-				if (diffSunrise < pt::hours(1) || diffSunset < pt::hours(1)) {
-					//wait till day end or day start
-					continue;
-				} else if (diffSunset >= pt::hours(1) || diffSunrise >= pt::hours(1)) {
+				if (diffSunset >= pt::hours(1) && diffSunrise >= pt::hours(1)) {
 					//TODO: handle invalid power: for now just ignore it!!!
 					LOG(Error) << "Total power of " << inverter->name << " 0";
+
+					continue;
 				} else if (diffSunset <= pt::hours(0)) {
 					//sunset and 0 power so we can log day data
 					logDayData(plant, inverterId);
@@ -482,10 +481,11 @@ void Datalogger::logData() {
 						pvlib_close(plant);
 						plants.erase(plant);
 					}
-
+					continue;
+				} else {
+					//wait till day end or day start
 					continue;
 				}
-
 			}
 
 			SpotData spotData = fillSpotData(ac, dc);
