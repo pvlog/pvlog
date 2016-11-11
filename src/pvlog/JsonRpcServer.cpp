@@ -98,7 +98,7 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 		Result r(
 				db->query<DayData>(Query::date >= fromTime && Query::date <= toTime));
 		for (const DayData& d : r) {
-			result[std::to_string(d.inverter->id)][bg::to_simple_string(d.date)] =
+			result[std::to_string(d.inverter->id)][bg::to_iso_extended_string(d.date)] =
 					static_cast<Json::Int64>(d.dayYield);
 		}
 		t.commit();
