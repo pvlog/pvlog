@@ -77,10 +77,9 @@ void setIfValid(boost::optional<T>& s, T t) {
 
 template<typename T>
 void sumUp(boost::optional<T>& sumed, const boost::optional<T>& val) {
-	if (!sumed && !val) {
+	if (sumed && val) {
 		sumed = sumed.get() + val.get();
-
-	} else if (!sumed || !val) {
+	} else {
 		PVLOG_EXCEPT("Invalid spot data!");
 	}
 }
