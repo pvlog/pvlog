@@ -492,6 +492,8 @@ void Datalogger::logData() {
 			spotData.inverter = inverter;
 			spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
 
+			LOG(Trace) << "Spot data: " << spotData;
+
 			curSpotData[inverterId].push_back(spotData);
 
 			if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
@@ -501,7 +503,7 @@ void Datalogger::logData() {
 						SpotData averagedSpotData = average(entry.second);
 						averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
 
-						LOG(Trace) << "Persisting spot data: " << averagedSpotData;
+						LOG(Debug) << "Persisting spot data: " << averagedSpotData;
 						odb::transaction t (db->begin ());
 						db->persist(averagedSpotData);
 						t.commit();
