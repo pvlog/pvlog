@@ -127,12 +127,12 @@ SpotData average(const std::vector<SpotData>& spotData) {
 			int numPhase = entry.first;
 			const Phase& phase = entry.second;
 
-			auto valueIt = sum.dcInputs.find(numPhase);
-			if (valueIt == sum.dcInputs.end()) {
+			auto valueIt = sum.phases.find(numPhase);
+			if (valueIt == sum.phases.end()) {
 				PVLOG_EXCEPT("Invalid data!");
 			}
 
-			valueIt->second.power = phase.power;
+			valueIt->second.power += phase.power;
 			sumUp(valueIt->second.voltage, phase.voltage);
 			sumUp(valueIt->second.current, phase.current);
 		}
