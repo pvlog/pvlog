@@ -122,7 +122,7 @@ Json::Value JsonRpcServer::getMonthData(const std::string& year) {
 		odb::transaction t(db->begin());
 		Result r(db->query<DayDataMonth> ("year = \"" + std::to_string(y) + "\""));
 		for (const DayDataMonth& d: r) {
-			result[std::to_string(d.inverterId)][std::to_string(d.month)] =
+			result[std::to_string(d.inverterId)][std::to_string(y) + "-" + std::to_string(d.month)] =
 					static_cast<Json::Int64>(d.yield);
 		}
 		t.commit();
