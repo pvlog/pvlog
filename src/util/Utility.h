@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <typeinfo>
+#include <iomanip>
 
 #include <boost/optional.hpp>
 #include <jsoncpp/json/value.h>
@@ -83,6 +84,13 @@ inline Json::Value toJson(const boost::optional<T>& opt) {
 	}
 
 	return value;
+}
+
+template<typename T>
+std::string to_string(T t, int width) {
+	std::stringstream ss;
+	ss << std::setw(width) << std::setfill('0') << t;
+	return ss.str();
 }
 
 
