@@ -26,6 +26,7 @@ set(ODB_HEADER
 	models/Phase.h
 	models/DcInput.h
 	models/DayData.h
+	models/Event.h
 )
 
 set(LIBS util ${ODB_LIBRARIES})

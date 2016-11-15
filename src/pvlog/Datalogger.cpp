@@ -28,6 +28,8 @@
 #include "Plant_odb.h"
 #include "Inverter_odb.h"
 #include "SpotData_odb.h"
+#include "models/Event.h"
+#include "Event_odb.h"
 
 using model::Config;
 using model::ConfigPtr;
@@ -38,6 +40,7 @@ using model::DcInput;
 using model::Inverter;
 using model::InverterPtr;
 using model::DayData;
+using model::Event;
 
 using std::unique_ptr;
 using std::shared_ptr;
@@ -208,6 +211,21 @@ static void updateOrInsert(odb::database* db, DayData& dayData) {
 	}
 }
 
+static void updateOrInsert(odb::database* db, Event& event) {
+	using Query  = odb::query<Event>;
+
+	Query query((Query::time == Query::_ref(event.time))
+			&& (Query::inverter == Query::_ref(event.inverter->id)));
+
+	std::shared_ptr<Event> res(db->query_one<Event>(query));
+	if (res != nullptr) {
+		//nothing to do
+	} else {
+		LOG(Info) << event.inverter->name << " Set event: " << event.time << "(" << event.number << ")" << event.message;
+		db->persist(event);
+	}
+}
+
 
 Datalogger::Datalogger(odb::core::database* database) :
 		quit(false), db(database)
@@ -351,7 +369,7 @@ void Datalogger::updateArchiveData() {
 			}
 			std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
 
-			LOG(Debug) << "Got " << ret << " archive entries";
+			LOG(Debug) << "Got " << ret << " day yield archive entries";
 
 			for (int i = 0; i < ret; ++i) {
 				pvlib_day_yield* dy = &dayYields[i];
@@ -364,6 +382,24 @@ void Datalogger::updateArchiveData() {
 
 				LOG(Debug) << "Updating or inserting DayData " << dayData.date << " " << dayData.dayYield;
 				updateOrInsert(db, dayData);
+			}
+
+			//handle events
+			pvlib_event* es;
+
+			if ((ret = pvlib_get_events(plant, inverterId, pt::to_time_t(lastRead),
+					pt::to_time_t(currentTime), &es)) < 0) {
+				LOG(Error) << "Error reading archive event data for " << inverter->name << " "
+						<< lastRead << " -> " << currentTime;
+				return;
+			}
+			std::unique_ptr<pvlib_event[], decltype(free)*> events(es, free);
+			LOG(Debug) << "Got " << ret << " event archive entries";
+
+			for (int i = 0; i < ret; ++i) {
+				const pvlib_event& e = events[i];
+				Event event(inverter, pt::from_time_t(e.time), e.value, e.message);
+				updateOrInsert(db, event);
 			}
 
 			inverter->archiveLastRead = currentTime;
