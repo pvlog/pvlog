@@ -199,8 +199,11 @@ static void updateOrInsert(odb::database* db, DayData& dayData) {
 	std::shared_ptr<DayData> res(db->query_one<DayData>(query));
 	if (res != nullptr) {
 		res->dayYield = dayData.dayYield;
+		LOG(Info) << dayData.inverter->name << " Updated day yield "
+				<< res->dayYield << " -> " << dayData.dayYield;
 		db->update(*res);
 	} else {
+		LOG(Info) << dayData.inverter->name << " Set day yield: " << dayData.dayYield;
 		db->persist(dayData);
 	}
 }
