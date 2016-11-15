@@ -8,6 +8,7 @@
 #include <odb/core.hxx>
 
 #include "Inverter.h"
+#include "TimeUtil.h"
 
 namespace model {
 
