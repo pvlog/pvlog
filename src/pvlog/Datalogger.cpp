@@ -375,7 +375,7 @@ void Datalogger::updateArchiveData() {
 				pvlib_day_yield* dy = &dayYields[i];
 
 				//Local time so we can convert it to local date
-				pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date + 12 * 3600));
+				pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date - 12 * 3600));
 				bg::date date = time.date();
 
 				DayData dayData(inverter, date, dy->dayYield);
