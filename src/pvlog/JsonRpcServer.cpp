@@ -206,13 +206,14 @@ Json::Value JsonRpcServer::getPlants() {
 Json::Value JsonRpcServer::getEvents() {
 	Json::Value result;
 	using Result = odb::result<Event>;
+	using Query  = odb::query<Event>;
 
 	try {
 		LOG(Debug) << "JsonRpcServer::getEvents";
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		Result r(db->query<Event>());
+		Result r(db->query<Event>("ORDER BY" + Query::inverter + "DESC," + Query::time));
 		for (const Event e : r) {
 			result[std::to_string(e.inverter->id)][std::to_string(
 					pt::to_time_t(e.time))] = toJson(e);
