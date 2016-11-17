@@ -19,6 +19,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getYearData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getYearDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getInverterI);
             this->bindAndAddMethod(jsonrpc::Procedure("getPlants", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getPlantsI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getEvents", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getEventsI);
         }
 
         inline virtual void getSpotDataI(const Json::Value &request, Json::Value &response)
@@ -53,6 +54,11 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             (void)request;
             response = this->getPlants();
         }
+        inline virtual void getEventsI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getEvents();
+        }
         virtual Json::Value getSpotData(const std::string& date) = 0;
         virtual Json::Value getLiveSpotData() = 0;
         virtual Json::Value getDayData(const std::string& from, const std::string& to) = 0;
@@ -60,6 +66,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         virtual Json::Value getYearData() = 0;
         virtual Json::Value getInverter() = 0;
         virtual Json::Value getPlants() = 0;
+        virtual Json::Value getEvents() = 0;
 };
 
 #endif //JSONRPC_CPP_STUB_ABSTRACTPVLOGSERVER_H_

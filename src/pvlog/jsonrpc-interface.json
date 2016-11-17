@@ -1,14 +1,14 @@
 [
 	{
 		"name": "getSpotData",
-		"params": { 
+		"params": {
 			"date"    : "2016-10-30"
 		},
 		"returns" : {"data": "data"}
 	},
 	{
 		"name" : "getLiveSpotData",
-		"params": { 
+		"params": {
 		},
 		"returns" : {"data": "data"}
 	},
@@ -22,26 +22,32 @@
 	},
 	{
 		"name" : "getMonthData",
-		"params": { 
+		"params": {
 			"year"   : "2016"
 		},
 		"returns" : {"data": "data"}
 	},
 	{
 		"name" : "getYearData",
-		"params": { 
+		"params": {
 		},
 		"returns" : {"data": "data"}
 	},
 	{
 		"name" : "getInverter",
-		"params": { 
+		"params": {
 		},
 		"returns" : {"data": "data"}
 	},
 	{
 		"name" : "getPlants",
-		"params": { 
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getEvents",
+		"params": {
 		},
 		"returns" : {"data": "data"}
 	}

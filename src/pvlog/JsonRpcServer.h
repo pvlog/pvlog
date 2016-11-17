@@ -21,13 +21,14 @@ public:
 	JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database);
 	virtual ~JsonRpcServer();
 
-    virtual Json::Value getSpotData(const std::string& date) override;
-    virtual Json::Value getLiveSpotData() override;
-    virtual Json::Value getDayData(const std::string& from, const std::string& to) override;
-    virtual Json::Value getMonthData(const std::string& year) override;
-    virtual Json::Value getYearData() override;
-    virtual Json::Value getInverter() override;
-    virtual Json::Value getPlants() override;
+	virtual Json::Value getSpotData(const std::string& date) override;
+	virtual Json::Value getLiveSpotData() override;
+	virtual Json::Value getDayData(const std::string& from, const std::string& to) override;
+	virtual Json::Value getMonthData(const std::string& year) override;
+	virtual Json::Value getYearData() override;
+	virtual Json::Value getInverter() override;
+	virtual Json::Value getPlants() override;
+	virtual Json::Value getEvents() override;
 };
 
 #endif /* SRC_JSONRPCSERVER_H_ */

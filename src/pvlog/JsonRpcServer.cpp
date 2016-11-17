@@ -17,6 +17,8 @@
 #include "models/DayData.h"
 #include "DayData_odb.h"
 #include "Log.h"
+#include "models/Event.h"
+#include "Event_odb.h"
 #include "TimeUtil.h"
 
 namespace bg = boost::gregorian;
@@ -32,6 +34,7 @@ using model::DayData;
 using model::DayDataMonth;
 using model::DayDataYear;
 using model::Plant;
+using model::Event;
 
 JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database) :
 		AbstractPvlogServer(conn), db(database) {
@@ -194,6 +197,29 @@ Json::Value JsonRpcServer::getPlants() {
 		t.commit();
 	} catch (const std::exception& ex) {
 		LOG(Error) << "Error getting plants" <<  ex.what();
+		result = Json::Value();
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcServer::getEvents() {
+	Json::Value result;
+	using Result = odb::result<Event>;
+
+	try {
+		LOG(Debug) << "JsonRpcServer::getEvents";
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<Event>());
+		for (const Event e : r) {
+			result[std::to_string(e.inverter->id)][std::to_string(
+					pt::to_time_t(e.time))] = toJson(e);
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting events" << ex.what();
 		result = Json::Value();
 	}
 
