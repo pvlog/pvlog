@@ -512,6 +512,7 @@ void Datalogger::logData() {
 					//close inverter for this day
 					Inverters& openInverters = plants.at(plant);
 					openInverters.erase(inverterId);
+					curSpotData.erase(inverterId);
 
 					LOG(Info) << "Closed inverter: " << inverter->name;
 					if (openInverters.empty()) {
@@ -530,13 +531,15 @@ void Datalogger::logData() {
 			spotData.inverter = inverter;
 			spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
 
+			curSpotData[inverterId] = spotData;
+
 			LOG(Trace) << "Spot data: " << spotData;
 
-			curSpotData[inverterId].push_back(spotData);
+			curSpotDataList[inverterId].push_back(spotData);
 
 			if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
 				LOG(Debug) << "logging current power, voltage, ...";
-				for (const auto& entry : curSpotData) {
+				for (const auto& entry : curSpotDataList) {
 					try {
 						SpotData averagedSpotData = average(entry.second);
 						averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
@@ -549,7 +552,7 @@ void Datalogger::logData() {
 						LOG(Error) << "Error averaging spot data: " << e.what() ;
 					}
 				}
-				curSpotData.clear();
+				curSpotDataList.clear();
 			}
 		}
 	}

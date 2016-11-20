@@ -20,6 +20,7 @@
 #include "models/Event.h"
 #include "Event_odb.h"
 #include "TimeUtil.h"
+#include "Datalogger.h"
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;
@@ -36,8 +37,8 @@ using model::DayDataYear;
 using model::Plant;
 using model::Event;
 
-JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database) :
-		AbstractPvlogServer(conn), db(database) {
+JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, Datalogger* datalogger, odb::database* database) :
+		AbstractPvlogServer(conn), db(database), datalogger(datalogger) {
 	//Nothing to do
 }
 
@@ -82,6 +83,16 @@ Json::Value JsonRpcServer::getSpotData(const std::string& date) {
 
 Json::Value JsonRpcServer::getLiveSpotData() {
 	Json::Value result;
+
+	for (const auto& entry : datalogger->getLiveData()) {
+		const SpotData& d = entry.second;
+
+		pt::ptime curTime = pt::second_clock::universal_time();
+		if (curTime - d.time < pt::minutes(5)) { //do do output old data
+			result[std::to_string(d.inverter->id)][std::to_string(pt::to_time_t(d.time))] = toJson(d);
+		}
+	}
+
 	return result;
 }
 

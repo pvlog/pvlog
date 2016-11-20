@@ -56,14 +56,14 @@ int main(int argc, char **argv)
 	LOG(Info) << "Successfully opened database.";
 
 
-	Datalogger dataLogger(db.get());
+	Datalogger datalogger(db.get());
 
 	//start json server
 	jsonrpc::HttpServer httpserver(8383);
-	JsonRpcServer server(httpserver, db.get());
+	JsonRpcServer server(httpserver, &datalogger, db.get());
 	server.StartListening();
 
 
 	//start datalogger work
-	dataLogger.work();
+	datalogger.work();
 }

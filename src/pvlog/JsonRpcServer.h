@@ -8,6 +8,8 @@
 #include "models/Inverter.h"
 #include "models/SpotData.h"
 
+class Datalogger;
+
 namespace odb {
 	class database;
 }
@@ -16,9 +18,11 @@ class JsonRpcServer: public AbstractPvlogServer {
 	odb::database *db;
 	using InverterSpotData = std::unordered_map<model::InverterPtr, std::vector<model::SpotDataPtr>>;
 
+	Datalogger* datalogger;
+
 	InverterSpotData readSpotData(const boost::gregorian::date& date);
 public:
-	JsonRpcServer(jsonrpc::AbstractServerConnector &conn, odb::database* database);
+	JsonRpcServer(jsonrpc::AbstractServerConnector &conn, Datalogger* datalogger, odb::database* database);
 	virtual ~JsonRpcServer();
 
 	virtual Json::Value getSpotData(const std::string& date) override;

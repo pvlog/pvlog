@@ -32,6 +32,8 @@ public:
 
 	virtual void work();
 
+	const std::unordered_map<int64_t, model::SpotData>& getLiveData() const;
+
 protected:
 //	/**
 //	 * Wait for begin of daylight.
@@ -71,7 +73,9 @@ private:
 
 	Plants plants;
 	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> inverterInfo;
-	std::unordered_map<int64_t, std::vector<model::SpotData>> curSpotData;
+	std::unordered_map<int64_t, std::vector<model::SpotData>> curSpotDataList;
+
+	std::unordered_map<int64_t, model::SpotData> curSpotData;
 };
 
 #endif // #ifndef DATA_LOGGER_H
