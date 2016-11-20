@@ -226,8 +226,7 @@ Json::Value JsonRpcServer::getEvents() {
 		odb::transaction t(db->begin());
 		Result r(db->query<Event>("ORDER BY" + Query::inverter + "," + Query::time  + "DESC"));
 		for (const Event e : r) {
-			result[std::to_string(e.inverter->id)][std::to_string(
-					pt::to_time_t(e.time))] = toJson(e);
+			result[std::to_string(e.inverter->id)].append(toJson(e));
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
