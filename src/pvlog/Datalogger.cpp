@@ -558,6 +558,10 @@ void Datalogger::logData() {
 	}
 }
 
+const std::unordered_map<int64_t, model::SpotData>& Datalogger::getLiveData() const {
+	return curSpotData;
+}
+
 void Datalogger::work()
 {
 	try {
