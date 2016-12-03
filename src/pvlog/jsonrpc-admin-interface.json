@@ -1,0 +1,41 @@
+[
+	{
+		"name": "stopDatalogger"
+	},
+	{
+		"name": "startDatalogger"
+	},
+	{
+		"name" : "getInverter",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getPlants",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "scanForInverters",
+		"params": {
+			"plant": {"data": "data"} 
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "saveInverter",
+		"params": {
+			"inverter": { "data": "data"}
+		},
+		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "savePlant",
+		"params": {
+			"inverter": { "data": "data"}
+		},
+		"returns" : {"status": "status"}
+	}
+]
