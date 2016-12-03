@@ -39,6 +39,10 @@ JsonRpcAdminServer::JsonRpcAdminServer(jsonrpc::AbstractServerConnector& conn, D
 	//nothing to do
 }
 
+JsonRpcAdminServer::~JsonRpcAdminServer() {
+	//nothing to do
+}
+
 void JsonRpcAdminServer::stopDatalogger() {
 	datalogger->stop();
 }

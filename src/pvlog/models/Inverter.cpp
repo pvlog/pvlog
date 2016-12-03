@@ -15,7 +15,7 @@ Json::Value toJson(const Inverter& inverter) {
 	return json;
 }
 
-inline Inverter inverterFromJson(const Json::Value& value) {
+Inverter inverterFromJson(const Json::Value& value) {
 	Inverter inverter;
 
 	inverter.id   = value["id"].asInt64();
