@@ -19,7 +19,7 @@ class Inverter;
 
 #pragma db object
 struct Plant {
-	#pragma db id
+	#pragma db id auto
 	int64_t id;
 
 	std::string name;
@@ -52,18 +52,9 @@ struct Plant {
 
 using PlantPtr = std::shared_ptr<Plant>;
 
-inline Json::Value toJson(const Plant& plant) {
-	Json::Value json;
+Json::Value toJson(const Plant& plant);
 
-	json["id"]       = static_cast<Json::Int64>(plant.id);
-	json["name"]     = plant.name;
-	json["connection"] = plant.connection;
-	json["protocol"]   = plant.protocol;
-	json["connection_param"] = plant.connectionParam;
-	json["protocol_param"]   = plant.protocolParam;
-
-	return json;
-}
+Plant plantFromJson(const Json::Value& value);
 
 } //namespace model {
 

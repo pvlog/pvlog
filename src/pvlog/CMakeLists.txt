@@ -5,6 +5,9 @@ set(SRC
 	SunriseSunset.cpp
 	JsonRpcServer.cpp
 	pvlibhelper.cpp
+	JsonRpcAdminServer.cpp
+	models/Inverter.cpp
+	models/Plant.cpp
 )
 
 set(HEADER

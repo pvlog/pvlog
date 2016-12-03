@@ -44,6 +44,9 @@ using model::Event;
 
 using std::unique_ptr;
 using std::shared_ptr;
+using std::mutex;
+using std::unique_lock;
+
 //using pvlib::Pvlib;
 using pvlib::Ac;
 using pvlib::Dc;
@@ -277,34 +280,15 @@ void Datalogger::openPlants() {
 	for (odb::result<Plant>::iterator it(r.begin()); it != r.end (); ++it) {
 		const Plant& plant = *it;
 
-		LOG(Info) << "Opening plant " << plant.name << " ["
+		LOG(Info) << "Connecting plant " << plant.name << " ["
 				<< plant.connection << ", " << plant.protocol << "]";
 
-		auto connectionIt = connections.find(plant.connection);
-		if (connectionIt == connections.end()) {
-			LOG(Error) << "plant: " << plant.name
-					<< "has unsupported connection: " << plant.connection;
-			continue;
-		}
-
-		auto protocolIt = protocols.find(plant.protocol);
-		if (protocolIt == protocols.end()) {
-			LOG(Error) << "plant: " << plant.name
-					<< "has unsupported protocol: " << plant.protocol;
-			continue;
-		}
-		//pvlib->openPlant(plant.name, plant.connection, plant.protocol);
-		pvlib_plant* pvlibPlant = pvlib_open(connectionIt->second, protocolIt->second, nullptr, nullptr);
-		if (pvlibPlant  == nullptr) {
-			LOG(Error) << "Could not open plant: " << plant.name;
-			continue;
-		}
-
-		LOG(Info) << "Connecting to plant " << plant.name << " ["
-				<< plant.connectionParam << ", " << plant.protocolParam << "]";
-		if (pvlib_connect(pvlibPlant, plant.connectionParam.c_str(), plant.protocolParam.c_str(), nullptr, nullptr) < 0) {
-			LOG(Error) << "Error Connecting to plant: " << plant.name;
-			continue;
+		pvlib_plant* pvlibPlant = nullptr;
+		try {
+			pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
+		} catch (PvlogException& ex) {
+			LOG(Error) << "Error opening plant: " << ex.what();
+			continue; //ignore plant
 		}
 
 		LOG(Info) << "Successfully connected plant " << plant.name << " ["
@@ -341,7 +325,6 @@ void Datalogger::openPlants() {
 
 		LOG(Info) << "Opened plant " << plant.name << " ["
 				<< plant.connection << ", " << plant.protocol << "]";
-
 	}
 	t.commit();
 }
@@ -440,9 +423,11 @@ void Datalogger::sleepUntill(pt::ptime time) {
 	using system_clock = std::chrono::system_clock;
 
 	time_t unixTime = pt::to_time_t(time);
-	system_clock::time_point sleep = system_clock::from_time_t(unixTime);
+	system_clock::time_point sleepUntil = system_clock::from_time_t(unixTime);
 
-	std::this_thread::sleep_until(sleep);
+	std::unique_lock<std::mutex> uniqueLock(mutex);
+
+	userEventSignal.wait_until(uniqueLock, sleepUntil, [this](){ return quit; });
 }
 
 void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
@@ -562,7 +547,45 @@ const std::unordered_map<int64_t, model::SpotData>& Datalogger::getLiveData() co
 	return curSpotData;
 }
 
-void Datalogger::work()
+void Datalogger::stop() {
+	std::unique_lock<std::mutex> lock(mutex);
+	if (active == false) {
+		return;
+	}
+	quit = true;
+	lock.unlock();
+
+	userEventSignal.notify_one();
+}
+
+void Datalogger::start() {
+	std::unique_lock<std::mutex> lock(mutex);
+	if (active) {
+		return;
+	}
+	quit = false;
+	lock.unlock();
+
+	userEventSignal.notify_one();
+}
+
+void Datalogger::work() {
+	for (;;) {
+		active = true;
+		logger();
+
+		if (!quit) {
+			continue;
+		}
+
+		active = false;
+
+		std::unique_lock<std::mutex> lock(mutex);
+		userEventSignal.wait(lock, [this]() { return !quit; });
+	}
+}
+
+void Datalogger::logger()
 {
 	try {
 		while (!quit) {

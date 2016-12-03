@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <condition_variable>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <odb/database.hxx>
@@ -34,6 +35,12 @@ public:
 
 	const std::unordered_map<int64_t, model::SpotData>& getLiveData() const;
 
+	void stop();
+
+	void start();
+
+	bool isRunning();
+
 protected:
 //	/**
 //	 * Wait for begin of daylight.
@@ -52,6 +59,8 @@ protected:
 	void logData();
 
 	void sleepUntill(boost::posix_time::ptime time);
+
+	void logger();
 private:
 	void openPlants();
 
@@ -59,7 +68,13 @@ private:
 
 	void updateArchiveData();
 
-	volatile bool quit;
+	bool quit;
+	bool active;
+	std::condition_variable userEventSignal;
+	std::mutex mutex;
+
+
+
 	odb::core::database* db;
 	//pvlib::Pvlib* pvlib;
 	boost::posix_time::time_duration timeout;
