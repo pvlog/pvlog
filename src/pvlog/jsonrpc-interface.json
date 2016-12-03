@@ -34,7 +34,7 @@
 		"returns" : {"data": "data"}
 	},
 	{
-		"name" : "getInverter",
+		"name" : "getInverters",
 		"params": {
 		},
 		"returns" : {"data": "data"}

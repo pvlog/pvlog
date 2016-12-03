@@ -17,7 +17,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getDayData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "from",jsonrpc::JSON_STRING,"to",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getDayDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getMonthData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "year",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getMonthDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getYearData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getYearDataI);
-            this->bindAndAddMethod(jsonrpc::Procedure("getInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getInverterI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getInvertersI);
             this->bindAndAddMethod(jsonrpc::Procedure("getPlants", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getPlantsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getEvents", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getEventsI);
         }
@@ -44,10 +44,10 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             (void)request;
             response = this->getYearData();
         }
-        inline virtual void getInverterI(const Json::Value &request, Json::Value &response)
+        inline virtual void getInvertersI(const Json::Value &request, Json::Value &response)
         {
             (void)request;
-            response = this->getInverter();
+            response = this->getInverters();
         }
         inline virtual void getPlantsI(const Json::Value &request, Json::Value &response)
         {
@@ -64,7 +64,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         virtual Json::Value getDayData(const std::string& from, const std::string& to) = 0;
         virtual Json::Value getMonthData(const std::string& year) = 0;
         virtual Json::Value getYearData() = 0;
-        virtual Json::Value getInverter() = 0;
+        virtual Json::Value getInverters() = 0;
         virtual Json::Value getPlants() = 0;
         virtual Json::Value getEvents() = 0;
 };

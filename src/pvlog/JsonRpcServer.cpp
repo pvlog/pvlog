@@ -170,7 +170,7 @@ Json::Value JsonRpcServer::getYearData() {
 	return result;
 }
 
-Json::Value JsonRpcServer::getInverter() {
+Json::Value JsonRpcServer::getInverters() {
 	Json::Value result;
 	using Result = odb::result<Inverter>;
 
