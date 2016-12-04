@@ -1,12 +1,14 @@
 #include "Inverter.h"
 
+#include "Plant.h"
+
 namespace model {
 
 Json::Value toJson(const Inverter& inverter) {
 	Json::Value json;
 
 	json["id"]       = static_cast<Json::Int64>(inverter.id);
-	//json["plant_id"] = static_cast<Json::Int64>(inverter.plant->id);
+	json["plantId"]  = static_cast<Json::Int64>(inverter.plant.lock()->id);
 	json["name"]     = inverter.name;
 	json["wattpeak"] = inverter.wattpeak;
 	json["phases"]   = inverter.phaseCount;
