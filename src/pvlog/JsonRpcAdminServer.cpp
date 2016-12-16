@@ -147,18 +147,19 @@ Json::Value JsonRpcAdminServer::getSupportedProtocols() {
 Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 	try {
 		Inverter inverter = inverterFromJson(inverterData);
-		db->persist(inverter);
+		int64_t id = db->persist(inverter);
+		return Json::Value(static_cast<Json::Int64>(id));
 	} catch (std::exception &ex) {
 		return errorToJson(-1, "Conversion error!");
 	}
-
-	return Json::Value();
+	;
 }
 
 Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 	try {
 		Plant plant = plantFromJson(plantJson);
-		db->persist(plant);
+		int64_t id = db->persist(plant);
+		return Json::Value(static_cast<Json::Int64>(id));
 	} catch (std::exception &ex) {
 		return errorToJson(-1, "Conversion error!");
 	}
