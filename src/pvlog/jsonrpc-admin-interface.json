@@ -6,7 +6,7 @@
 		"name": "startDatalogger"
 	},
 	{
-		"name" : "getInverter",
+		"name" : "getInverters",
 		"params": {
 		},
 		"returns" : {"data": "data"}

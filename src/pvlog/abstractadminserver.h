@@ -14,7 +14,7 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             this->bindAndAddNotification(jsonrpc::Procedure("stopDatalogger", jsonrpc::PARAMS_BY_NAME,  NULL), &AbstractAdminServer::stopDataloggerI);
             this->bindAndAddNotification(jsonrpc::Procedure("startDatalogger", jsonrpc::PARAMS_BY_NAME,  NULL), &AbstractAdminServer::startDataloggerI);
-            this->bindAndAddMethod(jsonrpc::Procedure("getInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getInverterI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getInvertersI);
             this->bindAndAddMethod(jsonrpc::Procedure("getPlants", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getPlantsI);
             this->bindAndAddMethod(jsonrpc::Procedure("scanForInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "plant",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::scanForInvertersI);
             this->bindAndAddMethod(jsonrpc::Procedure("getSupportedConnections", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedConnectionsI);
@@ -33,10 +33,10 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             (void)request;
             this->startDatalogger();
         }
-        inline virtual void getInverterI(const Json::Value &request, Json::Value &response)
+        inline virtual void getInvertersI(const Json::Value &request, Json::Value &response)
         {
             (void)request;
-            response = this->getInverter();
+            response = this->getInverters();
         }
         inline virtual void getPlantsI(const Json::Value &request, Json::Value &response)
         {
@@ -67,7 +67,7 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         }
         virtual void stopDatalogger() = 0;
         virtual void startDatalogger() = 0;
-        virtual Json::Value getInverter() = 0;
+        virtual Json::Value getInverters() = 0;
         virtual Json::Value getPlants() = 0;
         virtual Json::Value scanForInverters(const Json::Value& plant) = 0;
         virtual Json::Value getSupportedConnections() = 0;
