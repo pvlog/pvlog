@@ -9,6 +9,7 @@
 #include "Pvlib.h"
 #include "Log.h"
 #include "JsonRpcServer.h"
+#include "JsonRpcAdminServer.h"
 #include "ConfigReader.h"
 
 std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
@@ -62,6 +63,10 @@ int main(int argc, char **argv)
 	jsonrpc::HttpServer httpserver(8383);
 	JsonRpcServer server(httpserver, &datalogger, db.get());
 	server.StartListening();
+
+	jsonrpc::HttpServer adminHttpserver(8384);
+	JsonRpcAdminServer adminServer(adminHttpserver, &datalogger, db.get());
+	adminServer.StartListening();
 
 
 	//start datalogger work
