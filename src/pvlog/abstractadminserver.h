@@ -17,6 +17,8 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getInverterI);
             this->bindAndAddMethod(jsonrpc::Procedure("getPlants", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getPlantsI);
             this->bindAndAddMethod(jsonrpc::Procedure("scanForInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "plant",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::scanForInvertersI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getSupportedConnections", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedConnectionsI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getSupportedProtocols", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedProtocolsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveInverterI);
             this->bindAndAddMethod(jsonrpc::Procedure("savePlant", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::savePlantI);
         }
@@ -45,6 +47,16 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             response = this->scanForInverters(request["plant"]);
         }
+        inline virtual void getSupportedConnectionsI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getSupportedConnections();
+        }
+        inline virtual void getSupportedProtocolsI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getSupportedProtocols();
+        }
         inline virtual void saveInverterI(const Json::Value &request, Json::Value &response)
         {
             response = this->saveInverter(request["inverter"]);
@@ -58,6 +70,8 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         virtual Json::Value getInverter() = 0;
         virtual Json::Value getPlants() = 0;
         virtual Json::Value scanForInverters(const Json::Value& plant) = 0;
+        virtual Json::Value getSupportedConnections() = 0;
+        virtual Json::Value getSupportedProtocols() = 0;
         virtual Json::Value saveInverter(const Json::Value& inverter) = 0;
         virtual Json::Value savePlant(const Json::Value& inverter) = 0;
 };

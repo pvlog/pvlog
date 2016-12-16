@@ -27,6 +27,10 @@ public:
 
 	virtual Json::Value scanForInverters(const Json::Value& plant) override;
 
+	virtual Json::Value getSupportedConnections() override;
+
+	virtual Json::Value getSupportedProtocols() override;
+
 	virtual Json::Value saveInverter(const Json::Value& inverter) override;
 
 	virtual Json::Value savePlant(const Json::Value& inverter) override;

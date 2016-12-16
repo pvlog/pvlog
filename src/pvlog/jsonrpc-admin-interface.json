@@ -25,6 +25,18 @@
 		"returns" : {"data": "data"}
 	},
 	{
+		"name" : "getSupportedConnections",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getSupportedProtocols",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
 		"name" : "saveInverter",
 		"params": {
 			"inverter": { "data": "data"}

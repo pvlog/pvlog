@@ -10,6 +10,7 @@
 #include "models/Plant.h"
 #include "Plant_odb.h"
 #include "pvlibhelper.h"
+#include "Log.h"
 
 
 using model::PlantPtr;
@@ -51,11 +52,47 @@ void JsonRpcAdminServer::startDatalogger() {
 }
 
 Json::Value JsonRpcAdminServer::getInverter() {
-	return Json::Value();
+	Json::Value result;
+	using Result = odb::result<Inverter>;
+
+	try {
+		LOG(Debug) << "JsonRpcServer::getInverters";
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<Inverter>());
+		for (const Inverter& i : r) {
+			result.append(toJson(i));
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting inverters" <<  ex.what();
+		result = Json::Value();
+	}
+
+	return result;
 }
 
 Json::Value JsonRpcAdminServer::getPlants() {
-	return Json::Value();
+	Json::Value result;
+	using Result = odb::result<Plant>;
+
+	try {
+		LOG(Debug) << "JsonRpcServer::getPlants";
+
+		odb::session session;
+		odb::transaction t(db->begin());
+		Result r(db->query<Plant>());
+		for (const Plant& p : r) {
+			result.append(toJson(p));
+		}
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting plants" <<  ex.what();
+		result = Json::Value();
+	}
+
+	return result;
 }
 
 Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
@@ -74,6 +111,34 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 		pvlib_close(pvlibPlant);
 
 	} catch (PvlogException& ex) {
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcAdminServer::getSupportedConnections() {
+	Json::Value result;
+	int conNum = pvlib_connection_num();
+	std::vector<uint32_t> conHandles;
+	conHandles.resize(conNum);
+
+	pvlib_connections(conHandles.data(), conHandles.size());
+	for (uint32_t conHandle : conHandles) {
+		result.append(pvlib_connection_name(conHandle));
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcAdminServer::getSupportedProtocols() {
+	Json::Value result;
+	int protocolNum = pvlib_protocol_num();
+	std::vector<uint32_t> protocolHandles;
+	protocolHandles.resize(protocolNum);
+
+	pvlib_protocols(protocolHandles.data(), protocolHandles.size());
+	for (uint32_t protocoHandle : protocolHandles) {
+		result.append(pvlib_protocol_name(protocoHandle));
 	}
 
 	return result;
