@@ -49,5 +49,18 @@
 			"inverter": { "data": "data"}
 		},
 		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "getConfigs",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "saveConfig",
+		"params": {
+			"config": {"data": "data"}
+		},
+		"returns" : {"status": "status"}
 	}
 ]

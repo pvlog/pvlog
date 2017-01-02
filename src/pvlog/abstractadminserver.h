@@ -21,6 +21,8 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getSupportedProtocols", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedProtocolsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveInverterI);
             this->bindAndAddMethod(jsonrpc::Procedure("savePlant", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::savePlantI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getConfigs", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getConfigsI);
+            this->bindAndAddMethod(jsonrpc::Procedure("saveConfig", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "config",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveConfigI);
         }
 
         inline virtual void stopDataloggerI(const Json::Value &request)
@@ -65,6 +67,15 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             response = this->savePlant(request["inverter"]);
         }
+        inline virtual void getConfigsI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getConfigs();
+        }
+        inline virtual void saveConfigI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->saveConfig(request["config"]);
+        }
         virtual void stopDatalogger() = 0;
         virtual void startDatalogger() = 0;
         virtual Json::Value getInverters() = 0;
@@ -74,6 +85,8 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         virtual Json::Value getSupportedProtocols() = 0;
         virtual Json::Value saveInverter(const Json::Value& inverter) = 0;
         virtual Json::Value savePlant(const Json::Value& inverter) = 0;
+        virtual Json::Value getConfigs() = 0;
+        virtual Json::Value saveConfig(const Json::Value& config) = 0;
 };
 
 #endif //JSONRPC_CPP_STUB_ABSTRACTADMINSERVER_H_

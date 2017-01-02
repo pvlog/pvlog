@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <odb/core.hxx>
+#include <jsoncpp/json/value.h>
 
 namespace model {
 
@@ -24,6 +25,22 @@ struct Config {
 };
 
 using ConfigPtr = std::shared_ptr<Config>;
+
+inline Json::Value toJson(const Config& config) {
+	Json::Value json;
+
+	json["key"]   = config.key;
+	json["value"] = config.value;
+
+	return json;
+}
+
+inline Config configFromJson(const Json::Value& configJson) {
+	std::string key   = configJson["key"].asString();
+	std::string value = configJson["value"].asString();
+
+	return Config(key, value);
+}
 
 } //namespace model {
 

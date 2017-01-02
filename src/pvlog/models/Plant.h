@@ -46,7 +46,7 @@ struct Plant {
 		//nothing to go
 	}
 
-	Plant() : id(0) {}
+	Plant() : id(-1) {}
 
 };
 

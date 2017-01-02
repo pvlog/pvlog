@@ -34,6 +34,10 @@ public:
 	virtual Json::Value saveInverter(const Json::Value& inverter) override;
 
 	virtual Json::Value savePlant(const Json::Value& inverter) override;
+
+	virtual Json::Value getConfigs() override;
+
+	virtual Json::Value saveConfig(const Json::Value& config) override;
 };
 
 
