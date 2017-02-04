@@ -569,6 +569,11 @@ void Datalogger::start() {
 	userEventSignal.notify_one();
 }
 
+bool Datalogger::isRunning() {
+	std::lock_guard<std::mutex> lock(mutex);
+	return active;
+}
+
 void Datalogger::work() {
 	for (;;) {
 		active = true;

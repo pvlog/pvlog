@@ -106,6 +106,11 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 	try {
 		LOG(Debug) << "JsonRpcServer::scanForInverters";
 
+		if (datalogger->isRunning()) {
+			result = errorToJson(-2, "Datalogger needs to be stopped before scanning for inverters!");
+			return result;
+		}
+
 		Plant plant = plantFromJson(plantJson);
 
 		pvlib_plant* pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
@@ -225,6 +230,8 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 	Json::Value result;
 
 	try {
+		LOG(Debug) << "JsonRpcServer::saveConfig";
+
 		Config config = configFromJson(configJson);
 		ConfigPtr c(db->load<Config>(config.key));
 		if (c != nullptr) {
@@ -235,6 +242,8 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		}
 
 		result = Json::Value();
+	} catch (odb::exception &ex) {
+		result = errorToJson(-11, "Database error!");
 	} catch (std::exception &ex) {
 		result = errorToJson(-1, "Conversion error!");
 	}
