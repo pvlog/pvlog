@@ -233,6 +233,8 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		LOG(Debug) << "JsonRpcServer::saveConfig";
 
 		Config config = configFromJson(configJson);
+
+		odb::transaction t(db->begin());
 		ConfigPtr c(db->load<Config>(config.key));
 		if (c != nullptr) {
 			//c->value = config.value;
@@ -240,6 +242,7 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		} else {
 			db->persist(config);
 		}
+		t.commit();
 
 		result = Json::Value();
 	} catch (odb::exception &ex) {
