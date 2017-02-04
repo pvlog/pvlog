@@ -71,8 +71,8 @@ Json::Value JsonRpcAdminServer::getInverters() {
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
-		LOG(Error) << "Error getting inverters" <<  ex.what();
-		result = Json::Value();
+		LOG(Error) << "Error getting inverters: " <<  ex.what();
+		result = errorToJson(-1, ex.what());;
 	}
 
 	return result;
@@ -93,8 +93,8 @@ Json::Value JsonRpcAdminServer::getPlants() {
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
-		LOG(Error) << "Error getting plants" <<  ex.what();
-		result = Json::Value();
+		LOG(Error) << "Error getting plants: " <<  ex.what();
+		result = errorToJson(-1, ex.what());;
 	}
 
 	return result;
@@ -104,6 +104,8 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 	Json::Value result;
 
 	try {
+		LOG(Debug) << "JsonRpcServer::scanForInverters";
+
 		Plant plant = plantFromJson(plantJson);
 
 		pvlib_plant* pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
@@ -116,6 +118,8 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 		pvlib_close(pvlibPlant);
 
 	} catch (PvlogException& ex) {
+		LOG(Error) << "Error scan for inverters: " <<  ex.what();
+		result = errorToJson(-1, ex.what());
 	}
 
 	return result;
