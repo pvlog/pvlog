@@ -243,8 +243,10 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 
 		result = Json::Value();
 	} catch (odb::exception &ex) {
+		LOG(Error) << "Error saveConfig" <<  ex.what();
 		result = errorToJson(-11, "Database error!");
 	} catch (std::exception &ex) {
+		LOG(Error) << "Error saveConfig" <<  ex.what();
 		result = errorToJson(-1, "Conversion error!");
 	}
 
