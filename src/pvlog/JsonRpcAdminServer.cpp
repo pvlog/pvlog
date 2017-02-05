@@ -63,6 +63,8 @@ Json::Value JsonRpcAdminServer::getInverters() {
 	try {
 		LOG(Debug) << "JsonRpcServer::getInverters";
 
+		result = Json::Value(Json::arrayValue);
+
 		odb::session session;
 		odb::transaction t(db->begin());
 		Result r(db->query<Inverter>());
@@ -70,9 +72,12 @@ Json::Value JsonRpcAdminServer::getInverters() {
 			result.append(toJson(i));
 		}
 		t.commit();
-	} catch (const std::exception& ex) {
+	} catch (const odb::exception &ex) {
 		LOG(Error) << "Error getting inverters: " <<  ex.what();
-		result = errorToJson(-1, ex.what());;
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "Error getting inverters: " <<  ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
@@ -85,6 +90,8 @@ Json::Value JsonRpcAdminServer::getPlants() {
 	try {
 		LOG(Debug) << "JsonRpcServer::getPlants";
 
+		result = Json::Value(Json::arrayValue);
+
 		odb::session session;
 		odb::transaction t(db->begin());
 		Result r(db->query<Plant>());
@@ -92,9 +99,12 @@ Json::Value JsonRpcAdminServer::getPlants() {
 			result.append(toJson(p));
 		}
 		t.commit();
-	} catch (const std::exception& ex) {
+	} catch (const odb::exception &ex) {
 		LOG(Error) << "Error getting plants: " <<  ex.what();
-		result = errorToJson(-1, ex.what());;
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "Error getting plant: " <<  ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
@@ -122,9 +132,12 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 
 		pvlib_close(pvlibPlant);
 
-	} catch (PvlogException& ex) {
+	} catch (const PvlogException& ex) {
 		LOG(Error) << "Error scan for inverters: " <<  ex.what();
-		result = errorToJson(-1, ex.what());
+		result = errorToJson(-111, ex.what());
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error scan for inverters: " <<  ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
@@ -162,6 +175,8 @@ Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 	Json::Value result;
 
 	try {
+		LOG(Debug) << "JsonRpc::saveInverter";
+
 		Inverter inverter = inverterFromJson(inverterData);
 		InverterPtr inv = db->load<Inverter>(inverter.id);
 		if (inv == nullptr) {
@@ -170,11 +185,16 @@ Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 			db->update(inverter);
 		}
 
-		result = Json::Value();
-	} catch (odb::exception &ex) {
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "save inverter: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (std::exception &ex) {
+	} catch (const Json::Exception &ex) {
+		LOG(Error) << "save inverter: " << ex.what();
 		result = errorToJson(-1, "Conversion error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "save inverter: " << ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
@@ -184,6 +204,8 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 	Json::Value result;
 
 	try {
+		LOG(Debug) << "JsonRpc::savePlant";
+
 		Plant plant = plantFromJson(plantJson);
 		if (plant.id == -1) {
 			db->persist(plant);
@@ -192,10 +214,15 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 		}
 
 		result = Json::Value(static_cast<Json::Int64>(plant.id));
-	} catch (odb::exception &ex) {
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (std::exception &ex) {
+	} catch (const Json::Exception &ex) {
+		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-1, "Conversion error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "save plant: " << ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
@@ -209,6 +236,8 @@ Json::Value JsonRpcAdminServer::getConfigs() {
 	try {
 		LOG(Debug) << "JsonRpcServer::getConfig";
 
+		result = Json::Value(Json::arrayValue);
+
 		odb::session session;
 		odb::transaction t(db->begin());
 		Result r(db->query<Config>());
@@ -217,6 +246,7 @@ Json::Value JsonRpcAdminServer::getConfigs() {
 		}
 		t.commit();
 	} catch (odb::exception &ex) {
+		LOG(Error) << "Error getting configs" <<  ex.what();
 		result = errorToJson(-11, "Database error!");
 	} catch (const std::exception& ex) {
 		LOG(Error) << "Error getting configs" <<  ex.what();
@@ -244,13 +274,16 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		}
 		t.commit();
 
-		result = Json::Value();
-	} catch (odb::exception &ex) {
-		LOG(Error) << "Error saveConfig" <<  ex.what();
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "save config: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (std::exception &ex) {
-		LOG(Error) << "Error saveConfig" <<  ex.what();
+	} catch (const Json::Exception &ex) {
+		LOG(Error) << "save config: " << ex.what();
 		result = errorToJson(-1, "Conversion error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "save config: " << ex.what();
+		result = errorToJson(-1, "General error!");
 	}
 
 	return result;
