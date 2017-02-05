@@ -189,9 +189,9 @@ Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save inverter: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (const Json::Exception &ex) {
-		LOG(Error) << "save inverter: " << ex.what();
-		result = errorToJson(-1, "Conversion error!");
+//	} catch (const Json::Exception &ex) {
+//		LOG(Error) << "save inverter: " << ex.what();
+//		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
 		LOG(Error) << "save inverter: " << ex.what();
 		result = errorToJson(-1, "General error!");
@@ -217,9 +217,9 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (const Json::Exception &ex) {
-		LOG(Error) << "save plant: " << ex.what();
-		result = errorToJson(-1, "Conversion error!");
+//	} catch (const Json::Exception &ex) {
+//		LOG(Error) << "save plant: " << ex.what();
+//		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
 		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-1, "General error!");
@@ -278,9 +278,9 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save config: " << ex.what();
 		result = errorToJson(-11, "Database error!");
-	} catch (const Json::Exception &ex) {
-		LOG(Error) << "save config: " << ex.what();
-		result = errorToJson(-1, "Conversion error!");
+//	} catch (const Json::Exception &ex) {
+//		LOG(Error) << "save config: " << ex.what();
+//		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
 		LOG(Error) << "save config: " << ex.what();
 		result = errorToJson(-1, "General error!");
