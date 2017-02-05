@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "Inverter.h"

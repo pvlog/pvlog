@@ -6,7 +6,7 @@
 #include <iomanip>
 
 #include <boost/optional.hpp>
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 
 #include "PvlogException.h"
 

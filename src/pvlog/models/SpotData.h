@@ -6,7 +6,7 @@
 #include <memory>
 #include <ostream>
 
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

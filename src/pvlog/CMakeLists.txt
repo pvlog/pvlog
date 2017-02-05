@@ -8,7 +8,6 @@ set(SRC
 	JsonRpcAdminServer.cpp
 	models/Inverter.cpp
 	models/Plant.cpp
-	dist/jsoncpp.cpp
 )
 
 set(HEADER
@@ -35,13 +34,14 @@ set(ODB_HEADER
 
 set(LIBS util ${ODB_LIBRARIES})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
+set(LIBS ${LIBS} ${JSONCPP_LIBRARIES})
 set(LIBS ${LIBS} ${JSON_RPC_CPP_SERVER_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
 set(LIBS ${LIBS} rt) #clock_gettime
 
-include_directories("dist")
+include_directories("${JSONCPP_INCLUDE_DIRS}")
 
 get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 

@@ -9,7 +9,7 @@
 
 #include <odb/core.hxx>
 #include <odb/nullable.hxx>
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 
 #include "Inverter.h"
 

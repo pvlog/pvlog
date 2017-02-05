@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <odb/core.hxx>
 

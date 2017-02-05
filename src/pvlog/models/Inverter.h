@@ -7,7 +7,7 @@
 #include <utility>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
-#include <json/json.h>
+#include <jsoncpp/json/value.h>
 
 #include <odb/core.hxx>
 
