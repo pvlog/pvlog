@@ -4,6 +4,7 @@ include_directories(pvlib/src)
 include_directories(pvlog)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("pvlog/dist")
 
 add_subdirectory(pvlib)
 add_subdirectory(pvlog)

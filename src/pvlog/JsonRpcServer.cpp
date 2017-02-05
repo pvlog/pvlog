@@ -1,3 +1,4 @@
+#include <json/json.h>
 #include "JsonRpcServer.h"
 
 #include <string>

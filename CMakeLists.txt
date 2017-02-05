@@ -14,7 +14,6 @@ endif (CMAKE_COMPILER_IS_GNUCC)
 find_package(Boost REQUIRED COMPONENTS date_time)
 find_package(sqlite3 REQUIRED)
 find_package(ODB REQUIRED COMPONENTS sqlite boost)
-find_package(Jsoncpp REQUIRED)
 find_package(json_rpc_cpp REQUIRED)
 
 

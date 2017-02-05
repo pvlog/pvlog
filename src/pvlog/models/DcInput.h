@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <jsoncpp/json/value.h>
+#include <json/json.h>
 #include <boost/optional.hpp>
 #include <odb/core.hxx>
 

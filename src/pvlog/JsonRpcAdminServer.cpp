@@ -1,3 +1,4 @@
+#include <json/json.h>
 #include "JsonRpcAdminServer.h"
 
 #include <odb/database.hxx>
