@@ -56,6 +56,10 @@ void JsonRpcAdminServer::startDatalogger() {
 	datalogger->start();
 }
 
+bool JsonRpcAdminServer::isDataloggerRunning() {
+	return datalogger->isRunning();
+}
+
 Json::Value JsonRpcAdminServer::getInverters() {
 	Json::Value result;
 	using Result = odb::result<Inverter>;

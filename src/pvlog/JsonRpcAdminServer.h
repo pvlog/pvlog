@@ -21,6 +21,8 @@ public:
 
 	virtual void startDatalogger() override;
 
+	virtual bool isDataloggerRunning() override;
+
 	virtual Json::Value getInverters() override;
 
 	virtual Json::Value getPlants() override;

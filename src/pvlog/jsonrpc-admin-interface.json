@@ -6,6 +6,12 @@
 		"name": "startDatalogger"
 	},
 	{
+		"name": "isDataloggerRunning",
+		"params": {
+		},
+		"returns" : true
+	},
+	{
 		"name" : "getInverters",
 		"params": {
 		},
