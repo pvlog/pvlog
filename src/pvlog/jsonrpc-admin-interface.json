@@ -50,9 +50,23 @@
 		"returns" : {"status": "status"}
 	},
 	{
+		"name" : "deleteInverter",
+		"params": {
+			"plantId": "inverterId"
+		},
+		"returns" : {"status": "status"}
+	},
+	{
 		"name" : "savePlant",
 		"params": {
 			"inverter": { "data": "data"}
+		},
+		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "deletePlant",
+		"params": {
+			"plantId": "plantId"
 		},
 		"returns" : {"status": "status"}
 	},

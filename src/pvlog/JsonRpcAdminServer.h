@@ -35,7 +35,11 @@ public:
 
 	virtual Json::Value saveInverter(const Json::Value& inverter) override;
 
+	virtual Json::Value deleteInverter(const std::string& inverterId) override;
+
 	virtual Json::Value savePlant(const Json::Value& inverter) override;
+
+	virtual Json::Value deletePlant(const std::string& plantId) override;
 
 	virtual Json::Value getConfigs() override;
 

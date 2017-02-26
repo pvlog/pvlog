@@ -40,7 +40,7 @@ std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 	std::string password = configReader.getValue("password");
 	LOG(Info) << "Successfully parsed database configuration file.";
 
-	return std::unique_ptr<odb::database>(new odb::sqlite::database(databaseName, SQLITE_OPEN_READWRITE));
+	return std::unique_ptr<odb::database>(new odb::sqlite::database(databaseName, SQLITE_OPEN_READWRITE, true));
 }
 
 int main(int argc, char **argv)

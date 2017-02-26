@@ -21,7 +21,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getSupportedConnections", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedConnectionsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getSupportedProtocols", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getSupportedProtocolsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveInverterI);
+            this->bindAndAddMethod(jsonrpc::Procedure("deleteInverter", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "plantId",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::deleteInverterI);
             this->bindAndAddMethod(jsonrpc::Procedure("savePlant", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "inverter",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::savePlantI);
+            this->bindAndAddMethod(jsonrpc::Procedure("deletePlant", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "plantId",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::deletePlantI);
             this->bindAndAddMethod(jsonrpc::Procedure("getConfigs", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getConfigsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveConfig", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "config",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveConfigI);
         }
@@ -69,9 +71,17 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             response = this->saveInverter(request["inverter"]);
         }
+        inline virtual void deleteInverterI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->deleteInverter(request["plantId"].asString());
+        }
         inline virtual void savePlantI(const Json::Value &request, Json::Value &response)
         {
             response = this->savePlant(request["inverter"]);
+        }
+        inline virtual void deletePlantI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->deletePlant(request["plantId"].asString());
         }
         inline virtual void getConfigsI(const Json::Value &request, Json::Value &response)
         {
@@ -91,7 +101,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         virtual Json::Value getSupportedConnections() = 0;
         virtual Json::Value getSupportedProtocols() = 0;
         virtual Json::Value saveInverter(const Json::Value& inverter) = 0;
+        virtual Json::Value deleteInverter(const std::string& plantId) = 0;
         virtual Json::Value savePlant(const Json::Value& inverter) = 0;
+        virtual Json::Value deletePlant(const std::string& plantId) = 0;
         virtual Json::Value getConfigs() = 0;
         virtual Json::Value saveConfig(const Json::Value& config) = 0;
 };
