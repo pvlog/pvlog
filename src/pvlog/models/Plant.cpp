@@ -18,7 +18,7 @@ Json::Value toJson(const Plant& plant) {
 Plant plantFromJson(const Json::Value& value) {
 	Plant plant;
 
-	if (value.isMember("id")) {
+	if (value.isMember("id") && !value["id"].isNull()) {
 		plant.id = value["id"].asInt64();
 	}
 	plant.name       = value["name"].asString();
