@@ -131,7 +131,9 @@ Json::Value JsonRpcAdminServer::scanForInverters(const Json::Value& plantJson) {
 		std::unordered_set<int64_t> inverters = ::getInverters(pvlibPlant);
 
 		for (int64_t inverterId : inverters) {
-			result.append(static_cast<Json::Int64>(inverterId));
+			Json::Value inverter;
+			inverter["id"] = static_cast<Json::Int64>(inverterId);
+			result.append(inverter);
 		}
 
 		pvlib_close(pvlibPlant);
