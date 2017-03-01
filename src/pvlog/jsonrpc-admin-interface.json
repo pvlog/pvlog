@@ -52,7 +52,7 @@
 	{
 		"name" : "deleteInverter",
 		"params": {
-			"plantId": "inverterId"
+			"inverterId": "inverterId"
 		},
 		"returns" : {"status": "status"}
 	},
