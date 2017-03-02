@@ -35,7 +35,7 @@ static Json::Value errorToJson(int num ,std::string message) {
 
 	value["error"] = error;
 
-	return error;
+	return value;
 }
 
 JsonRpcAdminServer::JsonRpcAdminServer(jsonrpc::AbstractServerConnector& conn, Datalogger* datalogger, odb::database* db) :
