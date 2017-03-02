@@ -227,6 +227,8 @@ Json::Value JsonRpcAdminServer::deleteInverter(const std::string& inverterId) {
 
 		db->erase(inv);
 		t.commit();
+
+		result = Json::Value(Json::ValueType::objectValue);
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "delete: " << ex.what();
 		result = errorToJson(-11, "Database error! Note: you cant delete inverter with associated data in database!");
@@ -256,7 +258,7 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 			db->update(plant);
 		}
 
-		result = Json::Value(static_cast<Json::Int64>(plant.id));
+		result["id"] = Json::Value(static_cast<Json::Int64>(plant.id));
 		t.commit();
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save plant: " << ex.what();
@@ -294,6 +296,8 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 
 		db->erase(plant);
 		t.commit();
+
+		result = Json::Value(Json::ValueType::objectValue);
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "delete Plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
