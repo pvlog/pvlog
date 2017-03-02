@@ -59,7 +59,7 @@
 	{
 		"name" : "savePlant",
 		"params": {
-			"inverter": { "data": "data"}
+			"plant": { "data": "data"}
 		},
 		"returns" : {"status": "status"}
 	},
