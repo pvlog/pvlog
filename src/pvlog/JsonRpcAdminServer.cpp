@@ -295,13 +295,13 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 		db->erase(plant);
 		t.commit();
 	} catch (const odb::exception &ex) {
-		LOG(Error) << "save plant: " << ex.what();
+		LOG(Error) << "delete Plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
 //	} catch (const Json::Exception &ex) {
 //		LOG(Error) << "save plant: " << ex.what();
 //		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
-		LOG(Error) << "save plant: " << ex.what();
+		LOG(Error) << "delete plant: " << ex.what();
 		result = errorToJson(-1, "General error!");
 	}
 
