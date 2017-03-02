@@ -29,7 +29,7 @@ struct Plant {
 	std::string connectionParam; //for example address
 	std::string protocolParam; //for example password
 
-	#pragma db value_not_null inverse(plant)
+	#pragma db inverse(plant)
 	std::vector<std::shared_ptr<Inverter>> inverters;
 
 	Plant(std::string name,
