@@ -184,12 +184,16 @@ Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 		LOG(Debug) << "JsonRpc::saveInverter";
 
 		Inverter inverter = inverterFromJson(inverterData);
+
+		odb::session session;
+		odb::transaction t(db->begin());
 		InverterPtr inv = db->load<Inverter>(inverter.id);
 		if (inv == nullptr) {
 			db->persist(inverter);
 		} else {
 			db->update(inverter);
 		}
+		t.commit();
 
 		result = Json::Value(Json::ValueType::objectValue);
 	} catch (const odb::exception &ex) {
@@ -214,13 +218,15 @@ Json::Value JsonRpcAdminServer::deleteInverter(const std::string& inverterId) {
 
 		int64_t id = std::stoll(inverterId);
 
+		odb::session session;
+		odb::transaction t(db->begin());
 		InverterPtr inv = db->load<Inverter>(id);
 		if (inv == nullptr) {
 			return result;
 		}
 
 		db->erase(inv);
-
+		t.commit();
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "delete: " << ex.what();
 		result = errorToJson(-11, "Database error! Note: you cant delete inverter with associated data in database!");
@@ -242,6 +248,8 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 		LOG(Debug) << "JsonRpc::savePlant";
 
 		Plant plant = plantFromJson(plantJson);
+
+		odb::transaction t(db->begin());
 		if (plant.id == -1) {
 			db->persist(plant);
 		} else {
@@ -249,6 +257,7 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 		}
 
 		result = Json::Value(static_cast<Json::Int64>(plant.id));
+		t.commit();
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
@@ -270,6 +279,9 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 		LOG(Debug) << "JsonRpc::deletePlant";
 
 		int64_t id = std::stoll(plantId);
+
+		odb::session session;
+		odb::transaction t(db->begin());
 		PlantPtr plant = db->load<Plant>(id);
 
 		if (plant == nullptr) {
@@ -281,6 +293,7 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 		}
 
 		db->erase(plant);
+		t.commit();
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "save plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
