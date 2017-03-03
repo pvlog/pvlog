@@ -179,6 +179,7 @@ Json::Value JsonRpcAdminServer::getSupportedProtocols() {
 
 Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 	Json::Value result;
+	using Query = odb::query<Inverter>;
 
 	try {
 		LOG(Debug) << "JsonRpc::saveInverter";
@@ -187,7 +188,7 @@ Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		InverterPtr inv = db->load<Inverter>(inverter.id);
+		InverterPtr inv = db->query_one<Inverter>(Query::id == inverter.id);
 		if (inv == nullptr) {
 			db->persist(inverter);
 		} else {
@@ -218,23 +219,17 @@ Json::Value JsonRpcAdminServer::deleteInverter(const std::string& inverterId) {
 
 		int64_t id = std::stoll(inverterId);
 
-		odb::session session;
 		odb::transaction t(db->begin());
-		InverterPtr inv = db->load<Inverter>(id);
-		if (inv == nullptr) {
-			return result;
-		}
-
-		db->erase(inv);
+		db->erase<Inverter>(id);
 		t.commit();
 
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::object_not_persistent&) {
+		//inverter is not persisted, this is not an error!
 		result = Json::Value(Json::ValueType::objectValue);
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "delete: " << ex.what();
 		result = errorToJson(-11, "Database error! Note: you cant delete inverter with associated data in database!");
-//	} catch (const Json::Exception &ex) {
-//		LOG(Error) << "save inverter: " << ex.what();
-//		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
 		LOG(Error) << "save inverter: " << ex.what();
 		result = errorToJson(-1, "General error!");
@@ -275,7 +270,8 @@ Json::Value JsonRpcAdminServer::savePlant(const Json::Value& plantJson) {
 }
 
 Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
-	Json::Value result;
+	Json::Value result = Json::Value(Json::ValueType::objectValue);
+	using Query = odb::query<Plant>;
 
 	try {
 		LOG(Debug) << "JsonRpc::deletePlant";
@@ -284,7 +280,7 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		PlantPtr plant = db->load<Plant>(id);
+		PlantPtr plant = db->query_one<Plant>(Query::id == id);
 
 		if (plant == nullptr) {
 			return result;
@@ -296,8 +292,6 @@ Json::Value JsonRpcAdminServer::deletePlant(const std::string& plantId) {
 
 		db->erase(plant);
 		t.commit();
-
-		result = Json::Value(Json::ValueType::objectValue);
 	} catch (const odb::exception &ex) {
 		LOG(Error) << "delete Plant: " << ex.what();
 		result = errorToJson(-11, "Database error!");
@@ -342,6 +336,7 @@ Json::Value JsonRpcAdminServer::getConfigs() {
 
 Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 	Json::Value result;
+	using Query = odb::query<Config>;
 
 	try {
 		LOG(Debug) << "JsonRpcServer::saveConfig";
@@ -349,9 +344,8 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		Config config = configFromJson(configJson);
 
 		odb::transaction t(db->begin());
-		ConfigPtr c(db->load<Config>(config.key));
+		ConfigPtr c = db->query_one<Config>(Query::key == config.key);
 		if (c != nullptr) {
-			//c->value = config.value;
 			db->update(config);
 		} else {
 			db->persist(config);
