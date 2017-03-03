@@ -179,16 +179,26 @@ Json::Value JsonRpcAdminServer::getSupportedProtocols() {
 
 Json::Value JsonRpcAdminServer::saveInverter(const Json::Value& inverterData) {
 	Json::Value result;
-	using Query = odb::query<Inverter>;
+	using InverterQuery = odb::query<Inverter>;
+	using PlantQuery    = odb::query<Plant>;
 
 	try {
 		LOG(Debug) << "JsonRpc::saveInverter";
 
 		Inverter inverter = inverterFromJson(inverterData);
+		int64_t plantId = inverterData["plantId"].asInt64();
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		InverterPtr inv = db->query_one<Inverter>(Query::id == inverter.id);
+		InverterPtr inv = db->query_one<Inverter>(InverterQuery::id == inverter.id);
+		PlantPtr pl = db->query_one<Plant>(PlantQuery::id == plantId);
+		if (pl == nullptr) {
+			result = errorToJson(-11, "Database error!");
+			return result;
+		}
+
+		inverter.plant = pl;
+
 		if (inv == nullptr) {
 			db->persist(inverter);
 		} else {
