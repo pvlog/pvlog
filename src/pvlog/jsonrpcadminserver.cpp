@@ -1,18 +1,17 @@
-#include "JsonRpcAdminServer.h"
-
+#include <config.h>
+#include <datalogger.h>
+#include <inverter.h>
+#include <jsonrpcadminserver.h>
+#include <log.h>
 #include <odb/database.hxx>
 #include <odb/query.hxx>
+#include <plant.h>
 
-#include "Datalogger.h"
 #include "odb/database.hxx"
-#include "models/Inverter.h"
-#include "Inverter_odb.h"
-#include "models/Plant.h"
-#include "Plant_odb.h"
-#include "models/Config.h"
-#include "Config_odb.h"
+#include "inverter_odb.h"
+#include "plant_odb.h"
+#include "config_odb.h"
 #include "pvlibhelper.h"
-#include "Log.h"
 
 
 using model::PlantPtr;

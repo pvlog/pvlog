@@ -1,5 +1,3 @@
-#include "SunriseSunset.h"
-
 #include <cmath>
 #include <utility>
 #include <limits>
@@ -7,6 +5,7 @@
 #include <iomanip>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <sunrisesunset.h>
 
 using boost::posix_time::ptime;
 using boost::posix_time::from_time_t;

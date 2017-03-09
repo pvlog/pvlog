@@ -1,10 +1,9 @@
-#include "ConfigReader.h"
-
+#include <configreader.h>
+#include <log.h>
+#include <pvlogexception.h>
 #include <fstream>
 #include <iostream>
 
-#include "PvlogException.h"
-#include "Log.h"
 
 static void trim(std::string& source, const char * delims = "\t\n\r\0x20")
 {

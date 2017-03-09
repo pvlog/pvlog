@@ -8,12 +8,13 @@
 #include <condition_variable>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <daemon.h>
+#include <datetime.h>
 #include <odb/database.hxx>
+#include <pvlib.h>
+#include <pvlibhelper.h>
+#include <spotdata.h>
 
-#include "Daemon.h"
-#include "DateTime.h"
-#include "Pvlib.h"
-#include "models/SpotData.h"
 
 class SunriseSunset;
 class Database;

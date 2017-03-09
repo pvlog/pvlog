@@ -1,6 +1,5 @@
-#include "Inverter.h"
-
-#include "Plant.h"
+#include <inverter.h>
+#include <plant.h>
 
 namespace model {
 

@@ -1,35 +1,33 @@
 set(SRC 
-	Datalogger.cpp
+	datalogger.cpp
 	main.cpp
-	Pvlib.cpp
-	SunriseSunset.cpp
-	JsonRpcServer.cpp
+	sunrisesunset.cpp
+	jsonrpcserver.cpp
 	pvlibhelper.cpp
-	JsonRpcAdminServer.cpp
-	models/Inverter.cpp
-	models/Plant.cpp
+	jsonrpcadminserver.cpp
+	models/inverter.cpp
+	models/plant.cpp
 )
 
 set(HEADER
-	Datalogger.h
-	Pvlib.h
-	Pvlog.h
-	SunriseSunset.h
-	ForgroundDaemon.h
-	Daemon.h
+	datalogger.h
+	pvlog.h
+	sunrisesunset.h
+	forgrounddaemon.h
+	daemon.h
 	abstractpvlogserver.h
-	JsonRpcServer.h
+	jsonrpcserver.h
 )
 
 set(ODB_HEADER
-	models/Inverter.h
-	models/Plant.h
-	models/Config.h
-	models/SpotData.h
-	models/Phase.h
-	models/DcInput.h
-	models/DayData.h
-	models/Event.h
+	models/inverter.h
+	models/plant.h
+	models/config.h
+	models/spotdata.h
+	models/phase.h
+	models/dcinput.h
+	models/daydata.h
+	models/event.h
 )
 
 set(LIBS util ${ODB_LIBRARIES})
@@ -42,6 +40,7 @@ set(LIBS ${LIBS} bluetooth)
 set(LIBS ${LIBS} rt) #clock_gettime
 
 include_directories("${JSONCPP_INCLUDE_DIRS}")
+include_directories(models)
 
 get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
@@ -52,7 +51,6 @@ odb_compile(ODB_SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSIO
 	INCLUDE ${DIRS})
 
 
-include_directories(models)
 
 set(SRC ${SRC} ${ODB_SRC})
 add_executable(pvlog ${SRC} ${HEADER})

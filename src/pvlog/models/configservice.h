@@ -1,13 +1,13 @@
 #ifndef SRC_PVLOG_MODELS_CONFIGSERVICE_H_
 #define SRC_PVLOG_MODELS_CONFIGSERVICE_H_
 
+#include <config.h>
 #include <memory>
 
 #include <odb/database.hxx>
 #include <odb/sqlite/database.hxx>
 
-#include "Config.h"
-#include "Config_odb.h"
+#include "config_odb.h"
 
 
 inline std::string readConfig(odb::core::database* db,  const std::string& key) {

@@ -1,16 +1,16 @@
-#include <Datalogger.h>
+#include <configreader.h>
+#include <datalogger.h>
+#include <jsonrpcadminserver.h>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <odb/database.hxx>
 #include <odb/sqlite/database.hxx>
 #include <jsonrpccpp/server/connectors/httpserver.h>
+#include <jsonrpcserver.h>
+#include <log.h>
+#include <pvlib.h>
 
-#include "Pvlib.h"
-#include "Log.h"
-#include "JsonRpcServer.h"
-#include "JsonRpcAdminServer.h"
-#include "ConfigReader.h"
 
 std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 {

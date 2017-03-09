@@ -4,9 +4,9 @@
 #include <unordered_map>
 
 #include <abstractpvlogserver.h>
+#include <inverter.h>
 
-#include "models/Inverter.h"
-#include "models/SpotData.h"
+#include <spotdata.h>
 
 class Datalogger;
 

@@ -10,13 +10,13 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <dcinput.h>
+#include <inverter.h>
 #include <odb/core.hxx>
+#include <phase.h>
+#include <utility.h>
 
 #include "odbHelper.h"
-#include "Phase.h"
-#include "DcInput.h"
-#include "Inverter.h"
-#include "Utility.h"
 
 namespace model {
 

@@ -1,8 +1,8 @@
 #ifndef FORGROUND_DAEMON_H
 #define FORGROUND_DAEMON_H
 
-#include "Daemon.h"
-#include "Log.h"
+#include <daemon.h>
+#include <log.h>
 
 class ForgroundDaemon: public Daemon {
 public:

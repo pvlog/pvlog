@@ -5,10 +5,10 @@
 
 #include <jsoncpp/json/value.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <inverter.h>
 #include <odb/core.hxx>
 
-#include "Inverter.h"
-#include "TimeUtil.h"
+#include <timeutil.h>
 
 namespace model {
 

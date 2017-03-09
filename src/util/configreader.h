@@ -1,11 +1,11 @@
 #ifndef CONFIG_READER_H
 #define CONFIG_READER_H
 
+#include <utility.h>
 #include <string>
 #include <map>
 #include <fstream>
 
-#include <Utility.h>
 
 class ConfigReader {
 	DISABLE_COPY(ConfigReader)

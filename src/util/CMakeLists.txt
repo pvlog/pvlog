@@ -1,14 +1,14 @@
 set(SRC 
-	ConfigReader.cpp
-	Log.cpp
+	configreader.cpp
+	log.cpp
 	)
 
 set(HEADERS 
-	ConfigReader.h 
-	DateTime.h 
-	Log.h 
-	PvlogException.h 
-	Utility.h
+	configreader.h 
+	datetime.h 
+	log.h 
+	pvlogexception.h 
+	utility.h
 	)
 
 add_library(util ${SRC} ${HEADERS})

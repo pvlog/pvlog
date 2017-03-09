@@ -1,10 +1,10 @@
+#include <datetime.h>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <ctime>
 #include <fstream>
 #include "SqliteDatabase.h"
-#include "DateTime.h"
 #include <gtest/gtest.h>
 
 static const int STORAGE_INTERVAL = 60 * 5; //10 minutes

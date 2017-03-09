@@ -4,9 +4,9 @@
 #include <string>
 #include <memory>
 #include <odb/database.hxx>
+#include <pvlib.h>
 
-#include "Utility.h"
-#include "Pvlib.h"
+#include <utility.h>
 
 class Daemon;
 

@@ -8,7 +8,7 @@
 #include <boost/optional.hpp>
 #include <jsoncpp/json/value.h>
 
-#include "PvlogException.h"
+#include <pvlogexception.h>
 
 namespace util {
 

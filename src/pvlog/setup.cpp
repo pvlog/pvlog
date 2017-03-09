@@ -1,24 +1,24 @@
+#include <config.h>
+#include <configreader.h>
+#include <inverter.h>
+#include <log.h>
 #include <memory>
 
 #include <odb/database.hxx>
 #include <odb/transaction.hxx>
 #include <odb/sqlite/database.hxx>
 #include <odb/schema-catalog.hxx>
+#include <plant.h>
+#include <pvlib.h>
+#include <pvlogexception.h>
 
-#include "PvlogException.h"
-#include "Log.h"
-#include "ConfigReader.h"
-#include "models/Plant.h"
-#include "Plant_odb.h"
-#include "models/Inverter.h"
-#include "Inverter_odb.h"
-#include "models/Config.h"
-#include "Config_odb.h"
-#include "DayData_odb.h"
-#include "SpotData_odb.h"
+#include "plant_odb.h"
+#include "inverter_odb.h"
+#include "config_odb.h"
+#include "daydata_odb.h"
+#include "spotdata_odb.h"
 
 
-#include "Pvlib.h"
 
 
 using model::Plant;
