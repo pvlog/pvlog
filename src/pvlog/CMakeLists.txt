@@ -1,6 +1,7 @@
 set(SRC 
 	datalogger.cpp
 	main.cpp
+	email.cpp
 	sunrisesunset.cpp
 	jsonrpcserver.cpp
 	pvlibhelper.cpp
@@ -12,6 +13,7 @@ set(SRC
 set(HEADER
 	datalogger.h
 	pvlog.h
+	email.h
 	sunrisesunset.h
 	forgrounddaemon.h
 	daemon.h
@@ -34,6 +36,7 @@ set(LIBS util ${ODB_LIBRARIES})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(LIBS ${LIBS} ${JSONCPP_LIBRARIES})
 set(LIBS ${LIBS} ${JSON_RPC_CPP_SERVER_LIBRARIES})
+set(LIBS ${LIBS} ${Poco_LIBRARIES})
 set(LIBS ${LIBS} pthread)
 set(LIBS ${LIBS} pvlib)
 set(LIBS ${LIBS} bluetooth)
