@@ -110,14 +110,18 @@ list(APPEND components
 list(REMOVE_DUPLICATES components) # remove duplicate defaults
 
 foreach( component ${components} )
-	#if(NOT Poco_${component}_FOUND)
+	if(${component} STREQUAL "NetSSL_OpenSSL")
+		set(component "NetSSL")
+		set(SEARCH_NAMES Poco/${component}.h Poco/Net/${component}.h Poco/${component}/${component}.h)
+	else()
+		set(SEARCH_NAMES Poco/${component}.h Poco/${component}/${component}.h)
+	endif()
 		
 	# include directory for the component
 	if(NOT Poco_${component}_INCLUDE_DIR)
 		find_path(Poco_${component}_INCLUDE_DIR
 			NAMES 
-				Poco/${component}.h 	# e.g. Foundation.h
-				Poco/${component}/${component}.h # e.g. OSP/OSP.h Util/Util.h
+				${SEARCH_NAMES}
 			HINTS
 				${Poco_ROOT_DIR}
 			PATH_SUFFIXES
