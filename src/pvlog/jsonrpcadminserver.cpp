@@ -12,6 +12,7 @@
 #include "plant_odb.h"
 #include "config_odb.h"
 #include "pvlibhelper.h"
+#include "email.h"
 
 
 using model::PlantPtr;
@@ -24,6 +25,24 @@ using model::plantFromJson;
 using model::Config;
 using model::ConfigPtr;
 using model::configFromJson;
+
+static void saveOrUpdate(odb::database* db, const Config& config) {
+	using Query = odb::query<Config>;
+
+	ConfigPtr c = db->query_one<Config>(Query::key == config.key);
+	if (c != nullptr) {
+		db->update(config);
+	} else {
+		db->persist(config);
+	}
+}
+
+static ConfigPtr readConfig(odb::database* db, const std::string& key) {
+	using Query = odb::query<Config>;
+
+	ConfigPtr c = db->query_one<Config>(Query::key == key);
+	return c;
+}
 
 static Json::Value errorToJson(int num ,std::string message) {
 	Json::Value value;
@@ -345,7 +364,6 @@ Json::Value JsonRpcAdminServer::getConfigs() {
 
 Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 	Json::Value result;
-	using Query = odb::query<Config>;
 
 	try {
 		LOG(Debug) << "JsonRpcServer::saveConfig";
@@ -353,12 +371,7 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 		Config config = configFromJson(configJson);
 
 		odb::transaction t(db->begin());
-		ConfigPtr c = db->query_one<Config>(Query::key == config.key);
-		if (c != nullptr) {
-			db->update(config);
-		} else {
-			db->persist(config);
-		}
+		saveOrUpdate(db, config);
 		t.commit();
 
 		result = Json::Value(Json::ValueType::objectValue);
@@ -370,6 +383,90 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 //		result = errorToJson(-1, "Conversion error!");
 	} catch (const std::exception &ex) {
 		LOG(Error) << "save config: " << ex.what();
+		result = errorToJson(-1, "General error!");
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcAdminServer::saveEmailServer(const std::string& server, int port, const std::string& user, const std::string& password) {
+	Json::Value result;
+
+	Config smtpServer("smtpServer", server);
+	Config smtpPort("smtpPort", std::to_string(port));
+	Config smtpUser("smtpUser", user);
+	Config smtpPassword("smtpPassword", password);
+
+	try {
+		odb::transaction t(db->begin());
+		saveOrUpdate(db, smtpServer);
+		saveOrUpdate(db, smtpPort);
+		saveOrUpdate(db, smtpUser);
+		saveOrUpdate(db, smtpPassword);
+		t.commit();
+
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "saveEmailServer: " << ex.what();
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "saveEmailServer: " << ex.what();
+		result = errorToJson(-1, "General error!");
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcAdminServer::saveEmail(const std::string& email) {
+	Json::Value result;
+
+	Config emailConfig("email", email);
+
+	try {
+		odb::transaction t(db->begin());
+		saveOrUpdate(db, emailConfig);
+		t.commit();
+
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "saveEmail: " << ex.what();
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "saveEmail: " << ex.what();
+		result = errorToJson(-1, "General error!");
+	}
+
+	return result;
+
+}
+
+Json::Value JsonRpcAdminServer::sendTestEmail() {
+	Json::Value result;
+
+	try {
+		ConfigPtr smtpServerConf   = readConfig(db, "smtpServer");
+		ConfigPtr smtpPortConf     = readConfig(db, "smtpPort");
+		ConfigPtr smtpUserConf     = readConfig(db, "smtpUser");
+		ConfigPtr smtpPasswordConf = readConfig(db, "smtpPassword");
+
+		ConfigPtr emailConf = readConfig(db, "email");
+
+		const std::string& smtpServer = smtpServerConf->value;
+		int smtpPort                  = std::stoi(smtpPortConf->value);
+		const std::string& user       = smtpUserConf->value;
+		const std::string& password   = smtpPasswordConf->value;
+
+		const std::string& targetEmail = emailConf->value;
+
+		Email email(smtpServer, smtpPort, user, password);
+		email.send(user, targetEmail, "Pvlog test email", "Success: Pvlog email transmission is working!");
+
+		result = Json::Value(Json::ValueType::objectValue);
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "sendTestEmail: " << ex.what();
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "sendTestEmail: " << ex.what();
 		result = errorToJson(-1, "General error!");
 	}
 

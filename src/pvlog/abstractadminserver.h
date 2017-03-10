@@ -26,6 +26,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             this->bindAndAddMethod(jsonrpc::Procedure("deletePlant", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "plantId",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::deletePlantI);
             this->bindAndAddMethod(jsonrpc::Procedure("getConfigs", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getConfigsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveConfig", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "config",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveConfigI);
+            this->bindAndAddMethod(jsonrpc::Procedure("saveEmailServer", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "password",jsonrpc::JSON_STRING,"port",jsonrpc::JSON_INTEGER,"server",jsonrpc::JSON_STRING,"user",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::saveEmailServerI);
+            this->bindAndAddMethod(jsonrpc::Procedure("saveEmail", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "email",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::saveEmailI);
+            this->bindAndAddMethod(jsonrpc::Procedure("sendTestEmail", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::sendTestEmailI);
         }
 
         inline virtual void stopDataloggerI(const Json::Value &request)
@@ -92,6 +95,19 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             response = this->saveConfig(request["config"]);
         }
+        inline virtual void saveEmailServerI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->saveEmailServer(request["password"].asString(), request["port"].asInt(), request["server"].asString(), request["user"].asString());
+        }
+        inline virtual void saveEmailI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->saveEmail(request["email"].asString());
+        }
+        inline virtual void sendTestEmailI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->sendTestEmail();
+        }
         virtual void stopDatalogger() = 0;
         virtual void startDatalogger() = 0;
         virtual bool isDataloggerRunning() = 0;
@@ -106,6 +122,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         virtual Json::Value deletePlant(const std::string& plantId) = 0;
         virtual Json::Value getConfigs() = 0;
         virtual Json::Value saveConfig(const Json::Value& config) = 0;
+        virtual Json::Value saveEmailServer(const std::string& password, int port, const std::string& server, const std::string& user) = 0;
+        virtual Json::Value saveEmail(const std::string& email) = 0;
+        virtual Json::Value sendTestEmail() = 0;
 };
 
 #endif //JSONRPC_CPP_STUB_ABSTRACTADMINSERVER_H_

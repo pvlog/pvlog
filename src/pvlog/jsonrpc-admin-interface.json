@@ -82,5 +82,28 @@
 			"config": {"data": "data"}
 		},
 		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "saveEmailServer",
+		"params": {
+			"server": "smtp.gmail.com",
+			"port": 465,
+			"user": "user",
+			"password": "password"
+		},
+		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "saveEmail",
+		"params": {
+			"email": "email"
+		},
+		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "sendTestEmail",
+		"params": {
+		},
+		"returns" : {"status": "status"}
 	}
 ]
