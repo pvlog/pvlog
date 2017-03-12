@@ -417,6 +417,43 @@ Json::Value JsonRpcAdminServer::saveEmailServer(const std::string& server, int p
 	return result;
 }
 
+Json::Value JsonRpcAdminServer::getEmailServer() {
+	Json::Value result = Json::Value(Json::ValueType::objectValue);;
+
+	try {
+		ConfigPtr smtpServerConf   = readConfig(db, "smtpServer");
+		ConfigPtr smtpPortConf     = readConfig(db, "smtpPort");
+		ConfigPtr smtpUserConf     = readConfig(db, "smtpUser");
+		ConfigPtr smtpPasswordConf = readConfig(db, "smtpPassword");
+
+		Json::Value serverData;
+
+		if (smtpServerConf != nullptr) {
+			serverData["server"]   = smtpServerConf->value;
+		}
+		if (smtpPortConf != nullptr) {
+			serverData["port"]     = std::stoi(smtpPortConf->value);
+		}
+		if (smtpUserConf != nullptr) {
+			serverData["user"]     = smtpUserConf->value;
+		}
+		if (smtpPasswordConf != nullptr) {
+			serverData["password"] = smtpPasswordConf->value;
+		}
+
+		result = serverData;
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "getEmailServer: " << ex.what();
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "sgetEmailServer: " << ex.what();
+		result = errorToJson(-1, "General error!");
+	}
+
+	return result;
+}
+
+
 Json::Value JsonRpcAdminServer::saveEmail(const std::string& email) {
 	Json::Value result;
 
@@ -437,7 +474,26 @@ Json::Value JsonRpcAdminServer::saveEmail(const std::string& email) {
 	}
 
 	return result;
+}
 
+Json::Value JsonRpcAdminServer::getEmail() {
+	Json::Value result = Json::Value(Json::ValueType::objectValue);
+
+	try {
+		ConfigPtr emailConf   = readConfig(db, "email");
+
+		if (emailConf != nullptr) {
+			result["email"] = emailConf->value;
+		}
+	} catch (const odb::exception &ex) {
+		LOG(Error) << "getEmail: " << ex.what();
+		result = errorToJson(-11, "Database error!");
+	} catch (const std::exception &ex) {
+		LOG(Error) << "getEmail: " << ex.what();
+		result = errorToJson(-1, "General error!");
+	}
+
+	return result;
 }
 
 Json::Value JsonRpcAdminServer::sendTestEmail() {
@@ -450,6 +506,12 @@ Json::Value JsonRpcAdminServer::sendTestEmail() {
 		ConfigPtr smtpPasswordConf = readConfig(db, "smtpPassword");
 
 		ConfigPtr emailConf = readConfig(db, "email");
+
+		if (smtpServerConf == nullptr || smtpPortConf == nullptr || smtpUserConf == nullptr ||
+				smtpPasswordConf == nullptr || emailConf == nullptr) {
+			result = errorToJson(-1, "General error!");
+			return result;
+		}
 
 		const std::string& smtpServer = smtpServerConf->value;
 		int smtpPort                  = std::stoi(smtpPortConf->value);

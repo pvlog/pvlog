@@ -47,7 +47,11 @@ public:
 
 	virtual Json::Value saveEmailServer(const std::string& server, int port, const std::string& username, const std::string& password) override;
 
+	virtual Json::Value getEmailServer() override;
+
 	virtual Json::Value saveEmail(const std::string& email) override;
+
+	virtual Json::Value getEmail() override;
 
 	virtual Json::Value sendTestEmail() override;
 };

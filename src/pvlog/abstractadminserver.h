@@ -27,7 +27,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getConfigs", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getConfigsI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveConfig", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "config",jsonrpc::JSON_OBJECT, NULL), &AbstractAdminServer::saveConfigI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveEmailServer", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "password",jsonrpc::JSON_STRING,"port",jsonrpc::JSON_INTEGER,"server",jsonrpc::JSON_STRING,"user",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::saveEmailServerI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getEmailServer", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getEmailServerI);
             this->bindAndAddMethod(jsonrpc::Procedure("saveEmail", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "email",jsonrpc::JSON_STRING, NULL), &AbstractAdminServer::saveEmailI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getEmail", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::getEmailI);
             this->bindAndAddMethod(jsonrpc::Procedure("sendTestEmail", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractAdminServer::sendTestEmailI);
         }
 
@@ -99,9 +101,19 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         {
             response = this->saveEmailServer(request["password"].asString(), request["port"].asInt(), request["server"].asString(), request["user"].asString());
         }
+        inline virtual void getEmailServerI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getEmailServer();
+        }
         inline virtual void saveEmailI(const Json::Value &request, Json::Value &response)
         {
             response = this->saveEmail(request["email"].asString());
+        }
+        inline virtual void getEmailI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getEmail();
         }
         inline virtual void sendTestEmailI(const Json::Value &request, Json::Value &response)
         {
@@ -123,7 +135,9 @@ class AbstractAdminServer : public jsonrpc::AbstractServer<AbstractAdminServer>
         virtual Json::Value getConfigs() = 0;
         virtual Json::Value saveConfig(const Json::Value& config) = 0;
         virtual Json::Value saveEmailServer(const std::string& password, int port, const std::string& server, const std::string& user) = 0;
+        virtual Json::Value getEmailServer() = 0;
         virtual Json::Value saveEmail(const std::string& email) = 0;
+        virtual Json::Value getEmail() = 0;
         virtual Json::Value sendTestEmail() = 0;
 };
 

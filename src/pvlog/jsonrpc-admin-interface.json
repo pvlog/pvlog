@@ -94,9 +94,21 @@
 		"returns" : {"status": "status"}
 	},
 	{
+		"name" : "getEmailServer",
+		"params": {
+		},
+		"returns" : {"status": "status"}
+	},
+	{
 		"name" : "saveEmail",
 		"params": {
 			"email": "email"
+		},
+		"returns" : {"status": "status"}
+	},
+	{
+		"name" : "getEmail",
+		"params": {
 		},
 		"returns" : {"status": "status"}
 	},
