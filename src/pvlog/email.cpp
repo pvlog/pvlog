@@ -43,6 +43,8 @@ Email::Email(const std::string& smtpServer, int port,
 		session->login(SMTPClientSession::AUTH_LOGIN, user, password);
 	} catch (SMTPException &e) {
 		LOG(Error) << "Login error: " << e.displayText();
+		session->close();
+		OpenSSLInitializer::uninitialize();
 		PVLOG_EXCEPT(e.displayText());
 	}
 
