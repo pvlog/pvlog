@@ -421,10 +421,12 @@ Json::Value JsonRpcAdminServer::getEmailServer() {
 	Json::Value result = Json::Value(Json::ValueType::objectValue);;
 
 	try {
+		odb::transaction t(db->begin());
 		ConfigPtr smtpServerConf   = readConfig(db, "smtpServer");
 		ConfigPtr smtpPortConf     = readConfig(db, "smtpPort");
 		ConfigPtr smtpUserConf     = readConfig(db, "smtpUser");
 		ConfigPtr smtpPasswordConf = readConfig(db, "smtpPassword");
+		t.commit();
 
 		Json::Value serverData;
 
@@ -480,7 +482,9 @@ Json::Value JsonRpcAdminServer::getEmail() {
 	Json::Value result = Json::Value(Json::ValueType::objectValue);
 
 	try {
-		ConfigPtr emailConf   = readConfig(db, "email");
+		odb::transaction t(db->begin());
+		ConfigPtr emailConf = readConfig(db, "email");
+		t.commit();
 
 		if (emailConf != nullptr) {
 			result["email"] = emailConf->value;
