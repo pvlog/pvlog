@@ -12,13 +12,15 @@
 #include <Poco/Net/AcceptCertificateHandler.h>
 #include <Poco/AutoPtr.h>
 
+#include "util/log.h"
+
 using namespace Poco::Net;
 using namespace Poco;
 
 using Crypto::OpenSSLInitializer;
 
 Email::Email(const std::string& smtpServer, int port,
-		const std::string& username, const std::string& password)
+		const std::string& user, const std::string& password)
 {
 	OpenSSLInitializer::initialize();
 	SharedPtr<InvalidCertificateHandler> ptrHandler =
@@ -30,9 +32,15 @@ Email::Email(const std::string& smtpServer, int port,
 
 	SSLManager::instance().initializeClient(0, ptrHandler, ptrContext);
 
+	LOG(Debug) << "Establishing connection to " << smtpServer << " " << port;
 	SocketAddress sa(smtpServer, port);
 	SecureStreamSocket socket(sa);
 	session = std::unique_ptr<SMTPClientSession>(new SMTPClientSession(socket));
+	LOG(Debug) << "Established connection to " << smtpServer << " " << port;
+
+	LOG(Info) << "Login: " << user;
+	session->login(SMTPClientSession::AUTH_LOGIN, user, password);
+	LOG(Info) << "Logged in: " << user;
 }
 
 Email::~Email() {
