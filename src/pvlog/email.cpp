@@ -39,7 +39,13 @@ Email::Email(const std::string& smtpServer, int port,
 	LOG(Debug) << "Established connection to " << smtpServer << " " << port;
 
 	LOG(Info) << "Login: " << user;
-	session->login(SMTPClientSession::AUTH_LOGIN, user, password);
+	try {
+		session->login(SMTPClientSession::AUTH_LOGIN, user, password);
+	} catch (SMTPException &e) {
+		LOG(Error) << "Login error: " << e.displayText();
+		PVLOG_EXCEPT(e.displayText());
+	}
+
 	LOG(Info) << "Logged in: " << user;
 }
 
@@ -56,5 +62,10 @@ void Email::send(const std::string& from, const std::string& to, const std::stri
 	message.setContentType("text/plain; charset=UTF-8");
 	message.setContent(content, MailMessage::ENCODING_8BIT);
 
-	session->sendMessage(message);
+	try {
+		session->sendMessage(message);
+	} catch (SMTPException &e) {
+		LOG(Error) << "Send message error: " << e.displayText();
+		PVLOG_EXCEPT(e.displayText());
+	}
 }
