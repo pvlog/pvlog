@@ -389,7 +389,7 @@ Json::Value JsonRpcAdminServer::saveConfig(const Json::Value& configJson) {
 	return result;
 }
 
-Json::Value JsonRpcAdminServer::saveEmailServer(const std::string& server, int port, const std::string& user, const std::string& password) {
+Json::Value JsonRpcAdminServer::saveEmailServer(const std::string& password, int port, const std::string& server, const std::string& user) {
 	Json::Value result;
 
 	Config smtpServer("smtpServer", server);
