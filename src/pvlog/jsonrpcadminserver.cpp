@@ -504,12 +504,14 @@ Json::Value JsonRpcAdminServer::sendTestEmail() {
 	Json::Value result;
 
 	try {
+		odb::transaction t(db->begin());
 		ConfigPtr smtpServerConf   = readConfig(db, "smtpServer");
 		ConfigPtr smtpPortConf     = readConfig(db, "smtpPort");
 		ConfigPtr smtpUserConf     = readConfig(db, "smtpUser");
 		ConfigPtr smtpPasswordConf = readConfig(db, "smtpPassword");
 
 		ConfigPtr emailConf = readConfig(db, "email");
+		t.commit();
 
 		if (smtpServerConf == nullptr || smtpPortConf == nullptr || smtpUserConf == nullptr ||
 				smtpPasswordConf == nullptr || emailConf == nullptr) {
