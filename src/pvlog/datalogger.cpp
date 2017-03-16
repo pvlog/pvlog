@@ -606,6 +606,8 @@ void Datalogger::logger()
 				sunrise = sunriseSunset->sunrise(nextJulianDay);
 				sunset  = sunriseSunset->sunset(nextJulianDay);
 
+				//dayEndSig.signal();
+
 				LOG(Info) << "Waiting for next days sunrise: " << sunrise;
 				sleepUntill(sunrise);
 

@@ -8,6 +8,7 @@
 #include <condition_variable>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/signals2.hpp>
 #include <daemon.h>
 #include <datetime.h>
 #include <odb/database.hxx>
@@ -28,6 +29,10 @@ namespace model {
 //Logs one day of inverter data
 class Datalogger: public DaemonWork {
 public:
+	boost::signals2::signal<void (int, std::string)> errorSig;
+	boost::signals2::signal<void ()> dayEndSig;
+
+
 	Datalogger(odb::core::database* database);
 
 	virtual ~Datalogger();

@@ -1,15 +1,19 @@
-#include <configreader.h>
-#include <datalogger.h>
-#include <jsonrpcadminserver.h>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+
 #include <odb/database.hxx>
 #include <odb/sqlite/database.hxx>
 #include <jsonrpccpp/server/connectors/httpserver.h>
-#include <jsonrpcserver.h>
-#include <log.h>
-#include <pvlib.h>
+
+#include "configreader.h"
+#include "datalogger.h"
+#include "jsonrpcadminserver.h"
+#include "jsonrpcserver.h"
+#include "log.h"
+#include "pvlib.h"
+#include "emailnotification.h"
+#include "daysummarymessage.h"
 
 
 std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
@@ -58,6 +62,13 @@ int main(int argc, char **argv)
 
 
 	Datalogger datalogger(db.get());
+	DaySummaryMessage daySummaryMessage(db.get());
+	EmailNotification emailNotification(db.get());
+
+	datalogger.dayEndSig.connect(std::bind(&DaySummaryMessage::generateDaySummaryMessage, &daySummaryMessage));
+	daySummaryMessage.newDaySummarySignal.connect(std::bind(&EmailNotification::sendMessage,
+			&emailNotification, std::placeholders::_1));
+
 
 	//start json server
 	jsonrpc::HttpServer httpserver(8383);

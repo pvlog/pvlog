@@ -1,7 +1,10 @@
-set(SRC 
+set(SRC
 	datalogger.cpp
+	daysummarymessage.cpp
 	main.cpp
 	email.cpp
+	emailnotification.cpp
+	messagefilter.cpp
 	sunrisesunset.cpp
 	jsonrpcserver.cpp
 	pvlibhelper.cpp
