@@ -1,0 +1,20 @@
+<changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="sqlite" version="1">
+  <model version="1">
+    <table name="event" kind="object">
+      <column name="id" type="INTEGER" null="false"/>
+      <column name="inverter" type="INTEGER" null="false"/>
+      <column name="time" type="TEXT" null="true"/>
+      <column name="number" type="INTEGER" null="false"/>
+      <column name="message" type="TEXT" null="false"/>
+      <primary-key auto="true">
+        <column name="id"/>
+      </primary-key>
+      <foreign-key name="inverter_fk" deferrable="DEFERRED">
+        <column name="inverter"/>
+        <references table="inverter">
+          <column name="id"/>
+        </references>
+      </foreign-key>
+    </table>
+  </model>
+</changelog>

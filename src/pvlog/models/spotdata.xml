@@ -1,0 +1,55 @@
+<changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="sqlite" version="1">
+  <model version="1">
+    <table name="spot_data" kind="object">
+      <column name="id" type="INTEGER" null="false"/>
+      <column name="inverter" type="INTEGER" null="false"/>
+      <column name="time" type="INTEGER" null="true"/>
+      <column name="power" type="INTEGER" null="false"/>
+      <column name="frequency" type="INTEGER" null="true"/>
+      <primary-key auto="true">
+        <column name="id"/>
+      </primary-key>
+      <foreign-key name="inverter_fk" deferrable="DEFERRED">
+        <column name="inverter"/>
+        <references table="inverter">
+          <column name="id"/>
+        </references>
+      </foreign-key>
+      <index name="spot_data_time_i">
+        <column name="time"/>
+      </index>
+    </table>
+    <table name="phase" kind="container">
+      <column name="id" type="INTEGER" null="false"/>
+      <column name="phase" type="INTEGER" null="false"/>
+      <column name="power" type="INTEGER" null="false"/>
+      <column name="voltage" type="INTEGER" null="true"/>
+      <column name="current" type="INTEGER" null="true"/>
+      <foreign-key name="id_fk" on-delete="CASCADE">
+        <column name="id"/>
+        <references table="spot_data">
+          <column name="id"/>
+        </references>
+      </foreign-key>
+      <index name="phase_id_i">
+        <column name="id"/>
+      </index>
+    </table>
+    <table name="dc_input" kind="container">
+      <column name="id" type="INTEGER" null="false"/>
+      <column name="input" type="INTEGER" null="false"/>
+      <column name="power" type="INTEGER" null="true"/>
+      <column name="voltage" type="INTEGER" null="true"/>
+      <column name="current" type="INTEGER" null="true"/>
+      <foreign-key name="id_fk" on-delete="CASCADE">
+        <column name="id"/>
+        <references table="spot_data">
+          <column name="id"/>
+        </references>
+      </foreign-key>
+      <index name="dc_input_id_i">
+        <column name="id"/>
+      </index>
+    </table>
+  </model>
+</changelog>

@@ -12,6 +12,8 @@
 #include <odb/nullable.hxx>
 #include <jsoncpp/json/value.h>
 
+#include "version.h"
+
 
 namespace model {
 

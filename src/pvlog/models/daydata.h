@@ -8,6 +8,8 @@
 
 #include <inverter.h>
 
+#include "version.h"
+
 namespace model {
 
 #pragma db object

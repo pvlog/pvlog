@@ -8,6 +8,8 @@
 #include <odb/core.hxx>
 #include <jsoncpp/json/value.h>
 
+#include "version.h"
+
 namespace model {
 
 #pragma db object

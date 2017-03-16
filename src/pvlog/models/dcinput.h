@@ -9,6 +9,8 @@
 
 #include <utility.h>
 
+#include "version.h"
+
 namespace model {
 
 #pragma db value

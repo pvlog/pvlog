@@ -7,6 +7,8 @@
 #include <boost/optional.hpp>
 #include <odb/core.hxx>
 
+#include "version.h"
+
 #include <utility.h>
 
 namespace model {

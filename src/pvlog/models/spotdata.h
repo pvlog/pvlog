@@ -17,6 +17,7 @@
 #include <utility.h>
 
 #include "odbHelper.h"
+#include "version.h"
 
 namespace model {
 
