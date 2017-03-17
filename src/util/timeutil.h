@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/version.hpp>
 
 #if BOOST_VERSION < 105800
@@ -49,6 +50,23 @@ inline boost::posix_time::time_duration abs(boost::posix_time::time_duration dur
 		duration *= -1;
 	}
 	return duration;
+}
+
+inline boost::posix_time::ptime local_to_utc(const boost::posix_time::ptime& time) {
+	boost::gregorian::date date              = time.date();
+	boost::posix_time::time_duration dayTime = time.time_of_day();
+	std::tm timeInfo;
+
+	timeInfo.tm_year = date.year() - 1900;
+	timeInfo.tm_mon  = date.month() - 1;
+	timeInfo.tm_mday = date.day();
+	timeInfo.tm_hour = dayTime.hours();
+	timeInfo.tm_min  = dayTime.minutes();
+	timeInfo.tm_sec  = dayTime.seconds();
+
+	std::time_t utcTime = std::mktime(&timeInfo);
+
+	return boost::posix_time::from_time_t(utcTime);
 }
 
 } //namespace util {

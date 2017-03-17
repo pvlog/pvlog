@@ -2,7 +2,9 @@
 
 #include <sstream>
 
+#include <boost/date_time/c_local_time_adjustor.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
 
 #include <odb/database.hxx>
@@ -12,11 +14,14 @@
 #include "models/daydata.h"
 #include "models/event.h"
 #include "event_odb.h"
+#include "timeutil.h"
 
 using model::DayData;
 using model::Event;
 
 namespace bg = boost::gregorian;
+namespace pt = boost::posix_time;
+namespace dt = boost::date_time;
 
 DaySummaryMessage::DaySummaryMessage(odb::database* db) : db(db) {
 	// nothing to do
@@ -33,7 +38,7 @@ void DaySummaryMessage::generateDaySummaryMessage() {
 
 	std::ostringstream message;
 	message << "Todays production:\n\n";
-	message << boost::format("|%-30s|%-20s\n") % "Inverter Name" % "Energy[kWh]";
+	message << boost::format("|%-30s|%-20s|\n") % "Inverter Name" % "Energy[kWh]";
 	message << "|------------------------------|--------------------|\n";
 
 	boost::format dayDataFmter("|%-30s|%-20.2f|\n");
@@ -49,15 +54,24 @@ void DaySummaryMessage::generateDaySummaryMessage() {
 	using EventResult = odb::result<Event>;
 	using EventQuery  = odb::query<Event>;
 
-	EventResult eventRes(db->query<Event>("ORDER BY" + EventQuery::inverter + "," + EventQuery::time  + "DESC"));
+	bg::date curDate = bg::day_clock::local_day();
+
+	pt::ptime begin = util::local_to_utc(pt::ptime(curDate));
+	pt::ptime end   = begin + pt::hours(24);
+
+	EventQuery filterData(EventQuery::time >= EventQuery::_ref(begin) && EventQuery::time < EventQuery::_ref(end));
+	EventQuery sortResult("ORDER BY" + EventQuery::inverter + "," + EventQuery::time  + "DESC");
+
+	EventResult eventRes(db->query<Event>(filterData + sortResult));
 	if (eventRes.empty()) {
 		message << "No events present\n";
 	} else {
-		message << boost::format("|%-30s|%-15s|%-30s\n") % "Inverter Name" % "Event number" % "Event Message";
-		message << "|------------------------------|---------------|------------------------------|\n";
-		boost::format eventFmter("|%-30s|%-15d|%-30s|\n");
+		message << boost::format("|%-30s|%-20s|%-15s|%-30s\n") % "Inverter Name" % "Time" % "Event number" % "Event Message";
+		message << "|------------------------------|--------------------|---------------|------------------------------|\n";
+		boost::format eventFmter("|%-30s|%-20s|%-15d|%-30s|\n");
 		for (const Event& e : eventRes) {
-			message << eventFmter % e.inverter->name % e.number % e.message;
+			std::string timeString = pt::to_simple_string(dt::c_local_adjustor<pt::ptime>::utc_to_local(e.time));
+			message << eventFmter % e.inverter->name % timeString % e.number % e.message;
 		}
 	}
 	message << "\n\n";
