@@ -58,8 +58,8 @@ Json::Value JsonRpcServer::getSpotData(const std::string& date) {
 			return result;
 		}
 
-		pt::ptime begin = dt::c_local_adjustor<pt::ptime>::utc_to_local(pt::ptime(d));
-		pt::ptime end(d, pt::hours(24));
+		pt::ptime begin = util::local_to_utc(pt::ptime(d));
+		pt::ptime end   = begin + pt::hours(24);
 
 		Query filterData(Query::time >= Query::_ref(begin) && Query::time < Query::_ref(end));
 		Query sortResult("ORDER BY" + Query::inverter + "," + Query::time);
