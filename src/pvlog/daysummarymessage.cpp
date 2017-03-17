@@ -66,9 +66,9 @@ void DaySummaryMessage::generateDaySummaryMessage() {
 	if (eventRes.empty()) {
 		message << "No events present\n";
 	} else {
-		message << boost::format("|%-30s|%-20s|%-15s|%-30s\n") % "Inverter Name" % "Time" % "Event number" % "Event Message";
+		message << boost::format("|%-30s|%-25s|%-15s|%-30s\n") % "Inverter Name" % "Time" % "Event number" % "Event Message";
 		message << "|------------------------------|--------------------|---------------|------------------------------|\n";
-		boost::format eventFmter("|%-30s|%-20s|%-15d|%-30s|\n");
+		boost::format eventFmter("|%-30s|%-25s|%-15d|%-30s|\n");
 		for (const Event& e : eventRes) {
 			std::string timeString = pt::to_simple_string(dt::c_local_adjustor<pt::ptime>::utc_to_local(e.time));
 			message << eventFmter % e.inverter->name % timeString % e.number % e.message;
