@@ -53,7 +53,7 @@ get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 include(${ODB_USE_FILE})
 odb_compile(ODB_SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSION
 	STANDARD "c++11" DEFAULT_PTR "std::shared_ptr"
-	GENERATE_SCHEMA PROFILE boost/date-time boost/optional
+	GENERATE_SCHEMA SCHEMA_FORMAT "embedded" PROFILE boost/date-time boost/optional
 	INCLUDE ${DIRS})
 
 

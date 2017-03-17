@@ -4,6 +4,7 @@
 
 #include <odb/database.hxx>
 #include <odb/sqlite/database.hxx>
+#include <odb/schema-catalog.hxx>
 #include <jsonrpccpp/server/connectors/httpserver.h>
 
 #include "configreader.h"
@@ -15,6 +16,10 @@
 #include "emailnotification.h"
 #include "daysummarymessage.h"
 
+#include "models/config.h"
+#include "config_odb.h"
+
+using model::Config;
 
 std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 {
@@ -44,7 +49,18 @@ std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 	std::string password = configReader.getValue("password");
 	LOG(Info) << "Successfully parsed database configuration file.";
 
-	return std::unique_ptr<odb::database>(new odb::sqlite::database(databaseName, SQLITE_OPEN_READWRITE, true));
+	return std::unique_ptr<odb::database>(new odb::sqlite::database(databaseName,
+			SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, true));
+}
+
+void createDefaultConfig(odb::database* db) {
+	Config timeout("timeout", "300");
+	Config longitude("longitude", "-10.970000");
+	Config latitude("latitude", "49.710000");
+
+	db->persist(timeout);
+	db->persist(longitude);
+	db->persist(latitude);
 }
 
 int main(int argc, char **argv)
@@ -60,6 +76,14 @@ int main(int argc, char **argv)
 	std::unique_ptr<odb::database> db = openDatabase(argv[1]);
 	LOG(Info) << "Successfully opened database.";
 
+	//check database schema if doesn't exists
+	odb::transaction t (db->begin ());
+	if (db->schema_version() == 0) {
+		LOG(Info) << "Schema does not exist. Creating it!";
+		odb::schema_catalog::create_schema(*db.get(), "", false);
+		createDefaultConfig(db.get());
+	}
+	t.commit ();
 
 	Datalogger datalogger(db.get());
 	DaySummaryMessage daySummaryMessage(db.get());
