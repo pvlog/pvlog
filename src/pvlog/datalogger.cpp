@@ -427,7 +427,7 @@ void Datalogger::sleepUntill(pt::ptime time) {
 
 	std::unique_lock<std::mutex> uniqueLock(mutex);
 
-	userEventSignal.wait_until(uniqueLock, sleepUntil, [this](){ return quit; });
+	userEventSignal.wait_until(uniqueLock, sleepUntil, [this]() -> bool { return quit; });
 }
 
 void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
@@ -577,16 +577,24 @@ bool Datalogger::isRunning() {
 void Datalogger::work() {
 	for (;;) {
 		active = true;
-		logger();
-
-		if (!quit) {
-			continue;
+		openPlants();
+		if (plants.empty()) {
+			quit = true;
 		}
 
-		active = false;
+		if (!quit) {
+			logger();
+		} else {
+			LOG(Info) << "Pausing datalogger";
+			closePlants();
 
-		std::unique_lock<std::mutex> lock(mutex);
-		userEventSignal.wait(lock, [this]() { return !quit; });
+
+			active = false;
+
+			std::unique_lock<std::mutex> lock(mutex);
+			userEventSignal.wait(lock, [this]() { return !quit; });
+			LOG(Info) << "Continuing datalogger";
+		}
 	}
 }
 
@@ -594,11 +602,6 @@ void Datalogger::logger()
 {
 	try {
 		while (!quit) {
-			pt::ptime curTime = pt::second_clock::universal_time();
-			pt::ptime nextUpdate = util::roundUp(curTime, timeout);
-
-			LOG(Debug) << "Sunset: " << pt::to_simple_string(sunset);
-
 			if (plants.empty()) {
 				//no more plants are open => wait for next day
 
@@ -617,6 +620,12 @@ void Datalogger::logger()
 
 				updateArchiveData();
 			}
+
+			pt::ptime curTime = pt::second_clock::universal_time();
+			pt::ptime nextUpdate = util::roundUp(curTime, timeout);
+
+			LOG(Debug) << "Sunset: " << pt::to_simple_string(sunset);
+
 
 			LOG(Debug) << "current time: " << pt::to_simple_string(curTime);
 			LOG(Debug) << "time till wait: " << pt::to_simple_string(nextUpdate);

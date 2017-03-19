@@ -1,6 +1,7 @@
 #ifndef DATA_LOGGER_H
 #define DATA_LOGGER_H
 
+#include <atomic>
 #include <ctime>
 #include <memory>
 #include <unordered_map>
@@ -74,7 +75,7 @@ private:
 
 	void updateArchiveData();
 
-	bool quit;
+	std::atomic<bool> quit;
 	bool active;
 	std::condition_variable userEventSignal;
 	std::mutex mutex;
