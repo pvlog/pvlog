@@ -581,7 +581,9 @@ void Datalogger::work() {
 		if (!quit) {
 			updateArchiveData();
 			logger();
-		} else {
+		}
+
+		if (quit) {
 			LOG(Info) << "Pausing datalogger";
 			closePlants();
 
