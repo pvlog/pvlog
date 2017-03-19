@@ -231,7 +231,7 @@ static void updateOrInsert(odb::database* db, Event& event) {
 
 
 Datalogger::Datalogger(odb::core::database* database) :
-		quit(false), db(database)
+		quit(false), active(false), db(database)
 {
 	PVLOG_NOT_NULL(database);
 
@@ -257,10 +257,6 @@ Datalogger::Datalogger(odb::core::database* database) :
 	int julianDay = bg::day_clock::universal_day().julian_day();
 	sunset  = sunriseSunset->sunset(julianDay);
 	sunrise = sunriseSunset->sunrise(julianDay);
-
-	openPlants();
-
-	updateArchiveData();
 
 	this->updateInterval = pt::seconds(20);
 }
@@ -583,6 +579,7 @@ void Datalogger::work() {
 		}
 
 		if (!quit) {
+			updateArchiveData();
 			logger();
 		} else {
 			LOG(Info) << "Pausing datalogger";
