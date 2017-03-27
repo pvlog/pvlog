@@ -33,6 +33,14 @@ public:
 	boost::signals2::signal<void (int, std::string)> errorSig;
 	boost::signals2::signal<void ()> dayEndSig;
 
+	enum Status {
+		OK = 0,
+		NIGHT,
+		WARNING,
+		ERROR,
+		PAUSED
+	};
+
 
 	Datalogger(odb::core::database* database);
 
@@ -48,6 +56,7 @@ public:
 
 	bool isRunning();
 
+	Status getStatus();
 protected:
 //	/**
 //	 * Wait for begin of daylight.
@@ -79,6 +88,8 @@ private:
 	bool active;
 	std::condition_variable userEventSignal;
 	std::mutex mutex;
+
+	Status dataloggerStatus;
 
 
 

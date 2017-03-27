@@ -231,7 +231,7 @@ static void updateOrInsert(odb::database* db, Event& event) {
 
 
 Datalogger::Datalogger(odb::core::database* database) :
-		quit(false), active(false), db(database)
+		quit(false), active(false), dataloggerStatus(OK), db(database)
 {
 	PVLOG_NOT_NULL(database);
 
@@ -462,7 +462,7 @@ void Datalogger::logData() {
 			int ret;
 			Ac ac;
 			Dc dc;
-			Status status;
+			pvlib::Status status;
 
 			if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
 				(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
@@ -570,9 +570,19 @@ bool Datalogger::isRunning() {
 	return active;
 }
 
+Datalogger::Status Datalogger::getStatus() {
+	std::lock_guard<std::mutex> lock(mutex);
+	if (dataloggerStatus == OK && dataloggerStatus != active) {
+		return PAUSED;
+	} else {
+		return dataloggerStatus;
+	}
+}
+
 void Datalogger::work() {
 	for (;;) {
 		active = true;
+		dataloggerStatus = OK;
 		openPlants();
 		if (plants.empty()) {
 			quit = true;
@@ -609,12 +619,14 @@ void Datalogger::logger()
 				sunset  = sunriseSunset->sunset(nextJulianDay);
 
 				dayEndSig();
+				dataloggerStatus = NIGHT;
 
 				LOG(Info) << "Waiting for next days sunrise: " << sunrise;
 				sleepUntill(sunrise);
 
 				if (quit) return;
 
+				dataloggerStatus = OK;
 				openPlants();
 
 				updateArchiveData();
@@ -636,6 +648,7 @@ void Datalogger::logger()
 			logData();
 		}
 	} catch (const PvlogException& ex) {
+		dataloggerStatus = ERROR;
 		LOG(Error) << ex.what();
 	}
 }

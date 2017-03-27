@@ -95,6 +95,15 @@ Json::Value JsonRpcServer::getLiveSpotData() {
 	return result;
 }
 
+Json::Value JsonRpcServer::getDataloggerStatus() {
+	Json::Value result;
+
+	Datalogger::Status status = datalogger->getStatus();
+	result["dataloggerStatus"] = status;
+
+	return result;
+}
+
 Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string& to) {
 	Json::Value result;
 	using Result = odb::result<DayData>;

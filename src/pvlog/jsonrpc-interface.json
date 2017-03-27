@@ -13,6 +13,12 @@
 		"returns" : {"data": "data"}
 	},
 	{
+		"name" : "getDataloggerStatus",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
 		"name" : "getDayData",
 		"params": {
 			"from" : "2016-10-01",

@@ -14,6 +14,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         {
             this->bindAndAddMethod(jsonrpc::Procedure("getSpotData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "date",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getSpotDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getLiveSpotData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getLiveSpotDataI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getDataloggerStatus", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getDataloggerStatusI);
             this->bindAndAddMethod(jsonrpc::Procedure("getDayData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "from",jsonrpc::JSON_STRING,"to",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getDayDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getMonthData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "year",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getMonthDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getYearData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getYearDataI);
@@ -30,6 +31,11 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         {
             (void)request;
             response = this->getLiveSpotData();
+        }
+        inline virtual void getDataloggerStatusI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getDataloggerStatus();
         }
         inline virtual void getDayDataI(const Json::Value &request, Json::Value &response)
         {
@@ -61,6 +67,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         }
         virtual Json::Value getSpotData(const std::string& date) = 0;
         virtual Json::Value getLiveSpotData() = 0;
+        virtual Json::Value getDataloggerStatus() = 0;
         virtual Json::Value getDayData(const std::string& from, const std::string& to) = 0;
         virtual Json::Value getMonthData(const std::string& year) = 0;
         virtual Json::Value getYearData() = 0;
