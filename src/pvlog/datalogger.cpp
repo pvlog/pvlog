@@ -572,7 +572,7 @@ bool Datalogger::isRunning() {
 
 Datalogger::Status Datalogger::getStatus() {
 	std::lock_guard<std::mutex> lock(mutex);
-	if (dataloggerStatus == OK && dataloggerStatus != active) {
+	if (dataloggerStatus == OK && !active) {
 		return PAUSED;
 	} else {
 		return dataloggerStatus;

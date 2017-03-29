@@ -98,6 +98,8 @@ Json::Value JsonRpcServer::getLiveSpotData() {
 Json::Value JsonRpcServer::getDataloggerStatus() {
 	Json::Value result;
 
+	LOG(Debug) << "JsonRpcServer::getDataloggerStatus";
+
 	Datalogger::Status status = datalogger->getStatus();
 	result["dataloggerStatus"] = status;
 
