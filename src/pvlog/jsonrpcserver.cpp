@@ -177,29 +177,38 @@ Json::Value JsonRpcServer::getStatistics() {
 		ResultTopNDay topNDayRes(db->query<TopNDay>());
 		Json::Value topNDayJson;
 		for (const TopNDay& d: topNDayRes) {
-			topNDayJson[bg::to_iso_extended_string(d.date)] =
+			Json::Value entry;
+			entry[bg::to_iso_extended_string(d.date)] =
 					static_cast<Json::Int64>(d.yield);
+
+			topNDayJson.append(entry);
 		}
 
 		ResultLowNDay lowNDayRes(db->query<LowNDay>());
 		Json::Value lowNDayJson;
 		for (const LowNDay& d: lowNDayRes) {
-			lowNDayJson[bg::to_iso_extended_string(d.date)] =
+			Json::Value entry;
+			entry[bg::to_iso_extended_string(d.date)] =
 					static_cast<Json::Int64>(d.yield);
+			lowNDayJson.append(entry);
 		}
 
 		ResultTopNMonth topNMonthRes(db->query<TopNMonth>());
 		Json::Value topNMonthJson;
 		for (const TopNMonth& d: topNMonthRes) {
-			topNMonthJson[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
+			Json::Value entry;
+			entry[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
 					static_cast<Json::Int64>(d.yield);
+			topNMonthJson.append(entry);
 		}
 
 		ResultLowNMonth lowNMonthRes(db->query<LowNMonth>());
 		Json::Value lowNMonthJson;
 		for (const LowNMonth& d: lowNMonthRes) {
-			lowNMonthJson[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
+			Json::Value entry;
+			entry[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
 					static_cast<Json::Int64>(d.yield);
+			lowNMonthJson.append(entry);
 		}
 
 		result["topDays"] = topNDayJson;
