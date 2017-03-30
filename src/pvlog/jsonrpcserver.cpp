@@ -178,9 +178,8 @@ Json::Value JsonRpcServer::getStatistics() {
 		Json::Value topNDayJson;
 		for (const TopNDay& d: topNDayRes) {
 			Json::Value entry;
-			entry[bg::to_iso_extended_string(d.date)] =
-					static_cast<Json::Int64>(d.yield);
-
+			entry["date"]   = bg::to_iso_extended_string(d.date);
+			entry["energy"] = static_cast<Json::Int64>(d.yield);
 			topNDayJson.append(entry);
 		}
 
@@ -188,8 +187,8 @@ Json::Value JsonRpcServer::getStatistics() {
 		Json::Value lowNDayJson;
 		for (const LowNDay& d: lowNDayRes) {
 			Json::Value entry;
-			entry[bg::to_iso_extended_string(d.date)] =
-					static_cast<Json::Int64>(d.yield);
+			entry["date"]   = bg::to_iso_extended_string(d.date);
+			entry["energy"] = static_cast<Json::Int64>(d.yield);
 			lowNDayJson.append(entry);
 		}
 
@@ -197,8 +196,8 @@ Json::Value JsonRpcServer::getStatistics() {
 		Json::Value topNMonthJson;
 		for (const TopNMonth& d: topNMonthRes) {
 			Json::Value entry;
-			entry[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
-					static_cast<Json::Int64>(d.yield);
+			entry["date"]   = std::to_string(d.year) + "-" + util::to_string(d.month, 2);
+			entry["energy"] = static_cast<Json::Int64>(d.yield);
 			topNMonthJson.append(entry);
 		}
 
@@ -206,8 +205,8 @@ Json::Value JsonRpcServer::getStatistics() {
 		Json::Value lowNMonthJson;
 		for (const LowNMonth& d: lowNMonthRes) {
 			Json::Value entry;
-			entry[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
-					static_cast<Json::Int64>(d.yield);
+			entry["date"]   = std::to_string(d.year) + "-" + util::to_string(d.month, 2);
+			entry["energy"] = static_cast<Json::Int64>(d.yield);
 			lowNMonthJson.append(entry);
 		}
 
