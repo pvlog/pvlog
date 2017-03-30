@@ -26,6 +26,7 @@ public:
 	virtual ~JsonRpcServer();
 
 	virtual Json::Value getSpotData(const std::string& date) override;
+	virtual Json::Value getStatistics() override;
 	virtual Json::Value getLiveSpotData() override;
 	virtual Json::Value getDataloggerStatus() override;
 	virtual Json::Value getDayData(const std::string& from, const std::string& to) override;

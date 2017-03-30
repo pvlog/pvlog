@@ -56,6 +56,56 @@ struct DayDataMonth {
 };
 
 #pragma db view object(DayData) object(Inverter)\
+	query((?) + "GROUP BY date ORDER BY yield desc LIMIT 20")
+struct TopNDay {
+	#pragma db column("sum(" + DayData::dayYield + ")")
+	int64_t yield;
+
+	#pragma db column(DayData::date)
+	boost::gregorian::date date;
+};
+
+#pragma db view object(DayData) object(Inverter)\
+	query((?) + "GROUP BY date ORDER BY yield asc LIMIT 20")
+struct LowNDay {
+	#pragma db column("sum(" + DayData::dayYield + ")")
+	int64_t yield;
+
+	#pragma db column(DayData::date)
+	boost::gregorian::date date;
+};
+
+#pragma db view object(DayData) object(Inverter)\
+	query((?) + "GROUP BY year, month ORDER BY yield desc LIMIT 20")
+struct TopNMonth {
+	#pragma db column("sum(" + DayData::dayYield + ")")
+	int64_t yield;
+
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
+	int month;
+
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%Y'," + DayData::date + ") AS year")
+	int year;
+};
+
+#pragma db view object(DayData) object(Inverter)\
+	query((?) + "GROUP BY year, month ORDER BY yield asc LIMIT 20")
+struct LowNMonth{
+	#pragma db column("sum(" + DayData::dayYield + ")")
+	int64_t yield;
+
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
+	int month;
+
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%Y'," + DayData::date + ") AS year")
+	int year;
+};
+
+#pragma db view object(DayData) object(Inverter)\
 		query((?) + "GROUP BY year," + Inverter::id)
 struct DayDataYear {
 	#pragma db column("sum(" + DayData::dayYield + ")")

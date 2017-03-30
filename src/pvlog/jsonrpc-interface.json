@@ -34,6 +34,12 @@
 		"returns" : {"data": "data"}
 	},
 	{
+		"name" : "getStatistics",
+		"params": {
+		},
+		"returns" : {"data": "data"}
+	},
+	{
 		"name" : "getYearData",
 		"params": {
 		},

@@ -35,6 +35,10 @@ using model::DayDataMonth;
 using model::DayDataYear;
 using model::Plant;
 using model::Event;
+using model::TopNDay;
+using model::LowNDay;
+using model::TopNMonth;
+using model::LowNMonth;
 
 JsonRpcServer::JsonRpcServer(jsonrpc::AbstractServerConnector &conn, Datalogger* datalogger, odb::database* database) :
 		AbstractPvlogServer(conn), db(database), datalogger(datalogger) {
@@ -152,6 +156,60 @@ Json::Value JsonRpcServer::getMonthData(const std::string& year) {
 		t.commit();
 	} catch (const std::exception& ex) {
 		LOG(Error) << "Error getting month data" <<  ex.what();
+		result = Json::Value();
+	}
+
+	return result;
+}
+
+Json::Value JsonRpcServer::getStatistics() {
+	Json::Value result;
+	using ResultTopNDay = odb::result<TopNDay>;
+	using ResultLowNDay = odb::result<LowNDay>;
+	using ResultTopNMonth = odb::result<TopNMonth>;
+	using ResultLowNMonth = odb::result<LowNMonth>;
+
+	try {
+		LOG(Debug) << "JsonRpcServer::getStatstics";
+
+		odb::transaction t(db->begin());
+
+		ResultTopNDay topNDayRes(db->query<TopNDay>());
+		Json::Value topNDayJson;
+		for (const TopNDay& d: topNDayRes) {
+			topNDayJson[bg::to_iso_extended_string(d.date)] =
+					static_cast<Json::Int64>(d.yield);
+		}
+
+		ResultLowNDay lowNDayRes(db->query<LowNDay>());
+		Json::Value lowNDayJson;
+		for (const LowNDay& d: lowNDayRes) {
+			lowNDayJson[bg::to_iso_extended_string(d.date)] =
+					static_cast<Json::Int64>(d.yield);
+		}
+
+		ResultTopNMonth topNMonthRes(db->query<TopNMonth>());
+		Json::Value topNMonthJson;
+		for (const TopNMonth& d: topNMonthRes) {
+			topNMonthJson[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
+					static_cast<Json::Int64>(d.yield);
+		}
+
+		ResultLowNMonth lowNMonthRes(db->query<LowNMonth>());
+		Json::Value lowNMonthJson;
+		for (const LowNMonth& d: lowNMonthRes) {
+			lowNMonthJson[std::to_string(d.year) + "-" + util::to_string(d.month, 2)] =
+					static_cast<Json::Int64>(d.yield);
+		}
+
+		result["topDays"] = topNDayJson;
+		result["lowDays"] = lowNDayJson;
+		result["topMonths"] = topNMonthJson;
+		result["lowMonths"] = lowNMonthJson;
+
+		t.commit();
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Error getting statistics" <<  ex.what();
 		result = Json::Value();
 	}
 

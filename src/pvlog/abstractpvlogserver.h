@@ -17,6 +17,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getDataloggerStatus", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getDataloggerStatusI);
             this->bindAndAddMethod(jsonrpc::Procedure("getDayData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "from",jsonrpc::JSON_STRING,"to",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getDayDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getMonthData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "year",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getMonthDataI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getStatistics", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getStatisticsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getYearData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getYearDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getInvertersI);
             this->bindAndAddMethod(jsonrpc::Procedure("getPlants", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getPlantsI);
@@ -45,6 +46,11 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         {
             response = this->getMonthData(request["year"].asString());
         }
+        inline virtual void getStatisticsI(const Json::Value &request, Json::Value &response)
+        {
+            (void)request;
+            response = this->getStatistics();
+        }
         inline virtual void getYearDataI(const Json::Value &request, Json::Value &response)
         {
             (void)request;
@@ -70,6 +76,7 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         virtual Json::Value getDataloggerStatus() = 0;
         virtual Json::Value getDayData(const std::string& from, const std::string& to) = 0;
         virtual Json::Value getMonthData(const std::string& year) = 0;
+        virtual Json::Value getStatistics() = 0;
         virtual Json::Value getYearData() = 0;
         virtual Json::Value getInverters() = 0;
         virtual Json::Value getPlants() = 0;
