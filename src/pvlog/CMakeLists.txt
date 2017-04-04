@@ -69,18 +69,3 @@ target_include_directories(pvlog
 target_compile_definitions(pvlog
 	PRIVATE
 		DATABASE_SQLITE)
-
-set(SETUP_SRC
-	${ODB_SRC}
-	setup.cpp
-)
-
-add_executable(setup ${SETUP_SRC})
-target_link_libraries(setup ${LIBS})
-target_include_directories(setup
-	PRIVATE
-		${ODB_INCLUDE_DIRS}
-		${ODB_COMPILE_OUTPUT_DIR})
-target_compile_definitions(setup
-	PRIVATE
-		DATABASE_SQLITE)
