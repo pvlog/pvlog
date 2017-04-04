@@ -40,12 +40,13 @@ set(LIBS ${LIBS} ${Boost_LIBRARIES})
 set(LIBS ${LIBS} ${JSONCPP_LIBRARIES})
 set(LIBS ${LIBS} ${JSON_RPC_CPP_SERVER_LIBRARIES})
 set(LIBS ${LIBS} ${Poco_LIBRARIES})
-set(LIBS ${LIBS} pthread)
-set(LIBS ${LIBS} pvlib)
-set(LIBS ${LIBS} bluetooth)
-set(LIBS ${LIBS} rt) #clock_gettime
+set(LIBS ${LIBS} ${PVLIB_LIBRARIES})
 
-include_directories("${JSONCPP_INCLUDE_DIRS}")
+include_directories(${ODB_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${JSONCPP_INCLUDE_DIRS})
+include_directories(${Poco_INCLUDE_DIRS})
+include_directories(${PVLIB_INCLUDE_DIRS})
 include_directories(models)
 
 get_property(DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
@@ -61,7 +62,6 @@ odb_compile(ODB_SRC FILES ${ODB_HEADER} DB sqlite GENERATE_QUERY GENERATE_SESSIO
 set(SRC ${SRC} ${ODB_SRC})
 add_executable(pvlog ${SRC} ${HEADER})
 target_link_libraries(pvlog ${LIBS})
-install(TARGETS pvlog DESTINATION bin)
 target_include_directories(pvlog
 	PRIVATE
 		${ODB_INCLUDE_DIRS}
@@ -69,3 +69,5 @@ target_include_directories(pvlog
 target_compile_definitions(pvlog
 	PRIVATE
 		DATABASE_SQLITE)
+install(TARGETS pvlog
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
