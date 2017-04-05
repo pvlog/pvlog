@@ -8,12 +8,10 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 #include <jsoncpp/json/value.h>
-
 #include <odb/core.hxx>
 
 #include "version.h"
-
-#include <plant.h>
+#include "plant.h"
 
 namespace model {
 

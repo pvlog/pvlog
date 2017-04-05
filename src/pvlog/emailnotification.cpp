@@ -3,7 +3,7 @@
 
 #include "models/config.h"
 #include "models/configservice.h"
-#include "config_odb.h"
+#include "models/config_odb.h"
 #include "email.h"
 
 using model::ConfigPtr;

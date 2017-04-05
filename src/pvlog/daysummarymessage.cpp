@@ -10,10 +10,10 @@
 #include <odb/database.hxx>
 #include <odb/query.hxx>
 
-#include "daydata_odb.h"
+#include "models/daydata_odb.h"
 #include "models/daydata.h"
 #include "models/event.h"
-#include "event_odb.h"
+#include "models/event_odb.h"
 #include "timeutil.h"
 
 using model::DayData;

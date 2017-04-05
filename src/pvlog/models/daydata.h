@@ -6,7 +6,7 @@
 #include <jsoncpp/json/value.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include <inverter.h>
+#include "inverter.h"
 
 #include "version.h"
 

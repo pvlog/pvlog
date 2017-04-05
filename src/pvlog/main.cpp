@@ -12,12 +12,11 @@
 #include "jsonrpcadminserver.h"
 #include "jsonrpcserver.h"
 #include "log.h"
-#include "pvlib.h"
 #include "emailnotification.h"
 #include "daysummarymessage.h"
 
 #include "models/config.h"
-#include "config_odb.h"
+#include "models/config_odb.h"
 
 using model::Config;
 

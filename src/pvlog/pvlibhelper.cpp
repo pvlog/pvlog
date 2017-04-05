@@ -2,8 +2,6 @@
 #include "pvlibhelper.h"
 
 #include <vector>
-#include <pvlib.h>
-
 #include <pvlogexception.h>
 
 

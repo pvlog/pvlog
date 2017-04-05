@@ -1,7 +1,6 @@
 #ifndef SRC_PVLOG_MODELS_PLANT_H_
 #define SRC_PVLOG_MODELS_PLANT_H_
 
-#include <inverter.h>
 #include <cstdint>
 #include <string>
 #include <memory>
@@ -13,7 +12,7 @@
 #include <jsoncpp/json/value.h>
 
 #include "version.h"
-
+#include "inverter.h"
 
 namespace model {
 

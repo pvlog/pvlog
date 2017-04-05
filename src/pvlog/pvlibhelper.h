@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <limits>
 
-#include <pvlib.h>
+#include <pvlib/pvlib.h>
 
 #include <utility.h>
 

@@ -5,21 +5,22 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
-#include <datalogger.h>
-#include <daydata.h>
-#include <event.h>
-#include <inverter.h>
-#include <jsonrpcserver.h>
-#include <log.h>
-#include <plant.h>
-#include <spotdata.h>
-#include <timeutil.h>
 
-#include "spotdata_odb.h"
-#include "inverter_odb.h"
-#include "plant_odb.h"
-#include "daydata_odb.h"
-#include "event_odb.h"
+#include "datalogger.h"
+#include "jsonrpcserver.h"
+#include "log.h"
+#include "timeutil.h"
+
+#include "models/plant.h"
+#include "models/plant_odb.h"
+#include "models/spotdata.h"
+#include "models/spotdata_odb.h"
+#include "models/daydata.h"
+#include "models/daydata_odb.h"
+#include "models/event.h"
+#include "models/event_odb.h"
+#include "models/inverter.h"
+#include "models/inverter_odb.h"
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;

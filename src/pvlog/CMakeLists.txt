@@ -19,7 +19,6 @@ set(HEADER
 	email.h
 	sunrisesunset.h
 	forgrounddaemon.h
-	daemon.h
 	abstractpvlogserver.h
 	jsonrpcserver.h
 )
@@ -65,9 +64,10 @@ target_link_libraries(pvlog ${LIBS})
 target_include_directories(pvlog
 	PRIVATE
 		${ODB_INCLUDE_DIRS}
-		${ODB_COMPILE_OUTPUT_DIR})
+		${CMAKE_CURRENT_BINARY_DIR}/odb_gen/)
 target_compile_definitions(pvlog
 	PRIVATE
 		DATABASE_SQLITE)
+
 install(TARGETS pvlog
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

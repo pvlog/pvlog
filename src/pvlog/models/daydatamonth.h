@@ -8,7 +8,7 @@
 #ifndef SRC_PVLOG_MODELS_DAYDATAMONTH_H_
 #define SRC_PVLOG_MODELS_DAYDATAMONTH_H_
 
-#include <daydata.h>
+#include "daydata.h"
 namespace model {
 
 #pragma db view object(DayData)//

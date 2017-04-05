@@ -10,13 +10,12 @@
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/signals2.hpp>
-#include <daemon.h>
-#include <datetime.h>
 #include <odb/database.hxx>
-#include <pvlib.h>
-#include <pvlibhelper.h>
-#include <spotdata.h>
+#include <pvlib/pvlib.h>
 
+#include "pvlibhelper.h"
+
+#include "models/spotdata.h"
 
 class SunriseSunset;
 class Database;
@@ -28,7 +27,7 @@ namespace model {
 
 
 //Logs one day of inverter data
-class Datalogger: public DaemonWork {
+class Datalogger {
 public:
 	boost::signals2::signal<void (int, std::string)> errorSig;
 	boost::signals2::signal<void ()> dayEndSig;

@@ -7,29 +7,29 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 #include "boost/date_time/c_local_time_adjustor.hpp"
 #include <boost/optional.hpp>
-#include <config.h>
-#include <configservice.h>
-#include <datalogger.h>
-#include <daydata.h>
-#include <event.h>
-#include <log.h>
-#include <log.h>
 #include <odb/query.hxx>
-#include <plant.h>
-#include <pvlib.h>
-#include <pvlib.h>
-#include <spotdata.h>
-#include <sunrisesunset.h>
-#include <timeutil.h>
-#include <utility.h>
 
+#include "datalogger.h"
+#include "log.h"
+#include "sunrisesunset.h"
+#include "timeutil.h"
+#include "utility.h"
 #include "pvlibhelper.h"
-#include "daydata_odb.h"
-#include "config_odb.h"
-#include "plant_odb.h"
-#include "inverter_odb.h"
-#include "spotdata_odb.h"
-#include "event_odb.h"
+
+#include "models/config.h"
+#include "models/configservice.h"
+#include "models/config_odb.h"
+#include "models/daydata.h"
+#include "models/daydata_odb.h"
+#include "models/event.h"
+#include "models/event_odb.h"
+#include "models/plant.h"
+#include "models/plant_odb.h"
+#include "models/spotdata.h"
+#include "models/spotdata_odb.h"
+#include "models/inverter.h"
+#include "models/inverter_odb.h"
+
 
 using model::Config;
 using model::ConfigPtr;
@@ -47,7 +47,6 @@ using std::shared_ptr;
 using std::mutex;
 using std::unique_lock;
 
-//using pvlib::Pvlib;
 using pvlib::Ac;
 using pvlib::Dc;
 using pvlib::Status;

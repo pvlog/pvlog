@@ -1,18 +1,21 @@
-#include <config.h>
-#include <datalogger.h>
-#include <inverter.h>
-#include <jsonrpcadminserver.h>
-#include <log.h>
 #include <odb/database.hxx>
 #include <odb/query.hxx>
-#include <plant.h>
+#include <odb/database.hxx>
 
-#include "odb/database.hxx"
-#include "inverter_odb.h"
-#include "plant_odb.h"
-#include "config_odb.h"
+#include "datalogger.h"
+#include "jsonrpcadminserver.h"
+#include "log.h"
 #include "pvlibhelper.h"
 #include "email.h"
+
+#include "models/config.h"
+#include "models/plant.h"
+#include "models/inverter.h"
+#include "models/inverter_odb.h"
+#include "models/plant.h"
+#include "models/plant_odb.h"
+#include "models/config.h"
+#include "models/config_odb.h"
 
 
 using model::PlantPtr;

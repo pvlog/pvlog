@@ -8,8 +8,7 @@
 #include <odb/core.hxx>
 
 #include "version.h"
-
-#include <utility.h>
+#include "utility.h"
 
 namespace model {
 
