@@ -11,6 +11,7 @@
 #include <odb/core.hxx>
 
 #include "version.h"
+
 #include "plant.h"
 
 namespace model {

@@ -1,6 +1,5 @@
 #include "email.h"
 
-
 #include <Poco/Crypto/OpenSSLInitializer.h>
 #include <Poco/Net/MailMessage.h>
 #include <Poco/Net/MailRecipient.h>

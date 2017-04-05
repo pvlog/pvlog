@@ -1,10 +1,8 @@
 #ifndef SRC_PVLOG_PVLIBHELPER_H_
 #define SRC_PVLOG_PVLIBHELPER_H_
 
-#include <unordered_map>
-#include <unordered_set>
-#include <cstdint>
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -16,7 +14,7 @@
 
 #include <pvlib/pvlib.h>
 
-#include <utility.h>
+#include "utility.h"
 
 namespace pvlib {
 

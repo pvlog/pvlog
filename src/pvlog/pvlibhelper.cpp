@@ -1,8 +1,9 @@
-#include <log.h>
 #include "pvlibhelper.h"
 
 #include <vector>
-#include <pvlogexception.h>
+
+#include "log.h"
+#include "pvlogexception.h"
 
 
 std::unordered_map<std::string, uint32_t>  getConnections() {

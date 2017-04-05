@@ -6,15 +6,15 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
-
 #include <odb/database.hxx>
 #include <odb/query.hxx>
+
+#include "timeutil.h"
 
 #include "models/daydata_odb.h"
 #include "models/daydata.h"
 #include "models/event.h"
 #include "models/event_odb.h"
-#include "timeutil.h"
 
 using model::DayData;
 using model::Event;

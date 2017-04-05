@@ -26,6 +26,7 @@ struct Event {
 	std::string message;
 
 	Event(InverterPtr inverter, boost::posix_time::ptime time, int32_t number, std::string message) :
+			id(0),
 			inverter(inverter),
 			time(time),
 			number(number),

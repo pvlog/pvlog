@@ -12,12 +12,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <odb/core.hxx>
 
-#include "phase.h"
 #include "utility.h"
-#include "dcinput.h"
-#include "inverter.h"
 #include "odbHelper.h"
 #include "version.h"
+
+#include "phase.h"
+#include "dcinput.h"
+#include "inverter.h"
 
 namespace model {
 

@@ -1,10 +1,11 @@
 #include <emailnotification.h>
 #include <odb/database.hxx>
 
+#include "email.h"
+
 #include "models/config.h"
 #include "models/configservice.h"
 #include "models/config_odb.h"
-#include "email.h"
 
 using model::ConfigPtr;
 using model::Config;

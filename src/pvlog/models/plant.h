@@ -12,6 +12,7 @@
 #include <jsoncpp/json/value.h>
 
 #include "version.h"
+
 #include "inverter.h"
 
 namespace model {

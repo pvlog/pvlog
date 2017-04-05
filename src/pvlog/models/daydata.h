@@ -6,9 +6,9 @@
 #include <jsoncpp/json/value.h>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "inverter.h"
-
 #include "version.h"
+
+#include "inverter.h"
 
 namespace model {
 
