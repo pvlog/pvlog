@@ -89,11 +89,11 @@ static void createDefaultConfig(odb::database* db) {
 }
 
 static void initLogging(const std::string& file,  bttrivial::severity_level severity) {
-	btlog::core::get()->add_thread_attribute("Module",
-			btattrs::mutable_constant<std::string>("global"));
-	btlog::core::get()->add_thread_attribute("File",
-			btattrs::mutable_constant < std::string > (""));
-	btlog::core::get()->add_thread_attribute("Line",
+	btlog::core::get()->add_global_attribute("Module",
+			btattrs::mutable_constant<const char *>("global"));
+	btlog::core::get()->add_global_attribute("File",
+			btattrs::mutable_constant<std::string> (""));
+	btlog::core::get()->add_global_attribute("Line",
 			btattrs::mutable_constant<int>(0));
 
 	btlog::add_common_attributes();
@@ -103,7 +103,6 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	);
 
 	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f");
-//	auto fmtThreadId = btexpr::attr<btattrs::current_thread_id::value_type>("ThreadID");
 	auto fmtSeverity = btexpr::attr<bttrivial::severity_level>("Severity");
 	auto fmtFile = btexpr::attr<std::string>("File");
 	auto fmtLine = btexpr::attr<int>("Line");

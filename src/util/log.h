@@ -22,18 +22,19 @@
 #define LOG(sev) \
 		BOOST_LOG_STREAM_WITH_PARAMS( \
 				(boost::log::trivial::logger::get()), \
+				(logging::setGetAttrib("Module", PVLOG_LOG_MODULE)) \
 				(logging::setGetAttrib("File", logging::pathToFilename(__FILE__))) \
 				(logging::setGetAttrib("Line", __LINE__)) \
-				(logging::setGetAttrib("Module", PVLOG_LOG_MODULE)) \
 				(::boost::log::keywords::severity = (sev)) \
 		)
 
 namespace logging {
 template<typename ValueType>
 ValueType setGetAttrib(const char* name, ValueType value) {
-	auto attr = boost::log::attribute_cast < boost::log::attributes::mutable_constant<ValueType>>(
-			boost::log::core::get()->get_thread_attributes()[name]
+	auto attr = boost::log::attribute_cast<boost::log::attributes::mutable_constant<ValueType>>(
+			boost::log::core::get()->get_global_attributes()[name]
 	);
+
 	attr.set(value);
 	return attr.get();
 }
