@@ -99,7 +99,7 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	btlog::add_common_attributes();
 
 	boost::log::core::get()->set_filter(
-			boost::log::trivial::severity >= boost::log::trivial::trace
+			boost::log::trivial::severity >= severity
 	);
 
 	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f");
@@ -110,9 +110,15 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	btlog::formatter logFmt = btexpr::format("%1%[%2% %3%:%4%] %5%")
 			% fmtSeverity % fmtTimeStamp % fmtFile % fmtLine % btexpr::message;
 
-	auto fsSink = btlog::add_file_log(btkeywords::file_name = "pvlog.log");
-	fsSink->set_formatter(logFmt);
-	fsSink->locked_backend()->auto_flush(true);
+	if (!file.empty()) {
+		auto fsSink = btlog::add_file_log(btkeywords::file_name = file);
+		fsSink->set_formatter(logFmt);
+		fsSink->locked_backend()->auto_flush(true);
+	} else {
+		auto cSink = btlog::add_console_log();
+		cSink->set_formatter(logFmt);
+		cSink->locked_backend()->auto_flush(true);
+	}
 }
 
 
