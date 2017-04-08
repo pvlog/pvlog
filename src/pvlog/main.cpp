@@ -121,6 +121,39 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	}
 }
 
+void pvlibLogFunc(const char* module, const char *file, int line, pvlib_log_level logLevel, const char* message) {
+	bttrivial::severity_level sev;
+
+	switch (logLevel) {
+	case PVLIB_LOG_ERROR:
+		sev = bttrivial::error;
+		break;
+	case PVLIB_LOG_WARNING:
+		sev = bttrivial::warning;
+		break;
+	case PVLIB_LOG_INFO:
+		sev = bttrivial::info;
+		break;
+	case PVLIB_LOG_DEBUG:
+		sev = bttrivial::debug;
+		break;
+	case PVLIB_LOG_TRACE:
+		sev = bttrivial::trace;
+		break;
+	default:
+		sev = bttrivial::warning;
+		assert("Invalid severity level!");
+	}
+
+	BOOST_LOG_STREAM_WITH_PARAMS(
+			(boost::log::trivial::logger::get()),
+			(logging::setGetAttrib("Module", module))
+			(logging::setGetAttrib("File", std::string(file)))
+			(logging::setGetAttrib("Line", line))
+			(::boost::log::keywords::severity = (sev))
+	);
+}
+
 
 int main(int argc, char **argv) {
 	std::string logLevel;
@@ -144,16 +177,22 @@ int main(int argc, char **argv) {
 	}
 
 	bttrivial::severity_level logSeverity = bttrivial::warning;
+	pvlib_log_level pvlibLogSeverity = PVLIB_LOG_WARNING;
 	if (logLevel == "error") {
 		logSeverity = bttrivial::error;
+		pvlibLogSeverity = PVLIB_LOG_ERROR;
 	} else if (logLevel == "warning") {
 		logSeverity = bttrivial::warning;
+		pvlibLogSeverity = PVLIB_LOG_WARNING;
 	} else if (logLevel == "info") {
 		logSeverity = bttrivial::info;
+		pvlibLogSeverity = PVLIB_LOG_INFO;
 	} else if (logLevel == "debug") {
 		logSeverity = bttrivial::debug;
+		pvlibLogSeverity = PVLIB_LOG_DEBUG;
 	} else if (logLevel == "trace") {
 		logSeverity = bttrivial::trace;
+		pvlibLogSeverity = PVLIB_LOG_TRACE;
 	} else {
 		std::cerr << "Invalid loglevel" << std::endl;
 		std::cerr << desc << std::endl;
@@ -161,6 +200,8 @@ int main(int argc, char **argv) {
 	}
 
 	initLogging(logPath, logSeverity);
+
+	pvlib_init(pvlibLogFunc, nullptr, pvlibLogSeverity);
 
 	LOG(Info) << "Opening database.";
 	std::unique_ptr<odb::database> db = openDatabase(configPath);
