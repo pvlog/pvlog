@@ -151,7 +151,7 @@ void pvlibLogFunc(const char* module, const char *file, int line, pvlib_log_leve
 			(logging::setGetAttrib("File", std::string(file)))
 			(logging::setGetAttrib("Line", line))
 			(::boost::log::keywords::severity = (sev))
-	);
+	) << message;
 }
 
 
