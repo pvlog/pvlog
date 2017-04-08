@@ -12,6 +12,7 @@
 #include <Poco/AutoPtr.h>
 
 #include "util/log.h"
+#include "util/pvlogexception.h"
 
 using namespace Poco::Net;
 using namespace Poco;

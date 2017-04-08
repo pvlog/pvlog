@@ -15,10 +15,8 @@ set(SRC
 
 set(HEADER
 	datalogger.h
-	pvlog.h
 	email.h
 	sunrisesunset.h
-	forgrounddaemon.h
 	abstractpvlogserver.h
 	jsonrpcserver.h
 )

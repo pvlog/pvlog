@@ -1,6 +1,5 @@
 set(SRC 
 	configreader.cpp
-	log.cpp
 	)
 
 set(HEADERS 

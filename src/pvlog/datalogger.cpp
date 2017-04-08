@@ -61,6 +61,11 @@ namespace pt = boost::posix_time;
 
 typedef boost::date_time::c_local_adjustor<pt::ptime> local_adj;
 
+#define LOG_ERROR(X) \
+	std::stringstream ss << X; \
+	LOG(Error << ss.str(); \
+	errorSig(ss.str());
+
 namespace {
 
 //helper functions to test values for validity

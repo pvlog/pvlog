@@ -1,49 +1,47 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <utility.h>
-#include <sstream>
+//#include <utility.h>
+//#include <sstream>
 
+#include <boost/log/trivial.hpp>
+#include <boost/log/attributes/mutable_constant.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
 
-enum Level {
-	Error = 0, Info, Warning, Debug, Trace
-};
+#define Error boost::log::trivial::error
+#define Info boost::log::trivial::info
+#define Warning boost::log::trivial::warning
+#define Debug boost::log::trivial::debug
+#define Trace boost::log::trivial::trace
 
-class Log {
-	DISABLE_COPY(Log)
-public:
-	Log() {
-		//nothing to do
-	}
-	virtual ~Log();
+#ifndef PVLOG_LOG_MODULE
+#	define PVLOG_LOG_MODULE "global"
+#endif
 
-	std::ostringstream& get(Level level, const char* file, int line);
+#define LOG(sev) \
+		BOOST_LOG_STREAM_WITH_PARAMS( \
+				(boost::log::trivial::logger::get()), \
+				(logging::setGetAttrib("File", logging::pathToFilename(__FILE__))) \
+				(logging::setGetAttrib("Line", __LINE__)) \
+				(logging::setGetAttrib("Module", PVLOG_LOG_MODULE)) \
+				(::boost::log::keywords::severity = (sev)) \
+		)
 
-	static Level& reportingLevel() {
-		return messageLevel;
-	}
+namespace logging {
+template<typename ValueType>
+ValueType setGetAttrib(const char* name, ValueType value) {
+	auto attr = boost::log::attribute_cast < boost::log::attributes::mutable_constant<ValueType>>(
+			boost::log::core::get()->get_thread_attributes()[name]
+	);
+	attr.set(value);
+	return attr.get();
+}
 
-protected:
-	std::ostringstream os;
-
-	static const char *filename(const char *file);
-
-	static Level messageLevel;
-};
-
-struct print_array {
-	const uint8_t *array;
-	size_t size;
-
-	print_array(const uint8_t *array, size_t size) : array(array), size(size) {}
-};
-
-std::ostream& operator<<(std::ostream& o, const print_array& a);
-
-#define LOG(LEVEL) \
-if (LEVEL > Log::reportingLevel()) \
-; \
-else \
-Log().get(LEVEL, __FILE__, __LINE__)
+// Convert file path to only filename
+inline std::string pathToFilename(std::string path) {
+	return path.substr(path.find_last_of("/\\") + 1);
+}
+}
 
 #endif /* #ifndef LOG_H */
