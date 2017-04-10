@@ -381,7 +381,7 @@ void Datalogger::updateArchiveData() {
 
 			if ((ret = pvlib_get_events(plant, inverterId, pt::to_time_t(lastRead),
 					pt::to_time_t(currentTime), &es)) < 0) {
-				std::string errorMsg = bt::str(bt::format("Reading archive event data for %1 from %1 to %2 failed. Error code: %3")
+				std::string errorMsg = bt::str(bt::format("Reading archive event data for %1 from %2 to %3 failed. Error code: %4")
 						% inverter->name % lastRead % currentTime % ret);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
