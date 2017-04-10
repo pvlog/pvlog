@@ -29,7 +29,7 @@ namespace model {
 //Logs one day of inverter data
 class Datalogger {
 public:
-	boost::signals2::signal<void (int, std::string)> errorSig;
+	boost::signals2::signal<void (std::string)> errorSig;
 	boost::signals2::signal<void ()> dayEndSig;
 
 	enum Status {
