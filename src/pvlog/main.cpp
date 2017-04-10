@@ -31,6 +31,7 @@
 #include "log.h"
 #include "emailnotification.h"
 #include "daysummarymessage.h"
+#include "messagefilter.h"
 
 #include "models/config.h"
 #include "models/config_odb.h"
@@ -222,6 +223,11 @@ int main(int argc, char **argv) {
 
 	datalogger.dayEndSig.connect(std::bind(&DaySummaryMessage::generateDaySummaryMessage, &daySummaryMessage));
 	daySummaryMessage.newDaySummarySignal.connect(std::bind(&EmailNotification::sendMessage,
+			&emailNotification, std::placeholders::_1));
+
+	MessageFilter messageFilter;
+	datalogger.errorSig.connect(std::bind(&MessageFilter::addMessage, &messageFilter, std::placeholders::_1));
+	messageFilter.newMessageSignal.connect(std::bind(&EmailNotification::sendMessage,
 			&emailNotification, std::placeholders::_1));
 
 
