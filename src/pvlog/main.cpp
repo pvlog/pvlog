@@ -103,7 +103,7 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 			boost::log::trivial::severity >= severity
 	);
 
-	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f");
+	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S");
 	auto fmtSeverity = btexpr::attr<bttrivial::severity_level>("Severity");
 	auto fmtFile = btexpr::attr<std::string>("File");
 	auto fmtLine = btexpr::attr<int>("Line");
