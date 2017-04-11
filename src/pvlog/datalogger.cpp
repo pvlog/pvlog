@@ -290,7 +290,7 @@ void Datalogger::openPlants() {
 		try {
 			pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
 		} catch (PvlogException& ex) {
-			std::string errorMsg = bt::str(bt::format("Error opening plant %1 %2") % plant.name % ex.what());
+			std::string errorMsg = bt::str(bt::format("Error opening plant %1% %2%") % plant.name % ex.what());
 			LOG(Error) << errorMsg;
 			errorSig(errorMsg);
 			continue; //ignore plant
@@ -307,7 +307,7 @@ void Datalogger::openPlants() {
 
 		for (const auto& inverter : plant.inverters) {
 			if (availableInverterIds.count(inverter->id) != 1) {
-				std::string errorMsg = bt::str(bt::format("Could not open inverter %1") % inverter->name);
+				std::string errorMsg = bt::str(bt::format("Could not open inverter %1%") % inverter->name);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
 			}
@@ -354,7 +354,8 @@ void Datalogger::updateArchiveData() {
 			int ret;
 			if ((ret = pvlib_get_day_yield(plant, inverterId, pt::to_time_t(lastRead),
 					pt::to_time_t(currentTime), &y)) < 0) {
-				std::string errorMsg = bt::str(bt::format("Reading archive day data for %1 failed. Error code: %2") % inverter->name % ret);
+				std::string errorMsg = bt::str(bt::format("Reading archive day data for %1% failed. Error code: %2%")
+						% inverter->name % ret);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
 				continue; //Ignore inverter
@@ -381,7 +382,7 @@ void Datalogger::updateArchiveData() {
 
 			if ((ret = pvlib_get_events(plant, inverterId, pt::to_time_t(lastRead),
 					pt::to_time_t(currentTime), &es)) < 0) {
-				std::string errorMsg = bt::str(bt::format("Reading archive event data for %1 from %2 to %3 failed. Error code: %4")
+				std::string errorMsg = bt::str(bt::format("Reading archive event data for %1% from %2% to %3% failed. Error code: %4%")
 						% inverter->name % lastRead % currentTime % ret);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
@@ -447,7 +448,7 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 
 	LOG(Debug) << "logging day yield";
 	if (pvlib_get_stats(plant, inverterId, &stats) < 0) {
-		std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter % 1")
+		std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter %1%")
 				% inverter->name);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
@@ -487,7 +488,7 @@ void Datalogger::logData() {
 			if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
 				(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
 				(ret = pvlib_get_status(plant, inverterId, &status)) < 0) {
-				std::string errorMsg = bt::str(bt::format("Error reading inverter %1 data . Error: % 2")
+				std::string errorMsg = bt::str(bt::format("Error reading inverter %1% data . Error: %2%")
 						% inverter->name % ret);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
@@ -496,7 +497,7 @@ void Datalogger::logData() {
 			pt::ptime curTime = pt::second_clock::universal_time();
 
 			if (status.status != PVLIB_STATUS_OK) {
-				std::string errorMsg = bt::str(bt::format("Status of %1 not OK but %2")
+				std::string errorMsg = bt::str(bt::format("Status of %1% not OK but %2%")
 						% inverter->name % status.status);
 				LOG(Error) << errorMsg;
 				errorSig(errorMsg);
@@ -508,7 +509,7 @@ void Datalogger::logData() {
 
 				if (diffSunset >= pt::hours(1) && diffSunrise >= pt::hours(1)) {
 					//TODO: handle invalid power: for now just ignore it!!!
-					std::string errorMsg = bt::str(bt::format("Total power of %1 0 during the day!")
+					std::string errorMsg = bt::str(bt::format("Total power of %1% 0 during the day!")
 							% inverter->name);
 					LOG(Error) << errorMsg;
 					errorSig(errorMsg);
