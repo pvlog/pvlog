@@ -393,8 +393,11 @@ void Datalogger::updateDayArchive(pvlib_plant* plant, InverterPtr inverter) {
 		errorSig(errorMsg);
 		return;
 	}
-	std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
 	LOG(Debug) << "Got " << numEntries << " day yield archive entries";
+	if (numEntries == 0) {
+		return;
+	}
+	std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
 
 	saveDayArchiveData(db, inverter, dayYields.get(), numEntries, currentTime);
 
@@ -422,8 +425,11 @@ void Datalogger::updateEventArchive(pvlib_plant* plant, InverterPtr inverter) {
 		errorSig(errorMsg);
 		return;
 	}
-	std::unique_ptr<pvlib_event[], decltype(free)*> events(es, free);
 	LOG(Debug) << "Got " << numEntries << " event archive entries";
+	if (numEntries == 0) {
+		return;
+	}
+	std::unique_ptr<pvlib_event[], decltype(free)*> events(es, free);
 
 	saveEventArchiveData(db, inverter, events.get(), numEntries, currentTime);
 
