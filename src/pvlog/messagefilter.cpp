@@ -10,7 +10,7 @@ void MessageFilter::addMessage(const std::string& message) {
 	auto it = messages.find(message);
 	time_t curTime = time(nullptr);
 
-	if (it != messages.end()) {
+	if (it == messages.end()) {
 		messages.emplace(message, curTime);
 		newMessageSignal(message);
 	} else {
