@@ -2,6 +2,7 @@
 #include <odb/database.hxx>
 
 #include "email.h"
+#include "log.h"
 
 #include "models/config.h"
 #include "models/configservice.h"
@@ -41,4 +42,5 @@ void EmailNotification::sendMessage(const std::string& message) {
 
 	Email email(smtpServer, smtpPort, user, password);
 	email.send(user, targetEmail, "Pvlog email notification", message);
+	LOG(Info) << "Sended pvlog email notification: " << message;
 }
