@@ -89,6 +89,35 @@ static void createDefaultConfig(odb::database* db) {
 	db->persist(latitude);
 }
 
+static int initDatabase(odb::database* db) {
+	//check database schema if doesn't exists
+	odb::schema_version v (db->schema_version ());
+	odb::schema_version bv (odb::schema_catalog::base_version(*db));
+	odb::schema_version cv (odb::schema_catalog::current_version(*db));
+
+	if (v == 0) {
+		LOG(Info) << "Schema does not exist. Creating it!";
+		odb::transaction t (db->begin ());
+		odb::schema_catalog::create_schema(*db, "", false);
+		createDefaultConfig(db);
+		t.commit ();
+	} else if (v < cv) {
+		if (v < bv) {
+			LOG(Error) << "To old database version. Migration is not possible!";
+			return -1;
+		}
+
+		for (v = odb::schema_catalog::next_version(*db, v); v <= cv; v = odb::schema_catalog::next_version(*db, v)) {
+			LOG(Info) << "Migrating database to " << v;
+			odb::transaction t (db->begin());
+			odb::schema_catalog::migrate(*db, v);
+			t.commit ();
+		}
+	}
+
+	return 0;
+}
+
 static void initLogging(const std::string& file,  bttrivial::severity_level severity) {
 	btlog::core::get()->add_global_attribute("Module",
 			btattrs::mutable_constant<const char *>("global"));
@@ -200,22 +229,22 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
+	//Initialize logging
 	initLogging(logPath, logSeverity);
 
+	//Initialize pvlib
 	pvlib_init(pvlibLogFunc, nullptr, pvlibLogSeverity);
 
+
+	//Open and initialize/migrate database
 	LOG(Info) << "Opening database.";
 	std::unique_ptr<odb::database> db = openDatabase(configPath);
 	LOG(Info) << "Successfully opened database.";
 
-	//check database schema if doesn't exists
-	odb::transaction t (db->begin ());
-	if (db->schema_version() == 0) {
-		LOG(Info) << "Schema does not exist. Creating it!";
-		odb::schema_catalog::create_schema(*db.get(), "", false);
-		createDefaultConfig(db.get());
+	//Initialze/migrate database
+	if (initDatabase(db.get()) < 0) {
+		return EXIT_FAILURE;
 	}
-	t.commit ();
 
 	Datalogger datalogger(db.get());
 	DaySummaryMessage daySummaryMessage(db.get());
