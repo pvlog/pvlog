@@ -81,6 +81,10 @@ private:
 
 	void closePlants();
 
+	void updateDayArchive(pvlib_plant* plant, model::InverterPtr inverter);
+
+	void updateEventArchive(pvlib_plant* plant, model::InverterPtr inverter);
+
 	void updateArchiveData();
 
 	std::atomic<bool> quit;

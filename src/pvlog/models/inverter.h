@@ -31,7 +31,8 @@ struct Inverter {
 	int phaseCount;
 	int trackerCount;
 
-	boost::optional<boost::posix_time::ptime> archiveLastRead;
+	boost::optional<boost::posix_time::ptime> dayArchiveLastRead;
+	boost::optional<boost::posix_time::ptime> eventArchiveLastRead;
 
 	Inverter(int64_t id, std::string name, int32_t wattpeak, int phaseCount, int trackerCount) :
 			id(id),

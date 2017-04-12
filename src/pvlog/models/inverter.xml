@@ -1,4 +1,12 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="sqlite" version="1">
+  <changeset version="2">
+    <alter-table name="inverter">
+      <add-column name="day_archive_last_read" type="TEXT" null="true"/>
+      <add-column name="event_archive_last_read" type="TEXT" null="true"/>
+      <drop-column name="archive_last_read"/>
+    </alter-table>
+  </changeset>
+
   <model version="1">
     <table name="inverter" kind="object">
       <column name="id" type="INTEGER" null="false"/>
