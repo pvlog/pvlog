@@ -77,6 +77,8 @@ protected:
 
 	void logger();
 private:
+	void openPlant(const model::Plant& plant);
+
 	void openPlants();
 
 	void closePlants();

@@ -64,12 +64,9 @@ namespace bt = boost;
 
 typedef boost::date_time::c_local_adjustor<pt::ptime> local_adj;
 
-#define LOG_ERROR(X) \
-	std::stringstream ss << X; \
-	LOG(Error << ss.str(); \
-	errorSig(ss.str());
-
 namespace {
+
+const pt::ptime ARCHIVE_START = pt::from_iso_string("20000101T000000");
 
 //helper functions to test values for validity
 template<typename T>
@@ -237,6 +234,39 @@ static void updateOrInsert(odb::database* db, Event& event) {
 	}
 }
 
+static void saveDayArchiveData(odb::database* db, InverterPtr inv, pvlib_day_yield* dayYields, int num, pt::ptime readTime) {
+	odb::transaction t(db->begin());
+	for (int i = 0; i < num; ++i) {
+		pvlib_day_yield* dy = &dayYields[i];
+
+		//Local time so we can convert it to local date
+		pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date - 12 * 3600));
+		bg::date date = time.date();
+
+		DayData dayData(inv, date, dy->dayYield);
+
+		LOG(Debug) << "Updating or inserting DayData " << dayData.date << " " << dayData.dayYield;
+		updateOrInsert(db, dayData);
+	}
+
+	inv->dayArchiveLastRead = readTime;
+	db->update(inv);
+	t.commit();
+}
+
+static void saveEventArchiveData(odb::database* db, InverterPtr inv, pvlib_event* events, int num, pt::ptime readTime) {
+	odb::transaction t(db->begin());
+	for (int i = 0; i < num; ++i) {
+		const pvlib_event& e = events[i];
+		Event event(inv, pt::from_time_t(e.time), e.value, e.message);
+		updateOrInsert(db, event);
+	}
+
+	inv->eventArchiveLastRead = readTime;
+	db->update(inv);
+	t.commit();
+}
+
 
 Datalogger::Datalogger(odb::core::database* database) :
 		quit(false), active(false), dataloggerStatus(OK), db(database)
@@ -273,6 +303,61 @@ Datalogger::~Datalogger() {
 	//nothing to do
 }
 
+
+void Datalogger::openPlant(const Plant& plant) {
+	LOG(Info) << "Connecting plant " << plant.name << " ["
+			<< plant.connection << ", " << plant.protocol << "]";
+
+	pvlib_plant* pvlibPlant = nullptr;
+	try {
+		pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
+	} catch (PvlogException& ex) {
+		std::string errorMsg = bt::str(bt::format("Error opening plant %1% %2%")
+				% plant.name % ex.what());
+		LOG(Error) << errorMsg;
+		errorSig(errorMsg);
+		return; //Ignore plant
+	}
+
+	LOG(Info) << "Successfully connected plant " << plant.name << " ["
+			<< plant.connectionParam << ", " << plant.protocolParam << "]";
+
+	Inverters availableInverterIds = getInverters(pvlibPlant);
+	LOG(Info) << "Available inverters: ";
+	for (int64_t id : availableInverterIds) {
+		LOG(Info) << id;
+	}
+
+	for (const auto& inverter : plant.inverters) {
+		if (availableInverterIds.count(inverter->id) != 1) {
+			std::string errorMsg = bt::str(bt::format("Could not open inverter %1%")
+					% inverter->name);
+			LOG(Error) << errorMsg;
+			errorSig(errorMsg);
+		}
+	}
+
+	std::unordered_set<int64_t> plantInverterIds;
+	for (InverterPtr inverter : plant.inverters) {
+		plantInverterIds.insert(inverter->id);
+		inverterInfo.emplace(inverter->id, inverter);
+	}
+
+	for (auto inverterIt = availableInverterIds.begin(); inverterIt != availableInverterIds.end(); ) {
+		if (plantInverterIds.count(*inverterIt) == 0) {
+			LOG(Warning) << "Found inverter not in database. Id: " << *inverterIt;
+			inverterIt = availableInverterIds.erase(inverterIt);
+		} else {
+			++inverterIt;
+		}
+	}
+
+	plants.emplace(pvlibPlant, availableInverterIds);
+
+	LOG(Info) << "Opened plant " << plant.name << " ["
+			<< plant.connection << ", " << plant.protocol << "]";
+}
+
 void Datalogger::openPlants() {
 	std::unordered_map<std::string, uint32_t> connections = getConnections();
 	std::unordered_map<std::string, uint32_t> protocols   = getProtocols();
@@ -283,62 +368,14 @@ void Datalogger::openPlants() {
 
 	for (odb::result<Plant>::iterator it(r.begin()); it != r.end (); ++it) {
 		const Plant& plant = *it;
+		openPlant(plant);
 
-		LOG(Info) << "Connecting plant " << plant.name << " ["
-				<< plant.connection << ", " << plant.protocol << "]";
-
-		pvlib_plant* pvlibPlant = nullptr;
-		try {
-			pvlibPlant = connectPlant(plant.connection, plant.protocol, plant.connectionParam, plant.protocolParam);
-		} catch (PvlogException& ex) {
-			std::string errorMsg = bt::str(bt::format("Error opening plant %1% %2%") % plant.name % ex.what());
-			LOG(Error) << errorMsg;
-			errorSig(errorMsg);
-			continue; //ignore plant
-		}
-
-		LOG(Info) << "Successfully connected plant " << plant.name << " ["
-				<< plant.connectionParam << ", " << plant.protocolParam << "]";
-
-		Inverters availableInverterIds = getInverters(pvlibPlant);
-		LOG(Info) << "Available inverters: ";
-		for (int64_t id : availableInverterIds) {
-			LOG(Info) << id;
-		}
-
-		for (const auto& inverter : plant.inverters) {
-			if (availableInverterIds.count(inverter->id) != 1) {
-				std::string errorMsg = bt::str(bt::format("Could not open inverter %1%") % inverter->name);
-				LOG(Error) << errorMsg;
-				errorSig(errorMsg);
-			}
-		}
-
-		std::unordered_set<int64_t> plantInverterIds;
-		for (InverterPtr inverter : plant.inverters) {
-			plantInverterIds.insert(inverter->id);
-			inverterInfo.emplace(inverter->id, inverter);
-		}
-
-		for (auto inverterIt = availableInverterIds.begin(); inverterIt != availableInverterIds.end(); ) {
-			if (plantInverterIds.count(*inverterIt) == 0) {
-				LOG(Warning) << "Found inverter not in database. Id: " << *inverterIt;
-				inverterIt = availableInverterIds.erase(inverterIt);
-			} else {
-				++inverterIt;
-			}
-		}
-
-		plants.emplace(pvlibPlant, availableInverterIds);
-
-		LOG(Info) << "Opened plant " << plant.name << " ["
-				<< plant.connection << ", " << plant.protocol << "]";
 	}
 	t.commit();
 }
 
 void Datalogger::updateDayArchive(pvlib_plant* plant, InverterPtr inverter) {
-	pt::ptime lastRead = inverter->dayArchiveLastRead.get_value_or(pt::from_iso_string("20000101T000000"));
+	pt::ptime lastRead = inverter->dayArchiveLastRead.get_value_or(ARCHIVE_START);
 	pt::ptime currentTime = pt::second_clock::universal_time();
 
 	LOG(Info) << "Reading day archive data for "
@@ -348,42 +385,25 @@ void Datalogger::updateDayArchive(pvlib_plant* plant, InverterPtr inverter) {
 	pvlib_day_yield* y;
 	time_t from = pt::to_time_t(lastRead);
 	time_t to   = pt::to_time_t(currentTime);
-	int ret;
-	if ((ret = pvlib_get_day_yield(plant, inverterId, from, to, &y)) < 0) {
+	int numEntries;
+	if ((numEntries = pvlib_get_day_yield(plant, inverterId, from, to, &y)) < 0) {
 		std::string errorMsg = bt::str(bt::format("Reading archive event data for %1% from %2% to %3% failed. Error code: %4%")
-				% inverter->name % lastRead % currentTime % ret);
+				% inverter->name % lastRead % currentTime % numEntries);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
 		return;
 	}
 	std::unique_ptr<pvlib_day_yield[], decltype(free)*> dayYields(y, free);
+	LOG(Debug) << "Got " << numEntries << " day yield archive entries";
 
-	LOG(Debug) << "Got " << ret << " day yield archive entries";
-
-	odb::transaction t(db->begin());
-	for (int i = 0; i < ret; ++i) {
-		pvlib_day_yield* dy = &dayYields[i];
-
-		//Local time so we can convert it to local date
-		pt::ptime time = local_adj::utc_to_local(pt::from_time_t(dy->date - 12 * 3600));
-		bg::date date = time.date();
-
-		DayData dayData(inverter, date, dy->dayYield);
-
-		LOG(Debug) << "Updating or inserting DayData " << dayData.date << " " << dayData.dayYield;
-		updateOrInsert(db, dayData);
-	}
-
-	inverter->dayArchiveLastRead = currentTime;
-	db->update(inverter);
-	t.commit();
+	saveDayArchiveData(db, inverter, dayYields.get(), numEntries, currentTime);
 
 	LOG(Info) << "Read day archive data for "
 			<< inverter->name << " " << lastRead << " -> " << currentTime;
 }
 
 void Datalogger::updateEventArchive(pvlib_plant* plant, InverterPtr inverter) {
-	pt::ptime lastRead = inverter->eventArchiveLastRead.get_value_or(pt::from_iso_string("20000101T000000"));
+	pt::ptime lastRead = inverter->eventArchiveLastRead.get_value_or(ARCHIVE_START);
 	pt::ptime currentTime = pt::second_clock::universal_time();
 
 	LOG(Info) << "Reading event archive data for "
@@ -394,27 +414,18 @@ void Datalogger::updateEventArchive(pvlib_plant* plant, InverterPtr inverter) {
 	int64_t inverterId = inverter->id;
 	time_t from = pt::to_time_t(lastRead);
 	time_t to   = pt::to_time_t(currentTime);
-	int ret;
-	if ((ret = pvlib_get_events(plant, inverterId, from, to, &es)) < 0) {
+	int numEntries;
+	if ((numEntries = pvlib_get_events(plant, inverterId, from, to, &es)) < 0) {
 		std::string errorMsg = bt::str(bt::format("Reading archive event data for %1% from %2% to %3% failed. Error code: %4%")
-				% inverter->name % lastRead % currentTime % ret);
+				% inverter->name % lastRead % currentTime % numEntries);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
 		return;
 	}
 	std::unique_ptr<pvlib_event[], decltype(free)*> events(es, free);
-	LOG(Debug) << "Got " << ret << " event archive entries";
+	LOG(Debug) << "Got " << numEntries << " event archive entries";
 
-	odb::transaction t(db->begin());
-	for (int i = 0; i < ret; ++i) {
-		const pvlib_event& e = events[i];
-		Event event(inverter, pt::from_time_t(e.time), e.value, e.message);
-		updateOrInsert(db, event);
-	}
-
-	inverter->eventArchiveLastRead = currentTime;
-	db->update(inverter);
-	t.commit();
+	saveEventArchiveData(db, inverter, events.get(), numEntries, currentTime);
 
 	LOG(Info) << "Read event archive data for "
 			<< inverter->name << " " << lastRead << " -> " << currentTime;
@@ -444,22 +455,6 @@ void Datalogger::closePlants() {
 
 	plants.clear();
 }
-
-//bool DataLogger::waitForDay()
-//{
-//	/*	if (sunriseSunset->isDay(DateTime().julianDay())) {
-//	 return true;
-//	 }
-//	 */
-//	LOG(Debug) << "Waiting for day begin...";
-//	DateTime time = sunriseSunset->sunrise(DateTime().julianDay() + 1);
-//	return DateTime::sleepUntil(time);
-//}
-//
-//bool DataLogger::waitForLogTime(DateTime timeToWait)
-//{
-//	return DateTime::sleepUntil(timeToWait);
-//}
 
 void Datalogger::sleepUntill(pt::ptime time) {
 	using system_clock = std::chrono::system_clock;
