@@ -77,6 +77,8 @@ protected:
 
 	void logger();
 private:
+	void logData(pvlib_plant* plant, int64_t inverterId);
+
 	void openPlant(const model::Plant& plant);
 
 	void openPlants();

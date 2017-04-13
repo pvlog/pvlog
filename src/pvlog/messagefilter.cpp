@@ -2,7 +2,7 @@
 
 #include <ctime>
 
-MessageFilter::MessageFilter() {
+MessageFilter::MessageFilter(time_t timeout) : timeout(timeout) {
 	//nothing to do
 }
 
@@ -15,7 +15,7 @@ void MessageFilter::addMessage(const std::string& message) {
 		newMessageSignal(message);
 	} else {
 		time_t t = it->second;
-		if (curTime - t > 10 * 60) {
+		if (curTime - t > timeout) {
 			it->second = curTime;
 			newMessageSignal(message);
 		}

@@ -10,12 +10,16 @@ class MessageFilter {
 public:
 	boost::signals2::signal<void (const std::string&)> newMessageSignal;
 
-	MessageFilter();
+	/**
+	 * @timeout timeout in seconds.
+	 */
+	MessageFilter(time_t timeout = 60 * 60);
 
 	void addMessage(const std::string& message);
 
 private:
 	std::unordered_map<std::string, time_t> messages;
+	time_t timeout;
 };
 
 #endif //#ifndef MESSAGE_FILTER_H

@@ -502,6 +502,95 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	LOG(Debug) << "logged day yield";
 }
 
+void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
+	int ret;
+	Ac ac;
+	Dc dc;
+	pvlib::Status status;
+
+	InverterPtr inverter = inverterInfo.at(inverterId);
+
+	if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
+		(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
+		(ret = pvlib_get_status(plant, inverterId, &status)) < 0) {
+		std::string errorMsg = bt::str(bt::format("Error reading inverter %1% data. Error: %2%")
+				% inverter->name % ret);
+		LOG(Error) << errorMsg;
+		errorSig(errorMsg);
+	}
+
+	if (status.status != PVLIB_STATUS_OK) {
+		std::string errorMsg = bt::str(bt::format("Status of %1% not OK but %2%")
+				% inverter->name % status.status);
+		LOG(Error) << errorMsg;
+		errorSig(errorMsg);
+	}
+
+	if (!isValid(ac.totalPower) || ac.totalPower == 0) {
+		//handle invalid data
+		pt::ptime curTime = pt::second_clock::universal_time();
+		pt::time_duration diffSunset  = sunset - curTime;
+		pt::time_duration diffSunrise = curTime - sunrise;
+
+		if (diffSunset >= pt::hours(1) && diffSunrise >= pt::hours(1)) {
+			std::string errorMsg = bt::str(bt::format("Total power of %1% 0 during the day!")
+					% inverter->name);
+			LOG(Error) << errorMsg;
+			errorSig(errorMsg);
+			return;
+		} else if (diffSunset <= pt::hours(0)) {
+			//sunset and 0 power so we can log day data
+			logDayData(plant, inverterId);
+
+			//close inverter
+			//close inverter for this day
+			Inverters& openInverters = plants.at(plant);
+			openInverters.erase(inverterId);
+			curSpotData.erase(inverterId);
+
+			LOG(Info) << "Closed inverter: " << inverter->name;
+			if (openInverters.empty()) {
+				LOG(Info) << "Closing plant!";
+				pvlib_close(plant);
+				plants.erase(plant);
+			}
+			return;
+		} else {
+			//wait till day end or day start
+			return;
+		}
+	}
+
+	// extra function
+	SpotData spotData = fillSpotData(ac, dc);
+	spotData.inverter = inverter;
+	spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
+
+	curSpotData[inverterId] = spotData;
+
+	LOG(Trace) << "Spot data: " << spotData;
+
+	curSpotDataList[inverterId].push_back(spotData);
+
+	if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
+		LOG(Debug) << "logging current power, voltage, ...";
+		for (const auto& entry : curSpotDataList) {
+			try {
+				SpotData averagedSpotData = average(entry.second);
+				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
+
+				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
+				odb::transaction t (db->begin ());
+				db->persist(averagedSpotData);
+				t.commit();
+			} catch (const PvlogException& e) {
+				LOG(Error) << "Error averaging spot data: " << e.what() ;
+			}
+		}
+		curSpotDataList.clear();
+	}
+}
+
 void Datalogger::logData() {
 	Plants plantsCopy(plants); //Copy plants: so wen can delete plant from original plant
 
@@ -509,91 +598,7 @@ void Datalogger::logData() {
 		pvlib_plant* plant  = plantEntry.first;
 		Inverters inverters = plantEntry.second;
 		for (int64_t inverterId : inverters) {
-			InverterPtr inverter = inverterInfo.at(inverterId);
-
-			int ret;
-			Ac ac;
-			Dc dc;
-			pvlib::Status status;
-
-			if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
-				(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
-				(ret = pvlib_get_status(plant, inverterId, &status)) < 0) {
-				std::string errorMsg = bt::str(bt::format("Error reading inverter %1% data . Error: %2%")
-						% inverter->name % ret);
-				LOG(Error) << errorMsg;
-				errorSig(errorMsg);
-			}
-
-			pt::ptime curTime = pt::second_clock::universal_time();
-
-			if (status.status != PVLIB_STATUS_OK) {
-				std::string errorMsg = bt::str(bt::format("Status of %1% not OK but %2%")
-						% inverter->name % status.status);
-				LOG(Error) << errorMsg;
-				errorSig(errorMsg);
-			}
-
-			if (!isValid(ac.totalPower) || ac.totalPower == 0) {
-				pt::time_duration diffSunset  = sunset - curTime;
-				pt::time_duration diffSunrise = curTime - sunrise;
-
-				if (diffSunset >= pt::hours(1) && diffSunrise >= pt::hours(1)) {
-					//TODO: handle invalid power: for now just ignore it!!!
-					std::string errorMsg = bt::str(bt::format("Total power of %1% 0 during the day!")
-							% inverter->name);
-					LOG(Error) << errorMsg;
-					errorSig(errorMsg);
-					continue;
-				} else if (diffSunset <= pt::hours(0)) {
-					//sunset and 0 power so we can log day data
-					logDayData(plant, inverterId);
-
-					//close inverter for this day
-					Inverters& openInverters = plants.at(plant);
-					openInverters.erase(inverterId);
-					curSpotData.erase(inverterId);
-
-					LOG(Info) << "Closed inverter: " << inverter->name;
-					if (openInverters.empty()) {
-						LOG(Info) << "Closing plant!";
-						pvlib_close(plant);
-						plants.erase(plant);
-					}
-					continue;
-				} else {
-					//wait till day end or day start
-					continue;
-				}
-			}
-
-			SpotData spotData = fillSpotData(ac, dc);
-			spotData.inverter = inverter;
-			spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
-
-			curSpotData[inverterId] = spotData;
-
-			LOG(Trace) << "Spot data: " << spotData;
-
-			curSpotDataList[inverterId].push_back(spotData);
-
-			if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
-				LOG(Debug) << "logging current power, voltage, ...";
-				for (const auto& entry : curSpotDataList) {
-					try {
-						SpotData averagedSpotData = average(entry.second);
-						averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-
-						LOG(Debug) << "Persisting spot data: " << averagedSpotData;
-						odb::transaction t (db->begin ());
-						db->persist(averagedSpotData);
-						t.commit();
-					} catch (const PvlogException& e) {
-						LOG(Error) << "Error averaging spot data: " << e.what() ;
-					}
-				}
-				curSpotDataList.clear();
-			}
+			logData(plant, inverterId);
 		}
 	}
 }
