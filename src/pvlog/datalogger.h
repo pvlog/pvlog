@@ -77,7 +77,7 @@ protected:
 
 	void logger();
 private:
-	void logSpotData(model::InverterPtr inverter, const pvlib::Ac* ac, const pvlib::Dc* dc);
+	void logSpotData(model::InverterPtr inverter, const pvlib_ac* ac, const pvlib_dc* dc);
 
 	void logData(pvlib_plant* plant, int64_t inverterId);
 

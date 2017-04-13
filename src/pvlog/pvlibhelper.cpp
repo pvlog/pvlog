@@ -5,6 +5,47 @@
 #include "log.h"
 #include "pvlogexception.h"
 
+std::string to_string(const pvlib_ac& ac) {
+	std::ostringstream o;
+
+	o << "power: " << ac.totalPower << "W, frequency: " << ac.frequency
+			<< "mHz\n";
+	for (int i = 0; i < ac.phaseNum; ++i) {
+		o << i << ": power: " << ac.power[i] << "W, voltage: "
+				<< ac.voltage[i] << "mV, current: " << ac.current[i]
+				<< "mA\n";
+	}
+
+	return o.str();
+}
+
+std::string to_string(const pvlib_dc& dc) {
+	std::ostringstream o;
+
+	o << "power: " << dc.totalPower << "W\n";
+	for (int i = 0; i < dc.trackerNum; ++i) {
+		o << i << ": power: " << dc.power[i] << "W, voltage: "
+				<< dc.voltage[i] << "mV, current: " << dc.current[i]
+				<< "mA\n";
+	}
+	return o.str();
+}
+
+std::string to_string(const pvlib_status& status) {
+	std::ostringstream o;
+	o << "number: " << status.number << " status: " << status.status;
+	return o.str();
+}
+
+std::string to_string(const pvlib_stats& stats) {
+	std::ostringstream o;
+
+	o << "totalYield: " << stats.totalYield << " dayYield: " << stats.dayYield
+			<< " operationTime: " << stats.operationTime << " feedinTime: " << stats.feedInTime;
+
+	return o.str();
+}
+
 
 std::unordered_map<std::string, uint32_t>  getConnections() {
 	std::unordered_map<std::string, uint32_t> connections;

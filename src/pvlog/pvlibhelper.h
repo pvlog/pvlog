@@ -45,83 +45,14 @@ T isValid(T value) {
 	return value != invalid<T>();
 }
 
+std::string to_string(const pvlib_ac& ac);
 
-struct Ac : public pvlib_ac {
-	time_t time;
+std::string to_string(const pvlib_dc& dc);
 
-	Ac()  {
-		totalPower = invalid<int32_t>();
-		for (size_t i = 0; i < sizeof(power) / sizeof(power[0]); ++i) {
-			power[i]   = invalid<int32_t>();
-			voltage[i] = invalid<int32_t>();
-			current[i] = invalid<int32_t>();
-		}
-		phaseNum   = 0;
-		frequency  = invalid<int32_t>();
-		time = 0;
-	}
+std::string to_string(const pvlib_status& status);
 
-	friend std::ostream& operator <<(std::ostream& o, const Ac& ac) {
-		o << "power: " << ac.totalPower << "W, frequency: " << ac.frequency
-				<< "mHz\n";
-		for (int i = 0; i < ac.phaseNum; ++i) {
-			o << i << ": power: " << ac.power[i] << "W, voltage: "
-					<< ac.voltage[i] << "mV, current: " << ac.current[i]
-					<< "mA\n";
-		}
+std::string to_string(const pvlib_stats& stats);
 
-		return o;
-	}
-};
-
-struct Dc : public pvlib_dc {
-	time_t time;
-
-	Dc() {
-		totalPower = invalid<int32_t>();
-		for (size_t i = 0; i < sizeof(power) / sizeof(power[0]); ++i) {
-			power[i]   = invalid<int32_t>();
-			voltage[i] = invalid<int32_t>();
-			current[i] = invalid<int32_t>();
-		}
-		trackerNum = 0;
-		time       = 0;
-	}
-	friend std::ostream& operator <<(std::ostream& o, const Dc& dc) {
-		o << "power: " << dc.totalPower << "W\n";
-		for (int i = 0; i < dc.trackerNum; ++i) {
-			o << i << ": power: " << dc.power[i] << "W, voltage: "
-					<< dc.voltage[i] << "mV, current: " << dc.current[i]
-					<< "mA\n";
-		}
-
-		return o;
-	}
-};
-
-struct Stats : public pvlib_stats {
-	time_t time;
-
-	Stats() {
-		totalYield    = invalid<int64_t>();
-		dayYield      = invalid<int64_t>();
-		operationTime = invalid<int64_t>();
-		feedInTime    = invalid<int64_t>();
-		time = 0;
-	}
-};
-
-struct Status : pvlib_status {
-	Status() {
-		number = -1;
-	}
-
-	friend std::ostream& operator <<(std::ostream& o, const Status& status)
-	{
-		o << "number: " << status.number << " status: " << status.status;
-		return o;
-	}
-};
 } //namespace pvlib {
 
 

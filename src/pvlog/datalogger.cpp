@@ -48,10 +48,6 @@ using std::shared_ptr;
 using std::mutex;
 using std::unique_lock;
 
-using pvlib::Ac;
-using pvlib::Dc;
-using pvlib::Status;
-using pvlib::Stats;
 using pvlib::invalid;
 using pvlib::isValid;
 
@@ -172,7 +168,7 @@ SpotData average(const std::vector<SpotData>& spotData) {
 
 } //namespace {
 
-static SpotData fillSpotData(const Ac* ac, const Dc* dc) {
+static SpotData fillSpotData(const pvlib_ac* ac, const pvlib_dc* dc) {
 	SpotData spotData;
 
 	setIfValid(spotData.power, ac->totalPower);
@@ -474,11 +470,12 @@ void Datalogger::sleepUntill(pt::ptime time) {
 }
 
 void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
-	Stats stats;
+	std::unique_ptr<pvlib_stats, decltype(pvlib_free_stats)*> stats(pvlib_alloc_stats(), pvlib_free_stats);
+
 	InverterPtr inverter = inverterInfo.at(inverterId);
 
 	LOG(Debug) << "logging day yield";
-	if (pvlib_get_stats(plant, inverterId, &stats) < 0) {
+	if (pvlib_get_stats(plant, inverterId, stats.get()) < 0) {
 		std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter %1%")
 				% inverter->name);
 		LOG(Error) << errorMsg;
@@ -486,11 +483,11 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 		return;
 	}
 
-	if (isValid(stats.dayYield)) {
+	if (isValid(stats->dayYield)) {
 		odb::session session;
 		odb::transaction t (db->begin ());
 		bg::date curDate(bg::day_clock::local_day());
-		DayData dayData(inverter, curDate, stats.dayYield);
+		DayData dayData(inverter, curDate, stats->dayYield);
 
 		updateOrInsert(db, dayData);
 		t.commit();
@@ -502,7 +499,7 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	LOG(Debug) << "logged day yield";
 }
 
-void Datalogger::logSpotData(InverterPtr inverter, const Ac* ac, const Dc* dc) {
+void Datalogger::logSpotData(InverterPtr inverter, const pvlib_ac* ac, const pvlib_dc* dc) {
 	// extra function
 	SpotData spotData = fillSpotData(ac, dc);
 	spotData.inverter = inverter;
@@ -535,29 +532,29 @@ void Datalogger::logSpotData(InverterPtr inverter, const Ac* ac, const Dc* dc) {
 
 void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 	int ret;
-	Ac ac;
-	Dc dc;
-	pvlib::Status status;
+	std::unique_ptr<pvlib_ac, decltype(pvlib_free_ac)*> ac(pvlib_alloc_ac(), pvlib_free_ac);
+	std::unique_ptr<pvlib_dc, decltype(pvlib_free_dc)*> dc(pvlib_alloc_dc(), pvlib_free_dc);
+	std::unique_ptr<pvlib_status, decltype(pvlib_free_status)*> status(pvlib_alloc_status(), pvlib_free_status);
 
 	InverterPtr inverter = inverterInfo.at(inverterId);
 
-	if ((ret = pvlib_get_ac_values(plant, inverterId, &ac)) < 0 ||
-		(ret = pvlib_get_dc_values(plant, inverterId, &dc)) < 0 ||
-		(ret = pvlib_get_status(plant, inverterId, &status)) < 0) {
+	if ((ret = pvlib_get_ac_values(plant, inverterId, ac.get())) < 0 ||
+		(ret = pvlib_get_dc_values(plant, inverterId, dc.get())) < 0 ||
+		(ret = pvlib_get_status(plant, inverterId, status.get())) < 0) {
 		std::string errorMsg = bt::str(bt::format("Error reading inverter %1% data. Error: %2%")
 				% inverter->name % ret);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
 	}
 
-	if (status.status != PVLIB_STATUS_OK) {
+	if (status->status != PVLIB_STATUS_OK) {
 		std::string errorMsg = bt::str(bt::format("Status of %1% not OK but %2%")
-				% inverter->name % status.status);
+				% inverter->name % status->status);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
 	}
 
-	if (!isValid(ac.totalPower) || ac.totalPower == 0) {
+	if (!isValid(ac->totalPower) || ac->totalPower == 0) {
 		//handle invalid data
 		pt::ptime curTime = pt::second_clock::universal_time();
 		pt::time_duration diffSunset  = sunset - curTime;
@@ -592,7 +589,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 		}
 	}
 
-	logSpotData(inverter, &ac, &dc);
+	logSpotData(inverter, ac.get(), dc.get());
 }
 
 void Datalogger::logData() {
