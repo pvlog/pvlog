@@ -172,27 +172,27 @@ SpotData average(const std::vector<SpotData>& spotData) {
 
 } //namespace {
 
-static SpotData fillSpotData(const Ac& ac, const Dc& dc) {
+static SpotData fillSpotData(const Ac* ac, const Dc* dc) {
 	SpotData spotData;
 
-	setIfValid(spotData.power, ac.totalPower);
-	setIfValid(spotData.frequency, ac.frequency);
-	for (int i = 0; i < ac.phaseNum; ++i) {
-		if (isValid(ac.power[i])) {
+	setIfValid(spotData.power, ac->totalPower);
+	setIfValid(spotData.frequency, ac->frequency);
+	for (int i = 0; i < ac->phaseNum; ++i) {
+		if (isValid(ac->power[i])) {
 			Phase phase;
-			setIfValid(phase.power, ac.power[i]);
-			setIfValid(phase.voltage, ac.voltage[i]);
-			setIfValid(phase.current, ac.current[i]);
+			setIfValid(phase.power, ac->power[i]);
+			setIfValid(phase.voltage, ac->voltage[i]);
+			setIfValid(phase.current, ac->current[i]);
 
 			spotData.phases.emplace(i + 1, phase);
 		}
 	}
 
-	for (int i = 0; i < dc.trackerNum; ++i) {
+	for (int i = 0; i < dc->trackerNum; ++i) {
 		DcInput dcInput;
-		setIfValid(dcInput.power, dc.power[i]);
-		setIfValid(dcInput.voltage, dc.voltage[i]);
-		setIfValid(dcInput.current, dc.current[i]);
+		setIfValid(dcInput.power, dc->power[i]);
+		setIfValid(dcInput.voltage, dc->voltage[i]);
+		setIfValid(dcInput.current, dc->current[i]);
 
 		spotData.dcInputs.emplace(i + 1, dcInput);
 	}
@@ -502,6 +502,37 @@ void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	LOG(Debug) << "logged day yield";
 }
 
+void Datalogger::logSpotData(InverterPtr inverter, const Ac* ac, const Dc* dc) {
+	// extra function
+	SpotData spotData = fillSpotData(ac, dc);
+	spotData.inverter = inverter;
+	spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
+
+	curSpotData[inverter->id] = spotData;
+
+	LOG(Trace) << "Spot data: " << spotData;
+
+	curSpotDataList[inverter->id].push_back(spotData);
+
+	if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
+		LOG(Debug) << "logging current power, voltage, ...";
+		for (const auto& entry : curSpotDataList) {
+			try {
+				SpotData averagedSpotData = average(entry.second);
+				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
+
+				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
+				odb::transaction t (db->begin ());
+				db->persist(averagedSpotData);
+				t.commit();
+			} catch (const PvlogException& e) {
+				LOG(Error) << "Error averaging spot data: " << e.what() ;
+			}
+		}
+		curSpotDataList.clear();
+	}
+}
+
 void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 	int ret;
 	Ac ac;
@@ -561,34 +592,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 		}
 	}
 
-	// extra function
-	SpotData spotData = fillSpotData(ac, dc);
-	spotData.inverter = inverter;
-	spotData.time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
-
-	curSpotData[inverterId] = spotData;
-
-	LOG(Trace) << "Spot data: " << spotData;
-
-	curSpotDataList[inverterId].push_back(spotData);
-
-	if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
-		LOG(Debug) << "logging current power, voltage, ...";
-		for (const auto& entry : curSpotDataList) {
-			try {
-				SpotData averagedSpotData = average(entry.second);
-				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-
-				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
-				odb::transaction t (db->begin ());
-				db->persist(averagedSpotData);
-				t.commit();
-			} catch (const PvlogException& e) {
-				LOG(Error) << "Error averaging spot data: " << e.what() ;
-			}
-		}
-		curSpotDataList.clear();
-	}
+	logSpotData(inverter, &ac, &dc);
 }
 
 void Datalogger::logData() {
