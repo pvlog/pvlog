@@ -545,6 +545,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 				% inverter->name % ret);
 		LOG(Error) << errorMsg;
 		errorSig(errorMsg);
+		return;
 	}
 
 	if (status->status != PVLIB_STATUS_OK) {

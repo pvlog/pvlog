@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 
+
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/log/trivial.hpp>
@@ -13,6 +14,9 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/attributes/value_extraction_fwd.hpp>
+#include <boost/log/attributes/value_extraction.hpp>
+#include <boost/phoenix.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -45,7 +49,7 @@ namespace btkeywords = boost::log::keywords;
 namespace bttrivial = boost::log::trivial;
 
 namespace po = boost::program_options;
-
+namespace phoenix = boost::phoenix;
 
 static std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
 {
@@ -118,7 +122,19 @@ static int initDatabase(odb::database* db) {
 	return 0;
 }
 
-static void initLogging(const std::string& file,  bttrivial::severity_level severity) {
+BOOST_LOG_ATTRIBUTE_KEYWORD(module_attr, "Module", std::string)
+BOOST_LOG_ATTRIBUTE_KEYWORD(file_attr, "File", std::string)
+BOOST_LOG_ATTRIBUTE_KEYWORD(line_attr, "Line", int)
+
+bool logFilter(const btlog::value_ref<std::string, tag::module_attr>& module,
+               const btlog::value_ref<bttrivial::severity_level, bttrivial::tag::severity>& severity,
+               bttrivial::severity_level targetSeverity,
+               const std::unordered_set<std::string>& targetModules) {
+	std::string moduleName = module.get();
+	return severity >= targetSeverity && (targetModules.empty() || targetModules.count(moduleName) != 0);
+}
+
+static void initLogging(const std::string& file,  bttrivial::severity_level severity, const std::vector<std::string>& modules) {
 	btlog::core::get()->add_global_attribute("Module",
 			btattrs::mutable_constant<const char *>("global"));
 	btlog::core::get()->add_global_attribute("File",
@@ -128,8 +144,10 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 
 	btlog::add_common_attributes();
 
+	std::unordered_set<std::string> modulesSet(modules.begin(), modules.end());
+
 	boost::log::core::get()->set_filter(
-			boost::log::trivial::severity >= severity
+			phoenix::bind(&logFilter, module_attr.or_none(), bttrivial::severity.or_none(), severity, modulesSet)
 	);
 
 	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S");
@@ -189,12 +207,13 @@ int main(int argc, char **argv) {
 	std::string logLevel;
 	std::string logPath;
 	std::string configPath;
+	std::vector<std::string> modules;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 			("help,h", "produce help message")
 			("loglevel,l",po::value<std::string>(&logLevel)->default_value("warning"), "log level can be error, warning, info, debug, trace")
-			("logmodules,m",po::value<std::vector<std::string>>(), "modules logging is enabled default all modules")
-			("logpath,p", po::value<std::string>(), "log file location")
+			("logmodules,m",po::value<std::vector<std::string>>(&modules), "modules logging is enabled default all modules")
+			("logpath,p", po::value<std::string>(&logPath), "log file location")
 			("configpath,c", po::value<std::string>(&configPath)->default_value(CONFIG_FILE), "config file location");
 
 	po::variables_map vm;
@@ -230,7 +249,7 @@ int main(int argc, char **argv) {
 	}
 
 	//Initialize logging
-	initLogging(logPath, logSeverity);
+	initLogging(logPath, logSeverity, modules);
 
 	//Initialize pvlib
 	pvlib_init(pvlibLogFunc, nullptr, pvlibLogSeverity);
