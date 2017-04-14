@@ -122,15 +122,15 @@ static int initDatabase(odb::database* db) {
 	return 0;
 }
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(module_attr, "Module", std::string)
+BOOST_LOG_ATTRIBUTE_KEYWORD(module_attr, "Module", const char *)
 BOOST_LOG_ATTRIBUTE_KEYWORD(file_attr, "File", std::string)
 BOOST_LOG_ATTRIBUTE_KEYWORD(line_attr, "Line", int)
 
-bool logFilter(const btlog::value_ref<std::string, tag::module_attr>& module,
+bool logFilter(const btlog::value_ref<const char*, tag::module_attr>& module,
                const btlog::value_ref<bttrivial::severity_level, bttrivial::tag::severity>& severity,
                bttrivial::severity_level targetSeverity,
                const std::unordered_set<std::string>& targetModules) {
-	std::string moduleName = module.get();
+	const char* moduleName = module.get();
 	return severity >= targetSeverity && (targetModules.empty() || targetModules.count(moduleName) != 0);
 }
 
@@ -147,7 +147,7 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	std::unordered_set<std::string> modulesSet(modules.begin(), modules.end());
 
 	boost::log::core::get()->set_filter(
-			phoenix::bind(&logFilter, module_attr.or_default(std::string("global")), bttrivial::severity.or_none(), severity, modulesSet)
+			phoenix::bind(&logFilter, module_attr.or_none(), bttrivial::severity.or_none(), severity, modulesSet)
 	);
 
 	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S");
