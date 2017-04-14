@@ -147,7 +147,7 @@ static void initLogging(const std::string& file,  bttrivial::severity_level seve
 	std::unordered_set<std::string> modulesSet(modules.begin(), modules.end());
 
 	boost::log::core::get()->set_filter(
-			phoenix::bind(&logFilter, module_attr.or_none(), bttrivial::severity.or_none(), severity, modulesSet)
+			phoenix::bind(&logFilter, module_attr.or_default(std::string("global")), bttrivial::severity.or_none(), severity, modulesSet)
 	);
 
 	auto fmtTimeStamp = btexpr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S");
