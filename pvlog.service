@@ -1,0 +1,9 @@
+[Unit]
+Description=Pvlog service
+
+[Service]
+Type=simple
+ExecStart=/user/local/bin/pvlog -l warning -p /var/log/pvlog/pvlog.log -c ~/user/local/etc/pvlog/pvlog.conf
+
+[Install]
+WantedBy=multi-user.target
