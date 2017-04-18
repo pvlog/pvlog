@@ -51,24 +51,9 @@ namespace bttrivial = boost::log::trivial;
 namespace po = boost::program_options;
 namespace phoenix = boost::phoenix;
 
-static std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile)
-{
-	std::string filename;
-
-	if (configFile.empty()) {
-		char *home;
-		home = getenv("HOME");
-		if (home == NULL) {
-			PVLOG_EXCEPT("Could not get environment variable \"HOME\"!");
-		} else {
-			filename = std::string(home) + "/.pvlog/pvlog.conf";
-		}
-	} else {
-		filename = configFile;
-	}
-
+static std::unique_ptr<odb::core::database> openDatabase(const std::string& configFile) {
 	LOG(Info) << "Reading database configuration file.";
-	ConfigReader configReader(filename);
+	ConfigReader configReader(configFile);
 	configReader.parse();
 
 	std::string databaseType = configReader.getValue("database_type");

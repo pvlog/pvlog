@@ -20,7 +20,7 @@ static void trim(std::string& source, const char * delims = "\t\n\r\0x20")
 
 void ConfigReader::open(const std::string& filename)
 {
-	file.open(filename.c_str());
+	file.open(filename.c_str(), std::fstream::in);
 
 	if (!file.is_open()) PVLOG_EXCEPT("Could not open file: " + filename);
 
