@@ -2,6 +2,8 @@
 Description=Pvlog service
 
 [Service]
+TimeoutStartSec=30
+Restart=always
 Type=simple
 ExecStart=/usr/local/bin/pvlog -l warning -p /var/log/pvlog/pvlog.log -c /usr/local/etc/pvlog/pvlog.conf
 
