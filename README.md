@@ -36,7 +36,12 @@ sudo useradd --system pvlog
 create folder for log files:
 ```
 sudo mkdir /var/log/pvlog
-sudo chown /var/log/pvlog
+sudo chown pvlog /var/log/pvlog
+
+create folder for database:
+```
+sudo mkdir /var/lib/pvlog
+sudo chown pvlog /var/lib/pvlog
 
 Enable service:
 sudo systemctl enable pvlog.service
