@@ -11,6 +11,7 @@ set(SRC
 	jsonrpcadminserver.cpp
 	models/inverter.cpp
 	models/plant.cpp
+	pvoutputuploader.cpp
 )
 
 set(HEADER
@@ -19,6 +20,7 @@ set(HEADER
 	sunrisesunset.h
 	abstractpvlogserver.h
 	jsonrpcserver.h
+	pvoutputuploader.h
 )
 
 set(ODB_HEADER

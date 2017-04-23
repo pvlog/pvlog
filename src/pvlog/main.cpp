@@ -36,6 +36,7 @@
 #include "emailnotification.h"
 #include "daysummarymessage.h"
 #include "messagefilter.h"
+#include "pvoutputuploader.h"
 
 #include "models/config.h"
 #include "models/config_odb.h"
@@ -72,7 +73,7 @@ static std::unique_ptr<odb::core::database> openDatabase(const std::string& conf
 static void createDefaultConfig(odb::database* db) {
 	Config timeout("timeout", "300");
 	Config longitude("longitude", "-10.970000");
-	Config latitude("latitude", "49.710000");
+	Config latitude("latitude", "49.710000");;
 
 	db->persist(timeout);
 	db->persist(longitude);
@@ -254,6 +255,7 @@ int main(int argc, char **argv) {
 	Datalogger datalogger(db.get());
 	DaySummaryMessage daySummaryMessage(db.get());
 	EmailNotification emailNotification(db.get());
+	PvoutputUploader pvoutputUploader(db.get());
 
 	datalogger.dayEndSig.connect(std::bind(&DaySummaryMessage::generateDaySummaryMessage, &daySummaryMessage));
 	daySummaryMessage.newDaySummarySignal.connect(std::bind(&EmailNotification::sendMessage,
@@ -264,6 +266,8 @@ int main(int argc, char **argv) {
 	messageFilter.newMessageSignal.connect(std::bind(&EmailNotification::sendMessage,
 			&emailNotification, std::placeholders::_1));
 
+	datalogger.spotDataSig.connect(std::bind(&PvoutputUploader::uploadSpotData,
+			&pvoutputUploader, std::placeholders::_1));
 
 	//start json server
 	jsonrpc::HttpServer httpserver(8383);

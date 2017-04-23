@@ -23,6 +23,8 @@ struct pvlib_plant;
 
 namespace model {
 	class Inverter;
+	class SpotData;
+	class DayData;
 }
 
 
@@ -31,6 +33,8 @@ class Datalogger {
 public:
 	boost::signals2::signal<void (std::string)> errorSig;
 	boost::signals2::signal<void ()> dayEndSig;
+	boost::signals2::signal<void (const std::vector<model::SpotData>&)> spotDataSig;
+	boost::signals2::signal<void (const std::vector<model::DayData>&)> dayDataSig;
 
 	enum Status {
 		OK = 0,

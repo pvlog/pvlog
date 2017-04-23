@@ -510,24 +510,6 @@ void Datalogger::logSpotData(InverterPtr inverter, const pvlib_ac* ac, const pvl
 	LOG(Trace) << "Spot data: " << spotData;
 
 	curSpotDataList[inverter->id].push_back(spotData);
-
-	if (pt::to_time_t(spotData.time) % timeout.total_seconds() == 0) {
-		LOG(Debug) << "logging current power, voltage, ...";
-		for (const auto& entry : curSpotDataList) {
-			try {
-				SpotData averagedSpotData = average(entry.second);
-				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-
-				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
-				odb::transaction t (db->begin ());
-				db->persist(averagedSpotData);
-				t.commit();
-			} catch (const PvlogException& e) {
-				LOG(Error) << "Error averaging spot data: " << e.what() ;
-			}
-		}
-		curSpotDataList.clear();
-	}
 }
 
 void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
@@ -596,12 +578,37 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 void Datalogger::logData() {
 	Plants plantsCopy(plants); //Copy plants: so wen can delete plant from original plant
 
+	//Store data in curSpotDatalist
 	for (auto plantEntry : plantsCopy) {
 		pvlib_plant* plant  = plantEntry.first;
 		Inverters inverters = plantEntry.second;
 		for (int64_t inverterId : inverters) {
 			logData(plant, inverterId);
 		}
+	}
+
+	//Average data from last interval and store it in database
+	pt::ptime time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
+	if (pt::to_time_t(time) % timeout.total_seconds() == 0) {
+		LOG(Debug) << "logging current power, voltage, ...";
+		std::vector<SpotData> spotDatas;
+		for (const auto& entry : curSpotDataList) {
+			try {
+				SpotData averagedSpotData = average(entry.second);
+				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
+				spotDatas.push_back(averagedSpotData);
+
+				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
+				odb::transaction t (db->begin ());
+				db->persist(averagedSpotData);
+				t.commit();
+			} catch (const PvlogException& e) {
+				LOG(Error) << "Error averaging spot data: " << e.what() ;
+			}
+		}
+
+		spotDataSig(spotDatas);
+		curSpotDataList.clear();
 	}
 }
 
