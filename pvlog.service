@@ -5,7 +5,7 @@ Description=Pvlog service
 TimeoutStartSec=30
 Restart=always
 Type=simple
-ExecStart=/usr/local/bin/pvlog -l warning -p /var/log/pvlog/pvlog.log -c /usr/local/etc/pvlog/pvlog.conf
+ExecStart=/usr/local/bin/pvlog -l info -p /var/log/pvlog/pvlog.log -c /usr/local/etc/pvlog/pvlog.conf
 
 [Install]
 WantedBy=multi-user.target
