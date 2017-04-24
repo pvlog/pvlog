@@ -113,8 +113,11 @@ void PvoutputUploader::uploadSpotData(const std::vector<SpotData>& spotDatas) {
 	for (const SpotData& sd : spotDatas) {
 		power += sd.power;
 	}
-
-	uploadSpotDataSum(spotDatas.begin()->time, power, id, apiKey);
+	try {
+		uploadSpotDataSum(spotDatas.begin()->time, power, id, apiKey);
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Uploading spot data to pvoutput failed: " << ex.what();
+	}
 }
 
 void PvoutputUploader::uploadDayData(const std::vector<DayData>& dayDatas) {
@@ -131,5 +134,9 @@ void PvoutputUploader::uploadDayData(const std::vector<DayData>& dayDatas) {
 		yield += sd.dayYield;
 	}
 
-	uploadDayDataSum(dayDatas.begin()->date, yield, id, apiKey);
+	try {
+		uploadDayDataSum(dayDatas.begin()->date, yield, id, apiKey);
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Uploading day data to pvoutput failed: " << ex.what();
+	}
 }
