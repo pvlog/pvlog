@@ -9,6 +9,9 @@
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTMLForm.h>
+#include <Poco/Net/NetException.h>
+#include <Poco/Net/SSLManager.h>
+#include <Poco/Net/AcceptCertificateHandler.h>
 
 #include "log.h"
 #include "models/configservice.h"
@@ -18,6 +21,11 @@ using Poco::Net::HTTPMessage;
 using Poco::Net::HTMLForm;
 using Poco::Net::HTTPSClientSession;
 using Poco::Net::HTTPResponse;
+using Poco::SharedPtr;
+using Poco::Net::InvalidCertificateHandler;
+using Poco::Net::Context;
+using Poco::Net::SSLManager;
+using Poco::Net::AcceptCertificateHandler;
 
 namespace bg = boost::gregorian;
 namespace pt = boost::posix_time;
@@ -42,7 +50,14 @@ void readIdApiKey(odb::database* db, std::string& id, std::string& apiKey) {
 }
 
 PvoutputUploader::PvoutputUploader(odb::database* db) : db(db) {
-	//nothing to do
+	SharedPtr<InvalidCertificateHandler> ptrHandler =
+			new AcceptCertificateHandler(false);
+
+	ptrContext = new Context(Context::CLIENT_USE, "", "", "",
+			Context::VERIFY_RELAXED, 9, true,
+			"ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+
+	SSLManager::instance().initializeClient(0, ptrHandler, ptrContext);
 }
 
 void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
@@ -62,7 +77,7 @@ void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
 	form.add("v2", std::to_string(power));
 	form.prepareSubmit(request);
 
-	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT);
+	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT, ptrContext);
 	std::ostream& send = session.sendRequest(request);
 	form.write(send);
 
@@ -88,7 +103,7 @@ void PvoutputUploader::uploadDayDataSum(bg::date date, int32_t yield,
 	form.add("g", std::to_string(yield));
 	form.prepareSubmit(request);
 
-	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT);
+	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT, ptrContext);
 	std::ostream& send = session.sendRequest(request);
 	form.write(send);
 
