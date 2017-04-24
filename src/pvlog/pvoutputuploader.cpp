@@ -36,7 +36,7 @@ using model::DayData;
 static const std::string LIVE_DATA_PATH = "/r2/addstatus.jsp";
 static const std::string DAY_DATA_PATH = "/service/r2/addoutput.jsp";
 static const std::string PVOUTPUT_HOST = "pvoutput.org";
-static const int PVOUTPUT_PORT = 80;
+static const int PVOUTPUT_PORT = 443;
 
 void readIdApiKey(odb::database* db, std::string& id, std::string& apiKey) {
 	try {
