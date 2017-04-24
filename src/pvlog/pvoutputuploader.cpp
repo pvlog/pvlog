@@ -85,7 +85,8 @@ void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
 	session.receiveResponse(response);
 
 	if (response.getStatus() != HTTPResponse::HTTP_OK) {
-		LOG(Error) << "Error sending live power data. HTTP error: " << response.getStatus();
+		LOG(Error) << "Error sending live power data. HTTP error: " << response.getStatus()
+				<< " " << response.getReason();
 	}
 }
 
@@ -111,7 +112,8 @@ void PvoutputUploader::uploadDayDataSum(bg::date date, int32_t yield,
 	session.receiveResponse(response);
 
 	if (response.getStatus() != HTTPResponse::HTTP_OK) {
-		LOG(Error) << "Error sending day yield data. HTTP error: " << response.getStatus();
+		LOG(Error) << "Error sending day yield data. HTTP error: " << response.getStatus()
+				<< " " << response.getReason();
 	}
 }
 
