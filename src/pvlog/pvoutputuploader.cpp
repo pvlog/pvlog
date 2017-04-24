@@ -32,7 +32,7 @@ static const int PVOUTPUT_PORT = 80;
 
 void readIdApiKey(odb::database* db, std::string& id, std::string& apiKey) {
 	try {
-		id     = readConfig(db, "pvoutputId");
+		id     = readConfig(db, "pvoutputSystemId");
 		apiKey = readConfig(db, "pvoutputApikey");
 	} catch (const std::exception& ex) {
 		LOG(Debug) << "uploadLiveData to pvoutput.ord disabled!";
