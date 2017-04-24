@@ -82,11 +82,11 @@ void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
 	form.write(send);
 
 	HTTPResponse response;
-	session.receiveResponse(response);
+	std::istream& rs = session.receiveResponse(response);
 
 	if (response.getStatus() != HTTPResponse::HTTP_OK) {
 		LOG(Error) << "Error sending live power data. HTTP error: " << response.getStatus()
-				<< " " << response.getReason();
+				<< " " << rs.rdbuf();
 	}
 }
 
@@ -109,11 +109,11 @@ void PvoutputUploader::uploadDayDataSum(bg::date date, int32_t yield,
 	form.write(send);
 
 	HTTPResponse response;
-	session.receiveResponse(response);
+	std::istream& rs = session.receiveResponse(response);
 
 	if (response.getStatus() != HTTPResponse::HTTP_OK) {
 		LOG(Error) << "Error sending day yield data. HTTP error: " << response.getStatus()
-				<< " " << response.getReason();
+				<< " " << rs.rdbuf();
 	}
 }
 
