@@ -6,7 +6,7 @@
 
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/Net/HTTPClientSession.h>
+#include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPMessage.h>
 #include <Poco/Net/HTMLForm.h>
 
@@ -16,7 +16,7 @@
 using Poco::Net::HTTPRequest;
 using Poco::Net::HTTPMessage;
 using Poco::Net::HTMLForm;
-using Poco::Net::HTTPClientSession;
+using Poco::Net::HTTPSClientSession;
 using Poco::Net::HTTPResponse;
 
 namespace bg = boost::gregorian;
@@ -27,7 +27,7 @@ using model::DayData;
 
 static const std::string LIVE_DATA_PATH = "/r2/addstatus.jsp";
 static const std::string DAY_DATA_PATH = "/service/r2/addoutput.jsp";
-static const std::string PVOUTPUT_URI = "https://pvoutput.org";
+static const std::string PVOUTPUT_HOST = "pvoutput.org";
 static const int PVOUTPUT_PORT = 80;
 
 void readIdApiKey(odb::database* db, std::string& id, std::string& apiKey) {
@@ -62,7 +62,7 @@ void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
 	form.add("v2", std::to_string(power));
 	form.prepareSubmit(request);
 
-	HTTPClientSession session(PVOUTPUT_URI, PVOUTPUT_PORT);
+	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT);
 	std::ostream& send = session.sendRequest(request);
 	form.write(send);
 
@@ -88,7 +88,7 @@ void PvoutputUploader::uploadDayDataSum(bg::date date, int32_t yield,
 	form.add("g", std::to_string(yield));
 	form.prepareSubmit(request);
 
-	HTTPClientSession session(PVOUTPUT_URI, PVOUTPUT_PORT);
+	HTTPSClientSession session(PVOUTPUT_HOST, PVOUTPUT_PORT);
 	std::ostream& send = session.sendRequest(request);
 	form.write(send);
 
