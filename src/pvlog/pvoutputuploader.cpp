@@ -137,9 +137,9 @@ void PvoutputUploader::uploadSpotData(const std::vector<SpotData>& spotDatas) {
 		if (sd.dayYield) {
 			if (yield >= 0) {
 				yield += *sd.dayYield;
-			} else {
-				yield = -1;
 			}
+		} else {
+			yield = -1;
 		}
 	}
 	try {

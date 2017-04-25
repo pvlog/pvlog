@@ -597,11 +597,6 @@ void Datalogger::logData() {
 				SpotData averagedSpotData = average(entry.second);
 				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
 				spotDatas.emplace(averagedSpotData.id, averagedSpotData);
-
-				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
-				odb::transaction t (db->begin ());
-				db->persist(averagedSpotData);
-				t.commit();
 			} catch (const PvlogException& e) {
 				LOG(Error) << "Error averaging spot data: " << e.what() ;
 			}
@@ -628,6 +623,8 @@ void Datalogger::logData() {
 					if (it != spotDatas.end()) {
 						it->second.dayYield = stats->dayYield;
 					}
+				} else {
+					LOG(Warning) << "Got invalid day Yield";
 				}
 			}
 		}
@@ -636,6 +633,14 @@ void Datalogger::logData() {
 		spotDataVec.reserve(spotDatas.size());
 		for (const auto& entry : spotDatas) {
 			spotDataVec.push_back(entry.second);
+		}
+
+
+		for (SpotData& sd : spotDataVec) {
+			LOG(Debug) << "Persisting spot data: " << sd;
+			odb::transaction t (db->begin ());
+			db->persist(sd);
+			t.commit();
 		}
 
 		spotDataSig(spotDataVec);
