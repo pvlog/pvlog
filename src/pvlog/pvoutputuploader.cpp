@@ -60,7 +60,7 @@ PvoutputUploader::PvoutputUploader(odb::database* db) : db(db) {
 	SSLManager::instance().initializeClient(0, ptrHandler, ptrContext);
 }
 
-void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
+void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power, int32_t yield,
 		const std::string& systemId, const std::string& apiKey) {
 	LOG(Debug) << "Uploading live data. Time: " << datetime << " power: " << power << "W";
 
@@ -74,6 +74,9 @@ void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power,
 	int hours   = datetime.time_of_day().hours();
 	int minutes = datetime.time_of_day().minutes();
 	form.add("t", std::to_string(hours) + ":" + std::to_string(minutes));
+	if (yield >= 0) {
+		form.add("v1", std::to_string(yield));
+	}
 	form.add("v2", std::to_string(power));
 	form.prepareSubmit(request);
 
@@ -127,11 +130,19 @@ void PvoutputUploader::uploadSpotData(const std::vector<SpotData>& spotDatas) {
 	}
 
 	int32_t power = 0;
+	int32_t yield = 0;
 	for (const SpotData& sd : spotDatas) {
 		power += sd.power;
+		if (sd.dayYield) {
+			if (yield >= 0) {
+				yield += *sd.dayYield;
+			} else {
+				yield = -1;
+			}
+		}
 	}
 	try {
-		uploadSpotDataSum(spotDatas.begin()->time, power, id, apiKey);
+		uploadSpotDataSum(spotDatas.begin()->time, power, yield, id, apiKey);
 	} catch (const std::exception& ex) {
 		LOG(Error) << "Uploading spot data to pvoutput failed: " << ex.what();
 	}

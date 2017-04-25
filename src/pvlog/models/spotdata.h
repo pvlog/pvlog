@@ -33,7 +33,10 @@ struct SpotData {
 	#pragma db index type("INTEGER")
 	boost::posix_time::ptime time;
 
-	int32_t power;
+	int32_t power; //power in W
+
+	boost::optional<int32_t> dayYield; //current day Yield in Wh
+
 	boost::optional<int32_t> frequency;
 
 	#pragma db table("phase")      \

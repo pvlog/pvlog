@@ -588,15 +588,15 @@ void Datalogger::logData() {
 	}
 
 	//Average data from last interval and store it in database
-	pt::ptime time = util::roundUp(pt::second_clock::universal_time(), updateInterval);
+	pt::ptime time = util::roundDown(pt::second_clock::universal_time(), updateInterval);
 	if (pt::to_time_t(time) % timeout.total_seconds() == 0) {
 		LOG(Debug) << "logging current power, voltage, ...";
-		std::vector<SpotData> spotDatas;
+		std::unordered_map<int64_t, SpotData> spotDatas;
 		for (const auto& entry : curSpotDataList) {
 			try {
 				SpotData averagedSpotData = average(entry.second);
 				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-				spotDatas.push_back(averagedSpotData);
+				spotDatas.emplace(averagedSpotData.id, averagedSpotData);
 
 				LOG(Debug) << "Persisting spot data: " << averagedSpotData;
 				odb::transaction t (db->begin ());
@@ -607,7 +607,38 @@ void Datalogger::logData() {
 			}
 		}
 
-		spotDataSig(spotDatas);
+		//read current dayYield data to spot data
+		for (auto plantEntry : plantsCopy) {
+			pvlib_plant* plant  = plantEntry.first;
+			Inverters inverters = plantEntry.second;
+			for (int64_t inverterId : inverters) {
+				std::unique_ptr<pvlib_stats, decltype(pvlib_free_stats)*> stats(pvlib_alloc_stats(), pvlib_free_stats);
+
+				InverterPtr inverter = inverterInfo.at(inverterId);
+				if (pvlib_get_stats(plant, inverterId, stats.get()) < 0) {
+					std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter %1%")
+							% inverter->name);
+					LOG(Error) << errorMsg;
+					errorSig(errorMsg);
+					return;
+				}
+
+				if (isValid(stats->dayYield)) {
+					auto it = spotDatas.find(inverterId);
+					if (it != spotDatas.end()) {
+						it->second.dayYield = stats->dayYield;
+					}
+				}
+			}
+		}
+
+		std::vector<SpotData> spotDataVec;
+		spotDataVec.reserve(spotDatas.size());
+		for (const auto& entry : spotDatas) {
+			spotDataVec.push_back(entry.second);
+		}
+
+		spotDataSig(spotDataVec);
 		curSpotDataList.clear();
 	}
 }
