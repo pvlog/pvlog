@@ -62,7 +62,8 @@ PvoutputUploader::PvoutputUploader(odb::database* db) : db(db) {
 
 void PvoutputUploader::uploadSpotDataSum(pt::ptime datetime, int32_t power, int32_t yield,
 		const std::string& systemId, const std::string& apiKey) {
-	LOG(Debug) << "Uploading live data. Time: " << datetime << " power: " << power << "W";
+	LOG(Debug) << "Uploading live data. Time: " << datetime << " power: "
+			<< power << "W, dayYield: " << yield << "Wh";
 
 	HTTPRequest request(HTTPRequest::HTTP_POST, LIVE_DATA_PATH, HTTPMessage::HTTP_1_1);
 

@@ -54,18 +54,18 @@ struct SpotData {
 
 	friend std::ostream& operator<< (std::ostream& o, const SpotData& sd) {
 		o << "Inverter: " << sd.inverter->id << ": \n";
-		o << "time: " << boost::posix_time::to_simple_string(sd.time) << " power: " << sd.power << " frequency: "
-		  << sd.frequency << "\n" << "ac Phases: \n";
+		o << "time: " << boost::posix_time::to_simple_string(sd.time) << " power: " << sd.power << "W, frequency: "
+		  << sd.frequency << "Hz, dayYield "  << sd.dayYield << "Wh\n" << "ac Phases: \n";
 
 		for (const auto& ent : sd.phases) {
 			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+			  << ent.second.voltage << "mV, current: " << ent.second.current << "mA)\n";
 		}
 
 		o << "dc Inputs:\n";
 		for (const auto& ent : sd.dcInputs) {
 			o << ent.first << ": (power: " << ent.second.power << " voltage: "
-			  << ent.second.voltage << " current: " << ent.second.current << ")\n";
+			  << ent.second.voltage << "mV, current: " << ent.second.current << "mA)\n";
 		}
 
 		return o;
