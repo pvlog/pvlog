@@ -74,19 +74,6 @@ static inline T convertTo(const std::string& str,
 }
 
 template<typename T>
-inline Json::Value toJson(const boost::optional<T>& opt) {
-	Json::Value value;
-
-	if (opt) {
-		value = opt.get();
-	} else {
-		value = nullptr;
-	}
-
-	return value;
-}
-
-template<typename T>
 std::string to_string(T t, int width) {
 	std::stringstream ss;
 	ss << std::setw(width) << std::setfill('0') << t;

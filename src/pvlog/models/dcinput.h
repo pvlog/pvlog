@@ -23,9 +23,15 @@ inline Json::Value toJson(const DcInput& dcInput) {
 	using util::toJson;
 	Json::Value json;
 
-	json["power"]   = toJson(dcInput.power);
-	json["voltage"] = toJson(dcInput.voltage);
-	json["current"] = toJson(dcInput.current);
+	if (dcInput.power) {
+		json["power"] = dcInput.power.get();
+	}
+	if (dcInput.voltage) {
+		json["voltage"] = dcInput.voltage.get();
+	}
+	if (dcInput.current) {
+		json["current"] = dcInput.current.get();
+	}
 
 	return json;
 }

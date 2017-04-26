@@ -23,9 +23,13 @@ inline Json::Value toJson(const Phase& phase) {
 	using util::toJson;
 	Json::Value json;
 
-	json["power"]   = phase.power;
-	json["voltage"] = toJson(phase.voltage);
-	json["current"] = toJson(phase.current);
+	json["power"] = phase.power;
+	if (phase.voltage) {
+		json["voltage"] = phase.voltage.get();
+	}
+	if (phase.current) {
+		json["current"] = phase.current.get();
+	}
 
 	return json;
 }
