@@ -61,6 +61,8 @@ public:
 
 	Status getStatus();
 protected:
+	using Inverters = std::unordered_set<int64_t>;
+	using Plants    = std::unordered_map<pvlib_plant*, Inverters>;
 //	/**
 //	 * Wait for begin of daylight.
 //	 *
@@ -97,6 +99,12 @@ private:
 
 	void updateArchiveData();
 
+	void addDayYieldData(pvlib_plant* plant, model::InverterPtr inverter,
+			model::SpotData& spotData) const;
+
+	void addDayYieldData(const Plants& plants,
+			/* out */std::unordered_map<int64_t, model::SpotData>& spotDatas) const;
+
 	std::atomic<bool> quit;
 	bool active;
 	std::condition_variable userEventSignal;
@@ -113,9 +121,6 @@ private:
 	std::unique_ptr<SunriseSunset> sunriseSunset;
 	boost::posix_time::ptime sunset;
 	boost::posix_time::ptime sunrise;
-
-	using Inverters = std::unordered_set<int64_t>;
-	using Plants    = std::unordered_map<pvlib_plant*, Inverters>;
 
 	Plants plants;
 	std::unordered_map<int64_t, std::shared_ptr<model::Inverter>> inverterInfo;

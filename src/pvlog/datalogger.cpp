@@ -263,6 +263,58 @@ static void saveEventArchiveData(odb::database* db, InverterPtr inv, pvlib_event
 	t.commit();
 }
 
+static std::unordered_map<int64_t, SpotData> averageSpotData(const std::unordered_map<int64_t, std::vector<SpotData>>& curSpotDataList,
+		pt::time_duration timeout) {
+	std::unordered_map<int64_t, SpotData> spotDatas;
+	for (const auto& entry : curSpotDataList) {
+		try {
+			SpotData averagedSpotData = average(entry.second);
+			averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
+			spotDatas.emplace(averagedSpotData.id, averagedSpotData);
+		} catch (const PvlogException& e) {
+			LOG(Error) << "Error averaging spot data: " << e.what() ;
+		}
+	}
+
+	return spotDatas;
+}
+
+void Datalogger::addDayYieldData(pvlib_plant* plant, InverterPtr inverter,
+		/* out */SpotData& spotData) const {
+	int64_t inverterId = inverter->id;
+	std::unique_ptr<pvlib_stats, decltype(pvlib_free_stats)*> stats(pvlib_alloc_stats(), pvlib_free_stats);
+	if (pvlib_get_stats(plant, inverterId, stats.get()) < 0) {
+		std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter %1%")
+				% inverter->name);
+		LOG(Error) << errorMsg;
+		errorSig(errorMsg);
+		return;
+	}
+
+	if (isValid(stats->dayYield)) {
+			spotData.dayYield = stats->dayYield;
+	} else {
+		LOG(Warning) << "Got invalid day Yield";
+	}
+}
+
+void Datalogger::addDayYieldData(const Datalogger::Plants& plants,
+		/* out */std::unordered_map<int64_t, SpotData>& spotDatas) const {
+	for (auto plantEntry : plants) {
+		pvlib_plant* plant  = plantEntry.first;
+		Inverters inverters = plantEntry.second;
+		for (int64_t inverterId : inverters) {
+			InverterPtr inverter = inverterInfo.at(inverterId);
+			auto it = spotDatas.find(inverterId);
+			if (it == spotDatas.end()) {
+				LOG(Error) << "This should never happen";
+				continue;
+			}
+
+			addDayYieldData(plant, inverter, it->second);
+		}
+	}
+}
 
 Datalogger::Datalogger(odb::core::database* database) :
 		quit(false), active(false), dataloggerStatus(OK), db(database)
@@ -578,7 +630,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 void Datalogger::logData() {
 	Plants plantsCopy(plants); //Copy plants: so wen can delete plant from original plant
 
-	//Store data in curSpotDatalist
+	//log spot data
 	for (auto plantEntry : plantsCopy) {
 		pvlib_plant* plant  = plantEntry.first;
 		Inverters inverters = plantEntry.second;
@@ -590,52 +642,17 @@ void Datalogger::logData() {
 	//Average data from last interval and store it in database
 	pt::ptime time = util::roundDown(pt::second_clock::universal_time(), updateInterval);
 	if (pt::to_time_t(time) % timeout.total_seconds() == 0) {
-		LOG(Debug) << "logging current power, voltage, ...";
-		std::unordered_map<int64_t, SpotData> spotDatas;
-		for (const auto& entry : curSpotDataList) {
-			try {
-				SpotData averagedSpotData = average(entry.second);
-				averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-				spotDatas.emplace(averagedSpotData.id, averagedSpotData);
-			} catch (const PvlogException& e) {
-				LOG(Error) << "Error averaging spot data: " << e.what() ;
-			}
-		}
+		std::unordered_map<int64_t, SpotData> spotDatas = averageSpotData(curSpotDataList, timeout);
 
-		//read current dayYield data to spot data
-		for (auto plantEntry : plantsCopy) {
-			pvlib_plant* plant  = plantEntry.first;
-			Inverters inverters = plantEntry.second;
-			for (int64_t inverterId : inverters) {
-				std::unique_ptr<pvlib_stats, decltype(pvlib_free_stats)*> stats(pvlib_alloc_stats(), pvlib_free_stats);
+		//read current dayyield data
+		addDayYieldData(plants, spotDatas);
 
-				InverterPtr inverter = inverterInfo.at(inverterId);
-				if (pvlib_get_stats(plant, inverterId, stats.get()) < 0) {
-					std::string errorMsg = bt::str(bt::format("Failed getting statistics of inverter %1%")
-							% inverter->name);
-					LOG(Error) << errorMsg;
-					errorSig(errorMsg);
-					return;
-				}
-
-				if (isValid(stats->dayYield)) {
-					auto it = spotDatas.find(inverterId);
-					if (it != spotDatas.end()) {
-						it->second.dayYield = stats->dayYield;
-					}
-				} else {
-					LOG(Warning) << "Got invalid day Yield";
-				}
-			}
-		}
-
+		//persist spot data
 		std::vector<SpotData> spotDataVec;
 		spotDataVec.reserve(spotDatas.size());
 		for (const auto& entry : spotDatas) {
 			spotDataVec.push_back(entry.second);
 		}
-
-
 		for (SpotData& sd : spotDataVec) {
 			LOG(Debug) << "Persisting spot data: " << sd;
 			odb::transaction t (db->begin ());
