@@ -75,7 +75,6 @@ struct SpotData {
 using SpotDataPtr = std::shared_ptr<SpotData>;
 
 inline Json::Value toJson(const SpotData& spotData) {
-	using util::toJson;
 	Json::Value json;
 
 	json["power"]     = spotData.power;

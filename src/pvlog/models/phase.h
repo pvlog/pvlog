@@ -20,7 +20,6 @@ struct Phase {
 };
 
 inline Json::Value toJson(const Phase& phase) {
-	using util::toJson;
 	Json::Value json;
 
 	json["power"] = phase.power;

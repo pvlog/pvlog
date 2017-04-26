@@ -20,7 +20,6 @@ struct DcInput {
 };
 
 inline Json::Value toJson(const DcInput& dcInput) {
-	using util::toJson;
 	Json::Value json;
 
 	if (dcInput.power) {
