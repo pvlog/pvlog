@@ -654,7 +654,7 @@ void Datalogger::logData() {
 			spotDataVec.push_back(entry.second);
 		}
 		for (SpotData& sd : spotDataVec) {
-			LOG(Debug) << "Persisting spot data: " << sd;
+			LOG(Info) << "Persisting spot data: " << sd;
 			odb::transaction t (db->begin ());
 			db->persist(sd);
 			t.commit();

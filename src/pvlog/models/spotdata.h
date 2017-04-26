@@ -80,6 +80,7 @@ inline Json::Value toJson(const SpotData& spotData) {
 
 	json["power"]     = spotData.power;
 	json["frequency"] = toJson(spotData.frequency);
+	json["dayYield"]  = toJson(spotData.dayYield);
 
 	Json::Value phases;
 	for (const auto& phaseEntry : spotData.phases) {
