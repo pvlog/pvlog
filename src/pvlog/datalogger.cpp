@@ -270,7 +270,7 @@ static std::unordered_map<int64_t, SpotData> averageSpotData(const std::unordere
 		try {
 			SpotData averagedSpotData = average(entry.second);
 			averagedSpotData.time = util::roundUp(pt::second_clock::universal_time(), timeout);
-			spotDatas.emplace(averagedSpotData.id, averagedSpotData);
+			spotDatas.emplace(averagedSpotData.inverter->id, averagedSpotData);
 		} catch (const PvlogException& e) {
 			LOG(Error) << "Error averaging spot data: " << e.what() ;
 		}
