@@ -61,8 +61,17 @@ void Email::send(const std::string& from, const std::string& to, const std::stri
 	message.setSender(from);
 	message.addRecipient(MailRecipient(MailRecipient::PRIMARY_RECIPIENT, to));
 	message.setSubject(subject);
-	message.setContentType("text/plain; charset=UTF-8");
-	message.setContent(content, MailMessage::ENCODING_8BIT);
+	message.setContentType("text/html; charset=UTF-8");
+	std::string pre =
+			"<html>\n"
+			"<body>\n"
+			"<pre style=\"font: monospace\">\n";
+	std::string footer =
+			"</pre>\n"
+			"</body>\n"
+			"</html>\n";
+
+	message.setContent(pre + content + footer, MailMessage::ENCODING_8BIT);
 
 	try {
 		session->sendMessage(message);
