@@ -320,31 +320,6 @@ Datalogger::Datalogger(odb::core::database* database) :
 		quit(false), active(false), dataloggerStatus(OK), db(database)
 {
 	PVLOG_NOT_NULL(database);
-
-	timeout = pt::seconds(std::stoi(readConfig(db, "timeout")));
-	LOG(Info) << "Timeout: " << timeout;
-
-	if (timeout.total_seconds() < 60) {
-		PVLOG_EXCEPT("Timeout must be at least 60 seconds!");
-	}
-	if ((timeout.seconds()) != 0) {
-		PVLOG_EXCEPT("Timeout must be a multiple of 60 seconds");
-	}
-
-	float longitude = std::stof(readConfig(db, "longitude"));
-	float latitude = std::stof(readConfig(db, "latitude"));
-
-	LOG(Info) << "Location longitude " << longitude << " latitude: " << latitude;
-
-
-	sunriseSunset = std::unique_ptr<SunriseSunset>(
-			new SunriseSunset(longitude, latitude));
-
-	int julianDay = bg::day_clock::universal_day().julian_day();
-	sunset  = sunriseSunset->sunset(julianDay);
-	sunrise = sunriseSunset->sunrise(julianDay);
-
-	this->updateInterval = pt::seconds(20);
 }
 
 Datalogger::~Datalogger() {
@@ -707,6 +682,33 @@ Datalogger::Status Datalogger::getStatus() {
 
 void Datalogger::work() {
 	for (;;) {
+		timeout = pt::seconds(std::stoi(readConfig(db, "timeout")));
+		LOG(Info) << "Timeout: " << timeout;
+
+		if (timeout.total_seconds() < 60) {
+			LOG(Error) << "Timeout must be at least 60 seconds!";
+			stop();
+		}
+		if ((timeout.seconds()) != 0) {
+			LOG(Error) << "Timeout must be a multiple of 60 seconds";
+			stop();
+		}
+
+		float longitude = std::stof(readConfig(db, "longitude"));
+		float latitude = std::stof(readConfig(db, "latitude"));
+		LOG(Info) << "Location longitude " << longitude << " latitude: " << latitude;
+
+
+		sunriseSunset = std::unique_ptr<SunriseSunset>(
+				new SunriseSunset(longitude, latitude));
+
+		int julianDay = bg::day_clock::universal_day().julian_day();
+		sunset  = sunriseSunset->sunset(julianDay);
+		sunrise = sunriseSunset->sunrise(julianDay);
+
+		this->updateInterval = pt::seconds(20);
+
+
 		active = true;
 		dataloggerStatus = OK;
 		openPlants();
