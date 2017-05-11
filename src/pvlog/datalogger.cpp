@@ -304,7 +304,7 @@ void Datalogger::addDayYieldData(const Datalogger::Plants& plants,
 		pvlib_plant* plant  = plantEntry.first;
 		Inverters inverters = plantEntry.second;
 		for (int64_t inverterId : inverters) {
-			InverterPtr inverter = inverterInfo.at(inverterId);
+			InverterPtr inverter = idInverterMapp.at(inverterId);
 			auto it = spotDatas.find(inverterId);
 			if (it == spotDatas.end()) {
 				LOG(Error) << "This should never happen";
@@ -363,7 +363,7 @@ void Datalogger::openPlant(const Plant& plant) {
 	std::unordered_set<int64_t> plantInverterIds;
 	for (InverterPtr inverter : plant.inverters) {
 		plantInverterIds.insert(inverter->id);
-		inverterInfo.emplace(inverter->id, inverter);
+		idInverterMapp.emplace(inverter->id, inverter);
 	}
 
 	for (auto inverterIt = availableInverterIds.begin(); inverterIt != availableInverterIds.end(); ) {
@@ -485,7 +485,7 @@ void Datalogger::closePlants() {
 	plants.clear();
 }
 
-void Datalogger::sleepUntill(pt::ptime time) {
+void Datalogger::sleepUntill(pt::ptime time) const {
 	using system_clock = std::chrono::system_clock;
 
 	time_t unixTime = pt::to_time_t(time);
@@ -499,7 +499,7 @@ void Datalogger::sleepUntill(pt::ptime time) {
 void Datalogger::logDayData(pvlib_plant* plant, int64_t inverterId) {
 	std::unique_ptr<pvlib_stats, decltype(pvlib_free_stats)*> stats(pvlib_alloc_stats(), pvlib_free_stats);
 
-	InverterPtr inverter = inverterInfo.at(inverterId);
+	InverterPtr inverter = idInverterMapp.at(inverterId);
 
 	LOG(Debug) << "logging day yield";
 	if (pvlib_get_stats(plant, inverterId, stats.get()) < 0) {
@@ -545,7 +545,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 	std::unique_ptr<pvlib_dc, decltype(pvlib_free_dc)*> dc(pvlib_alloc_dc(), pvlib_free_dc);
 	std::unique_ptr<pvlib_status, decltype(pvlib_free_status)*> status(pvlib_alloc_status(), pvlib_free_status);
 
-	InverterPtr inverter = inverterInfo.at(inverterId);
+	InverterPtr inverter = idInverterMapp.at(inverterId);
 
 	if ((ret = pvlib_get_ac_values(plant, inverterId, ac.get())) < 0 ||
 		(ret = pvlib_get_dc_values(plant, inverterId, dc.get())) < 0 ||
@@ -699,12 +699,11 @@ void Datalogger::work() {
 		LOG(Info) << "Location longitude " << longitude << " latitude: " << latitude;
 
 
-		sunriseSunset = std::unique_ptr<SunriseSunset>(
+		sunriseSunsetCalculator = std::unique_ptr<SunriseSunset>(
 				new SunriseSunset(longitude, latitude));
-
 		int julianDay = bg::day_clock::universal_day().julian_day();
-		sunset  = sunriseSunset->sunset(julianDay);
-		sunrise = sunriseSunset->sunrise(julianDay);
+		sunset  = sunriseSunsetCalculator->sunset(julianDay);
+		sunrise = sunriseSunsetCalculator->sunrise(julianDay);
 
 		this->updateInterval = pt::seconds(20);
 
@@ -743,8 +742,8 @@ void Datalogger::logger()
 				//no more plants are open => wait for next day
 
 				int nextJulianDay = bg::day_clock::universal_day().julian_day() + 1;
-				sunrise = sunriseSunset->sunrise(nextJulianDay);
-				sunset  = sunriseSunset->sunset(nextJulianDay);
+				sunrise = sunriseSunsetCalculator->sunrise(nextJulianDay);
+				sunset  = sunriseSunsetCalculator->sunset(nextJulianDay);
 
 				dayEndSig();
 				dataloggerStatus = NIGHT;
