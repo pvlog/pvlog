@@ -1,6 +1,5 @@
 #include "email.h"
 
-#include <Poco/Crypto/OpenSSLInitializer.h>
 #include <Poco/Net/MailMessage.h>
 #include <Poco/Net/MailRecipient.h>
 #include <Poco/Net/SecureStreamSocket.h>
@@ -17,12 +16,9 @@
 using namespace Poco::Net;
 using namespace Poco;
 
-using Crypto::OpenSSLInitializer;
-
 Email::Email(const std::string& smtpServer, int port,
 		const std::string& user, const std::string& password)
 {
-	OpenSSLInitializer::initialize();
 	SharedPtr<InvalidCertificateHandler> ptrHandler =
 			new AcceptCertificateHandler(false);
 
@@ -44,7 +40,6 @@ Email::Email(const std::string& smtpServer, int port,
 	} catch (SMTPException &e) {
 		LOG(Error) << "Login error: " << e.displayText();
 		session->close();
-		OpenSSLInitializer::uninitialize();
 		PVLOG_EXCEPT(e.displayText());
 	}
 
@@ -53,7 +48,6 @@ Email::Email(const std::string& smtpServer, int port,
 
 Email::~Email() {
 	session->close();
-	OpenSSLInitializer::uninitialize();
 }
 
 void Email::send(const std::string& from, const std::string& to, const std::string& subject, const std::string& content) {
