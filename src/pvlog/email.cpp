@@ -37,7 +37,7 @@ Email::Email(const std::string& smtpServer, int port,
 	LOG(Info) << "Login: " << user;
 	try {
 		session->login(SMTPClientSession::AUTH_LOGIN, user, password);
-	} catch (SMTPException &e) {
+	} catch (const Exception &e) {
 		LOG(Error) << "Login error: " << e.displayText();
 		session->close();
 		PVLOG_EXCEPT(e.displayText());
@@ -69,7 +69,7 @@ void Email::send(const std::string& from, const std::string& to, const std::stri
 
 	try {
 		session->sendMessage(message);
-	} catch (SMTPException &e) {
+	} catch (const Exception &e) {
 		LOG(Error) << "Send message error: " << e.displayText();
 		PVLOG_EXCEPT(e.displayText());
 	}
