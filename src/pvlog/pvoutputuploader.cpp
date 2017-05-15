@@ -125,6 +125,8 @@ void PvoutputUploader::uploadSpotData(const std::vector<SpotData>& spotDatas) {
 	std::string id;
 	std::string apiKey;
 
+	assert(!spotDatas.empty());
+
 	readIdApiKey(db, id, apiKey);
 	if (id == "" || apiKey == "") {
 		return;
@@ -152,6 +154,8 @@ void PvoutputUploader::uploadSpotData(const std::vector<SpotData>& spotDatas) {
 void PvoutputUploader::uploadDayData(const std::vector<DayData>& dayDatas) {
 	std::string id;
 	std::string apiKey;
+
+	assert(!dayDatas.empty());
 
 	readIdApiKey(db, id, apiKey);
 	if (id == "" || apiKey == "") {
