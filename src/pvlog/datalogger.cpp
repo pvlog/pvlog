@@ -603,7 +603,7 @@ void Datalogger::logData(pvlib_plant* plant, int64_t inverterId) {
 }
 
 void Datalogger::logData() {
-	Plants plantsCopy(plants); //Copy plants: so wen can delete plant from original plant
+	Plants plantsCopy(plants); //Copy plants: so we can delete plant from original plant
 
 	//log spot data
 	for (auto plantEntry : plantsCopy) {
