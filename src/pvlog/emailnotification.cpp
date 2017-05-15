@@ -19,28 +19,32 @@ EmailNotification::EmailNotification(odb::database* db) : db(db) {
 void EmailNotification::sendMessage(const std::string& message) {
 	using Query = odb::query<Config>;
 
-	odb::transaction t(db->begin());
-	ConfigPtr smtpServerConf   = db->query_one<Config>(Query::key == "smtpServer");
-	ConfigPtr smtpPortConf     = db->query_one<Config>(Query::key == "smtpPort");
-	ConfigPtr smtpUserConf     = db->query_one<Config>(Query::key == "smtpUser");
-	ConfigPtr smtpPasswordConf = db->query_one<Config>(Query::key == "smtpPassword");
+	try {
+		odb::transaction t(db->begin());
+		ConfigPtr smtpServerConf   = db->query_one<Config>(Query::key == "smtpServer");
+		ConfigPtr smtpPortConf     = db->query_one<Config>(Query::key == "smtpPort");
+		ConfigPtr smtpUserConf     = db->query_one<Config>(Query::key == "smtpUser");
+		ConfigPtr smtpPasswordConf = db->query_one<Config>(Query::key == "smtpPassword");
 
-	ConfigPtr emailConf = db->query_one<Config>(Query::key == "email");
-	t.commit();
+		ConfigPtr emailConf = db->query_one<Config>(Query::key == "email");
+		t.commit();
 
-	if (smtpServerConf == nullptr || smtpPortConf == nullptr || smtpUserConf == nullptr ||
-			smtpPasswordConf == nullptr || emailConf == nullptr) {
-		return;
+		if (smtpServerConf == nullptr || smtpPortConf == nullptr || smtpUserConf == nullptr ||
+				smtpPasswordConf == nullptr || emailConf == nullptr) {
+			return;
+		}
+
+		const std::string& smtpServer = smtpServerConf->value;
+		int smtpPort                  = std::stoi(smtpPortConf->value);
+		const std::string& user       = smtpUserConf->value;
+		const std::string& password   = smtpPasswordConf->value;
+
+		const std::string& targetEmail = emailConf->value;
+
+		Email email(smtpServer, smtpPort, user, password);
+		email.send(user, targetEmail, "Pvlog email notification", message);
+		LOG(Info) << "Sended pvlog email notification: " << message;
+	} catch (const std::exception& ex) {
+		LOG(Error) << "Failed sending email notification: " << ex.what();
 	}
-
-	const std::string& smtpServer = smtpServerConf->value;
-	int smtpPort                  = std::stoi(smtpPortConf->value);
-	const std::string& user       = smtpUserConf->value;
-	const std::string& password   = smtpPasswordConf->value;
-
-	const std::string& targetEmail = emailConf->value;
-
-	Email email(smtpServer, smtpPort, user, password);
-	email.send(user, targetEmail, "Pvlog email notification", message);
-	LOG(Info) << "Sended pvlog email notification: " << message;
 }
