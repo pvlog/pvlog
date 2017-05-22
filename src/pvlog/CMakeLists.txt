@@ -11,6 +11,7 @@ set(SRC
 	jsonrpcadminserver.cpp
 	models/inverter.cpp
 	models/plant.cpp
+	models/daydata.cpp
 	pvoutputuploader.cpp
 )
 

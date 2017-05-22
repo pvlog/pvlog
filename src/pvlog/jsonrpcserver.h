@@ -49,7 +49,9 @@ public:
 	virtual Json::Value getLiveSpotData() override;
 	virtual Json::Value getDataloggerStatus() override;
 	virtual Json::Value getDayData(const std::string& from, const std::string& to) override;
+	virtual Json::Value getDayStats(const std::string& from, const std::string& to) override;
 	virtual Json::Value getMonthData(const std::string& year) override;
+	virtual Json::Value getMonthStats(const std::string& year) override;
 	virtual Json::Value getYearData() override;
 	virtual Json::Value getInverters() override;
 	virtual Json::Value getPlants() override;

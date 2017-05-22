@@ -16,7 +16,9 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
             this->bindAndAddMethod(jsonrpc::Procedure("getLiveSpotData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getLiveSpotDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getDataloggerStatus", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getDataloggerStatusI);
             this->bindAndAddMethod(jsonrpc::Procedure("getDayData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "from",jsonrpc::JSON_STRING,"to",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getDayDataI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getDayStats", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "from",jsonrpc::JSON_STRING,"to",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getDayStatsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getMonthData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "year",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getMonthDataI);
+            this->bindAndAddMethod(jsonrpc::Procedure("getMonthStats", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT, "year",jsonrpc::JSON_STRING, NULL), &AbstractPvlogServer::getMonthStatsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getStatistics", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getStatisticsI);
             this->bindAndAddMethod(jsonrpc::Procedure("getYearData", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getYearDataI);
             this->bindAndAddMethod(jsonrpc::Procedure("getInverters", jsonrpc::PARAMS_BY_NAME, jsonrpc::JSON_OBJECT,  NULL), &AbstractPvlogServer::getInvertersI);
@@ -42,9 +44,17 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         {
             response = this->getDayData(request["from"].asString(), request["to"].asString());
         }
+        inline virtual void getDayStatsI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->getDayStats(request["from"].asString(), request["to"].asString());
+        }
         inline virtual void getMonthDataI(const Json::Value &request, Json::Value &response)
         {
             response = this->getMonthData(request["year"].asString());
+        }
+        inline virtual void getMonthStatsI(const Json::Value &request, Json::Value &response)
+        {
+            response = this->getMonthStats(request["year"].asString());
         }
         inline virtual void getStatisticsI(const Json::Value &request, Json::Value &response)
         {
@@ -75,7 +85,9 @@ class AbstractPvlogServer : public jsonrpc::AbstractServer<AbstractPvlogServer>
         virtual Json::Value getLiveSpotData() = 0;
         virtual Json::Value getDataloggerStatus() = 0;
         virtual Json::Value getDayData(const std::string& from, const std::string& to) = 0;
+        virtual Json::Value getDayStats(const std::string& from, const std::string& to) = 0;
         virtual Json::Value getMonthData(const std::string& year) = 0;
+        virtual Json::Value getMonthStats(const std::string& year) = 0;
         virtual Json::Value getStatistics() = 0;
         virtual Json::Value getYearData() = 0;
         virtual Json::Value getInverters() = 0;

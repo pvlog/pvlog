@@ -94,6 +94,22 @@ struct LowNDay {
 	boost::gregorian::date date;
 };
 
+#pragma db view object(DayData)\
+	query((?) + "GROUP BY date")
+struct DayStats {
+	#pragma db column(DayData::date)
+	boost::gregorian::date date;
+
+	#pragma db column("max(" + DayData::dayYield + ") as max")
+	int64_t max;
+
+	#pragma db column("avg(" + DayData::dayYield + ") as avg")
+	int64_t avg;
+
+	#pragma db column("max(" + DayData::dayYield + ") as min")
+	int64_t min;
+};
+
 #pragma db view object(DayData) object(Inverter)\
 	query((?) + "GROUP BY year, month ORDER BY yield desc LIMIT 20")
 struct TopNMonth {
@@ -124,6 +140,23 @@ struct LowNMonth{
 	int year;
 };
 
+#pragma db view object(DayData)\
+	query((?) + "GROUP BY month")
+struct MonthStats {
+	//FIXME: support other databases than sqlite
+	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
+	int month;
+
+	#pragma db column("max(" + DayData::dayYield + ") as max")
+	int64_t max;
+
+	#pragma db column("avg(" + DayData::dayYield + ") as avg")
+	int64_t avg;
+
+	#pragma db column("max(" + DayData::dayYield + ") as min")
+	int64_t min;
+};
+
 #pragma db view object(DayData) object(Inverter)\
 		query((?) + "GROUP BY year," + Inverter::id)
 struct DayDataYear {
@@ -138,16 +171,11 @@ struct DayDataYear {
 	int64_t inverterId;
 };
 
+Json::Value toJson(const DayStats& dayStats);
 
-inline Json::Value toJson(const DayData& dayData) {
-	Json::Value json;
+Json::Value toJson(const MonthStats& monthStats);
 
-	json["inverter"] =  static_cast<Json::Int64>(dayData.inverter->id);
-	json["date"]     = boost::gregorian::to_iso_string(dayData.date);
-	json["yield"] = static_cast<Json::Int64>(dayData.dayYield);
-
-	return json;
-}
+Json::Value toJson(const DayData& dayData);
 
 } //namespace model {
 

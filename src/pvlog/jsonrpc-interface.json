@@ -27,7 +27,22 @@
 		"returns" : {"data": "data"}
 	},
 	{
+		"name" : "getDayStats",
+		"params": {
+			"from" : "2016-10-01",
+			"to" : "2016-10-01"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
 		"name" : "getMonthData",
+		"params": {
+			"year"   : "2016"
+		},
+		"returns" : {"data": "data"}
+	},
+	{
+		"name" : "getMonthStats",
 		"params": {
 			"year"   : "2016"
 		},
