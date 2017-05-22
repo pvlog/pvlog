@@ -94,19 +94,27 @@ struct LowNDay {
 	boost::gregorian::date date;
 };
 
-#pragma db view object(DayData)\
-	query((?) + "GROUP BY date")
-struct DayStats {
-	#pragma db column(DayData::date)
-	boost::gregorian::date date;
 
-	#pragma db column("max(" + DayData::dayYield + ") as max")
+
+#pragma db view\
+	query("SELECT CAST(strftime('%m', date) AS INTEGER) AS month, CAST(strftime('%d', date) AS INTEGER) AS day, "\
+			"MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min FROM "\
+			"(SELECT date, SUM(day_yield) AS sum_dayyield "\
+			"FROM day_data GROUP BY date) WHERE " + (?) + " GROUP BY month, day")
+struct DayStats {
+	#pragma db type("INTEGER")
+	int month;
+
+	#pragma db type("INTEGER")
+	int day;
+
+	#pragma db type("INTEGER")
 	int64_t max;
 
-	#pragma db column("avg(" + DayData::dayYield + ") as avg")
+	#pragma db type("INTEGER")
 	int64_t avg;
 
-	#pragma db column("max(" + DayData::dayYield + ") as min")
+	#pragma db type("INTEGER")
 	int64_t min;
 };
 
@@ -140,20 +148,23 @@ struct LowNMonth{
 	int year;
 };
 
-#pragma db view object(DayData)\
-	query((?) + "GROUP BY month")
+
+#pragma db view\
+	query("SELECT month, MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min FROM "\
+			"(SELECT strftime('%m', date) AS month, strftime('%Y', date) AS year,  SUM(day_yield) AS sum_dayyield, count(*) as count "\
+			"FROM day_data GROUP BY month, year HAVING count >= 28) GROUP BY month;")
 struct MonthStats {
 	//FIXME: support other databases than sqlite
-	#pragma db column("strftime('%m'," + DayData::date + ") AS month")
+	#pragma db type("INTEGER")
 	int month;
 
-	#pragma db column("max(" + DayData::dayYield + ") as max")
+	#pragma db type("INTEGER")
 	int64_t max;
 
-	#pragma db column("avg(" + DayData::dayYield + ") as avg")
+	#pragma db type("INTEGER")
 	int64_t avg;
 
-	#pragma db column("max(" + DayData::dayYield + ") as min")
+	#pragma db type("INTEGER")
 	int64_t min;
 };
 

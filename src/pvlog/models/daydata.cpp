@@ -24,10 +24,11 @@ namespace model {
 Json::Value toJson(const DayStats& dayStats) {
 	Json::Value json;
 
-	json["date"] = boost::gregorian::to_iso_string(dayStats.date);
-	json["min"]  = static_cast<Json::Int64>(dayStats.min);
-	json["avg"]  = static_cast<Json::Int64>(dayStats.avg);
-	json["max"]  = static_cast<Json::Int64>(dayStats.max);
+	json["month"] = dayStats.month;
+	json["day"]   = dayStats.day;
+	json["min"]   = static_cast<Json::Int64>(dayStats.min);
+	json["avg"]   = static_cast<Json::Int64>(dayStats.avg);
+	json["max"]   = static_cast<Json::Int64>(dayStats.max);
 
 	return json;
 }
@@ -36,9 +37,9 @@ Json::Value toJson(const MonthStats& monthStats) {
 	Json::Value json;
 
 	json["month"] = monthStats.month;
-	json["min"]  = static_cast<Json::Int64>(monthStats.min);
-	json["avg"]  = static_cast<Json::Int64>(monthStats.avg);
-	json["max"]  = static_cast<Json::Int64>(monthStats.max);
+	json["min"]   = static_cast<Json::Int64>(monthStats.min);
+	json["avg"]   = static_cast<Json::Int64>(monthStats.avg);
+	json["max"]   = static_cast<Json::Int64>(monthStats.max);
 
 	return json;
 }
@@ -48,7 +49,7 @@ Json::Value toJson(const DayData& dayData) {
 
 	json["inverter"] =  static_cast<Json::Int64>(dayData.inverter->id);
 	json["date"]     = boost::gregorian::to_iso_string(dayData.date);
-	json["yield"] = static_cast<Json::Int64>(dayData.dayYield);
+	json["yield"]    = static_cast<Json::Int64>(dayData.dayYield);
 
 	return json;
 }

@@ -164,24 +164,50 @@ Json::Value JsonRpcServer::getDayData(const std::string& from, const std::string
 Json::Value JsonRpcServer::getDayStats(const std::string& from, const std::string& to) {
 	Json::Value result;
 	using Result = odb::result<DayStats>;
-	using Query  = odb::query<DayStats>;
+	//using Query  = odb::query<DayStats>;
 
 	try {
-		LOG(Debug) << "JsonRpcServer::getDayData: " << from << "->" << to;
+		LOG(Debug) << "JsonRpcServer::getDayStats: " << from << "->" << to;
 
 		bg::date fromTime = bg::from_simple_string(from);
 		bg::date toTime   = bg::from_simple_string(to);
 
 		odb::session session;
 		odb::transaction t(db->begin());
-		Result r(
-				db->query<DayStats>(Query::date >= fromTime && Query::date <= toTime));
+
+		std::string fromMonth = std::to_string(fromTime.month());
+		std::string fromDay   = std::to_string(fromTime.day());
+
+		std::string toMonth = std::to_string(toTime.month());
+		std::string toDay   = std::to_string(toTime.day());
+
+		int startYear = fromTime.year();
+		int endYear   = toTime.year();
+		if (startYear != endYear && startYear + 1 != endYear) {
+			LOG(Error) << "Invalid time string";
+			result = Json::Value();
+			return result;
+		}
+
+		std::string queryString =
+				std::string(("(") + fromMonth + " < " + " month or (month = " + fromMonth +  " and day >= " + fromDay +
+				")) and ( month < " + toMonth  + " or (month = " + toMonth + " and day <= " + toDay + "))");
+
+		int curYear   = startYear;
+		int prevMonth = 1;
+		Result r(db->query<DayStats>(queryString));
 		for (const DayStats& d : r) {
-			result[bg::to_iso_extended_string(d.date)] = toJson(d);
+			if (startYear != endYear && prevMonth > d.month) {
+				curYear = endYear;
+			}
+			bg::date date(curYear, d.month, d.day);
+			prevMonth = d.month;
+
+			result[bg::to_iso_extended_string(date)] = toJson(d);
 		}
 		t.commit();
 	} catch (const std::exception& ex) {
-		LOG(Error) << "Error getting day stats" <<  ex.what();
+		LOG(Error) << "Error getting day stats: " <<  ex.what();
 		result = Json::Value();
 	}
 
@@ -222,7 +248,7 @@ Json::Value JsonRpcServer::getMonthStats(const std::string& year) {
 		int y = std::stoi(year);
 
 		odb::transaction t(db->begin());
-		Result r(db->query<MonthStats> ("year = \"" + std::to_string(y) + "\""));
+		Result r(db->query<MonthStats>());
 		for (const MonthStats& d: r) {
 			result[std::to_string(y) + "-" + util::to_string(d.month, 2)] =
 					toJson(d);
