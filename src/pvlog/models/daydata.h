@@ -98,7 +98,7 @@ struct LowNDay {
 
 #pragma db view\
 	query("SELECT CAST(strftime('%m', date) AS INTEGER) AS month, CAST(strftime('%d', date) AS INTEGER) AS day, "\
-			"MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min FROM "\
+			"MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min, count(*) AS count FROM "\
 			"(SELECT date, SUM(day_yield) AS sum_dayyield "\
 			"FROM day_data GROUP BY date) WHERE " + (?) + " GROUP BY month, day")
 struct DayStats {
@@ -116,6 +116,9 @@ struct DayStats {
 
 	#pragma db type("INTEGER")
 	int64_t min;
+
+	#pragma db type("INTEGER")
+	int count;
 };
 
 #pragma db view object(DayData) object(Inverter)\
@@ -150,7 +153,7 @@ struct LowNMonth{
 
 
 #pragma db view\
-	query("SELECT month, MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min FROM "\
+	query("SELECT month, MAX(sum_dayyield) AS max, AVG(sum_dayyield) AS avg, MIN(sum_dayyield) AS min FROM, count(*) AS count "\
 			"(SELECT strftime('%m', date) AS month, strftime('%Y', date) AS year,  SUM(day_yield) AS sum_dayyield, count(*) as count "\
 			"FROM day_data GROUP BY month, year HAVING count >= 28) GROUP BY month;")
 struct MonthStats {
@@ -166,6 +169,9 @@ struct MonthStats {
 
 	#pragma db type("INTEGER")
 	int64_t min;
+
+	#pragma db type("INTEGER")
+	int count;
 };
 
 #pragma db view object(DayData) object(Inverter)\

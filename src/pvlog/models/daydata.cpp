@@ -29,6 +29,7 @@ Json::Value toJson(const DayStats& dayStats) {
 	json["min"]   = static_cast<Json::Int64>(dayStats.min);
 	json["avg"]   = static_cast<Json::Int64>(dayStats.avg);
 	json["max"]   = static_cast<Json::Int64>(dayStats.max);
+	json["count"] = dayStats.count;
 
 	return json;
 }
@@ -40,6 +41,7 @@ Json::Value toJson(const MonthStats& monthStats) {
 	json["min"]   = static_cast<Json::Int64>(monthStats.min);
 	json["avg"]   = static_cast<Json::Int64>(monthStats.avg);
 	json["max"]   = static_cast<Json::Int64>(monthStats.max);
+	json["count"] = monthStats.count;
 
 	return json;
 }
